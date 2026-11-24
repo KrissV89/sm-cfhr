@@ -1,0 +1,46 @@
+\section{Verificación formal de propiedades matemáticas mediante Lean~4}\label{app:lean4}
+
+Con el fin de garantizar la solidez lógica de los enunciados teóricos del artículo y eliminar hipótesis implícitas o pasos algebraicos omitidos, todas las propiedades analíticas y estructurales del estimador SM-CFHR fueron formalizadas y verificadas mecánicamente en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) sobre la biblioteca matemática \textbf{Mathlib} (commit \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}), en la rama independiente \texttt{formal/sm-cfhr-lean4} (\texttt{formal/sm\_cfhr\_lean/}), sin alterar el código Python congelado ni los artefactos experimentales.
+
+\subsection{Alcance de los 26 teoremas verificados}
+
+La compilación completa mediante \texttt{lake build} finalizó con éxito (\texttt{exit code 0}), cero ocurrencias de \texttt{sorry}, cero usos de \texttt{admit} y cero axiomas personalizados. La auditoría automática ejecutada con \texttt{\#print axioms} (\texttt{SMCFHR/AxiomsAudit.lean}) confirma que los $26$ teoremas dependen únicamente de los tres axiomas estándar del núcleo constructivo/clásico de Lean~4 (\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}).
+
+\begin{table}[!htbp]
+\centering
+\caption{Correspondencia entre enunciados del manuscrito y teoremas formalizados en Lean~4 (\texttt{v4.36.0}).}
+\label{tab:lean4-correspondencia}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.3cm}p{2.8cm}L@{}}
+\toprule
+\textbf{Manuscrito} & \textbf{Módulo Lean~4} & \textbf{Teoremas compilados} \\
+\midrule
+Def.~1 / Ec.~(1)--(3) & \texttt{Clipping.lean}, \texttt{Monotonicity.lean} & \texttt{clip01\_nonneg}, \texttt{clip01\_le\_one}, \texttt{clip01\_mono}, \texttt{predictCF\_bounds}, \texttt{predictEnergy\_bounds} \\
+Ec.~(9)--(11) & \texttt{Huber.lean} & \texttt{huber\_nonneg}, \texttt{psi\_abs\_le}, \texttt{psi\_lipschitz}, \texttt{hasDerivAt\_huber}, \texttt{convexOn\_huber}, \texttt{strictConvexOn\_huber\_band} \\
+Teorema~1 (1)--(2) & \texttt{Model.lean}, \texttt{Gradient.lean} & \texttt{convex\_feasibleSet}, \texttt{isClosed\_feasibleSet}, \texttt{convexOn\_objective}, \texttt{hasDerivAt\_objective\_line}, \texttt{objective\_subgradient}, \texttt{gradB\_lipschitz} \\
+Teorema~1 (3) & \texttt{Optimality.lean} & \texttt{objective\_coercive} ($n\ge 1$, $\alpha_j>0$), \texttt{exists\_global\_minimizer} \\
+Teorema~2 (1)--(3) & \texttt{Optimality.lean} & \texttt{unique\_weights}, \texttt{unique\_intercept\_of\_interior\_residual}, \texttt{intercept\_nonunique\_counterexample} \\
+Proposición~1 & \texttt{Optimality.lean} & \texttt{kkt\_iff\_isMinOn} (necesidad y suficiencia KKT en $\Omega$) \\
+Proposición~2 (1) & \texttt{Gradient.lean} & \texttt{gradB\_term\_bound}, \texttt{gradW\_term\_bound} \\
+Proposición~2 (2) & \texttt{Monotonicity.lean} & \texttt{predictEnergy\_monotone\_in\_restricted} (ceteris paribus) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Precisión de hipótesis detectadas durante la formalización}
+
+La auditoría formal permitió hacer explícitas tres precisiones matemáticas que en demostraciones informales suelen quedar implícitas:
+\begin{enumerate}
+    \item \textbf{Positividad estricta y tamaño muestral en coercividad y existencia:} \texttt{objective\_coercive} y \texttt{exists\_global\_minimizer} requieren explícitamente $n \ge 1$ y $\alpha_j > 0$ para todo $j \in \{1,\dots,p\}$, mientras que la convexidad (\texttt{convexOn\_objective}) y las condiciones KKT (\texttt{kkt\_iff\_isMinOn}) valen bajo la hipótesis más débil $\alpha_j \ge 0$.
+    \item \textbf{Unicidad del vector de pesos vs.\ no unicidad degenerada del intercepto:} \texttt{unique\_weights} demuestra que cualquier par de minimizadores globales en $\Omega$ comparte exactamente $\mathbf{w}^*$, pero \texttt{intercept\_nonunique\_counterexample} exhibe un caso explícito ($n=2$, $p=1$, $\mathbf{Z}=\mathbf{0}$, $\mathbf{y}=(-2\delta, 2\delta)$) donde todo $b \in [-\delta,\delta]$ es óptimo. La unicidad de $b^*$ (\texttt{unique\_intercept\_of\_interior\_residual}) queda garantizada bajo la condición suficiente de existencia de al menos un residuo interior $|r_{k_0}^*| < \delta$.
+    \item \textbf{Acotación por observación vs.\ apalancamiento en covariables:} \texttt{gradB\_term\_bound} y \texttt{gradW\_term\_bound} acotan cada término del gradiente en $\delta/n$ y $|Z_{k,j}|\delta/n$, respectivamente, dejando explícito que la pérdida de Huber acota la influencia en los residuos de la respuesta pero no protege frente a puntos de apalancamiento arbitrarios en $\mathbf{Z}$.
+\end{enumerate}
+
+\subsection{Limitaciones explícitas de la verificación formal}
+
+En estricta coherencia con la separación entre análisis real y ejecución numérica:
+\begin{itemize}
+    \item La formalización está desarrollada sobre el cuerpo de los reales $\mathbb{R}$; no verifica la aritmética de punto flotante IEEE-754 de Python/NumPy.
+    \item No formaliza la convergencia empírica ni las tolerancias de parada del optimizador \texttt{L-BFGS-B} de SciPy.
+    \item No constituye una verificación de desempeño predictivo fuera de muestra, calibración probabilística ni validación causal temporal.
+\end{itemize}

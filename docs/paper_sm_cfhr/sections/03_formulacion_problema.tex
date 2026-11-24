@@ -1,0 +1,53 @@
+\section{Formulación del problema fotovoltaico}\label{sec:problema}
+
+Sea $\mathcal{P} = \{1,\dots,M\}$ el conjunto de plantas fotovoltaicas ($M=17$), indexadas por $i \in \mathcal{P}$, y sea $\mathcal{T} \subset \mathbb{Z}$ el calendario diario discreto desde el 1 de enero de 2024 hasta el 31 de octubre de 2026 ($|\mathcal{T}| = 1\,035$ días). Las centrales se agrupan en $G=7$ zonas geográficas mediante una asignación fija $g : \mathcal{P} \to \{1,\dots,G\}$ construida por enlace simple a menos de $100\text{ km}$.
+
+\subsection{Magnitudes físicas, unidades y normalización causal}
+
+Para cada planta $i \in \mathcal{P}$ y fecha $s \in \mathcal{T}$, denotamos por $C_{i,s} > 0$ su capacidad efectiva neta registrada en megavatios (MW) y por $y_{i,s} \ge 0$ su generación eléctrica observada en kilovatios-hora por día ($\text{kWh/día}$). Si la central operara de forma continua a su potencia neta durante las $24$ horas del día, la cota energética nominal máxima diaria (en $\text{kWh/día}$) se obtiene por conversión directa de unidades:
+\begin{equation}
+E^{\max}_{i,s} := C_{i,s}\;\text{MW} \times 1\,000\;\frac{\text{kW}}{\text{MW}} \times 24\;\frac{\text{h}}{\text{día}} = 24\,000\,C_{i,s} \quad (\text{kWh/día}).
+\label{eq:emax}
+\end{equation}
+En el análisis exploratorio contemporáneo, el factor de capacidad diario observado es el cociente adimensional $\mathrm{cf}^{\mathrm{obs}}_{i,s} := y_{i,s} / E^{\max}_{i,s}$.
+
+En el problema predictivo desde un origen de emisión $t \in \mathcal{T}$ (cierre operativo del día $t$), la capacidad futura $C_{i,t+h}$ para $h \ge 1$ puede no conocerse al momento de emitir el pronóstico debido a ampliaciones escalonadas de potencia neta. Para evitar cualquier anticipación de cambios futuros de capacidad, toda normalización predictiva ---tanto de las estadísticas históricas al origen como de la variable objetivo futura--- utiliza exclusivamente la capacidad vigente al origen $C_{i,t}$ (en el panel, el último valor válido observado hasta $t$, denotado \texttt{cap\_MW\_D} en $D+1$ y \texttt{cap\_at\_origin} en multihorizonte). En consecuencia, el denominador causal de referencia en el origen $t$ es $E^{\max}_{i,t} = 24\,000\,C_{i,t}$.
+
+Distinguimos con rigor dos formulaciones del objetivo según el tipo de escenario:
+\begin{enumerate}
+    \item \textbf{Objetivo diario ($D+1$ y esquema recursivo):} para cada paso de adelanto $h \in \{1,\dots,H\}$, con $H \in \{1,7,14,21,28\}$ días, el objetivo físico es la energía diaria $y_{i,t+h}$ en $\text{kWh/día}$ (factor de escala $H_{\mathrm{dir}} = 1$). Su factor de capacidad causal proyectado al rango físico se define como
+    \begin{equation}
+    c_{i,t+h \mid t} := \clip\!\left(\frac{y_{i,t+h}}{24\,000\,C_{i,t}},\, 0,\, 1\right),
+    \label{eq:cf_diario}
+    \end{equation}
+    donde $\clip(u,0,1) := \min\{\max\{u,0\},1\}$.
+    \item \textbf{Objetivo acumulado (esquema directo):} para $H \in \{7,14,21,28\}$ días, se predice en un único paso la energía total acumulada sobre la ventana completa $[t+1, t+H]$:
+    \begin{equation}
+    Y_{i,t}^{(H)} := \sum_{h=1}^{H} y_{i,t+h} \quad (\text{kWh}),
+    \label{eq:y_directo}
+    \end{equation}
+    restringido a ventanas en que los $H$ días son válidos. Al normalizar por $H \cdot 24\,000\,C_{i,t}$ (es decir, $H_{\mathrm{dir}} = H$), el objetivo adimensional $c_{i,t}^{(H)} := \clip\!\big(Y_{i,t}^{(H)} / (24\,000\,H\,C_{i,t}),\, 0,\, 1\big)$ vuelve a representar el factor de capacidad medio diario en $[0,1]$. Cuando se reporta energía acumulada en MWh en comparaciones directas, basta dividir $\text{kWh}$ entre $1\,000$; para comparar esquemas directos y recursivos en la misma unidad diaria ($\text{kWh/día}$), los errores acumulados se dividen explícitamente por $H$.
+\end{enumerate}
+
+El truncamiento $\clip(\cdot,0,1)$ garantiza que ni errores de medición ni pequeñas ampliaciones no anticipadas produzcan factores de capacidad fuera del dominio físico $[0,1]$. Como contrapartida, introduce una censura en los extremos $0$ y $1$ que trunca valores extremos positivos si $y_{i,t+h} > 24\,000\,C_{i,t}$ tras una ampliación no conocida al origen, y limita las predicciones finales al rango factible $[0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$.
+
+\subsection{Restricciones de información, regímenes de generalización y métrica primaria}
+
+Al cierre del origen $t$, la información histórica disponible de la planta $i$ constituye la filtración causal
+\begin{equation}
+\mathcal{F}_{i,t} := \sigma\!\left(\{y_{i,s}, C_{i,s} : s \le t\},\; \{\mathbf{z}_{i,u \mid s} : s \le t,\; u > s\},\; \text{calendario}\right),
+\end{equation}
+donde $\mathbf{z}_{i,u \mid s} \in \mathbb{R}^5$ representa el pronóstico meteorológico emitido en $s \le t$ para la fecha objetivo $u > s$ (irradiación horizontal, temperatura a $2\text{ m}$, nubosidad total, humedad relativa y velocidad del viento a $10\text{ m}$). Se evalúan dos configuraciones de disponibilidad climática: escenarios \emph{sin meteorología}, que omiten por completo $\mathbf{z}_{i,u \mid s}$, y escenarios \emph{con meteorología}, que emplean pronósticos archivados a $24\text{ h}$ en $D+1$ o corridas operacionales NOAA GEFSv12 en horizontes $7$--$28$ días. En todo el estudio, el término «causal» designa estrictamente no anticipación temporal respecto a $\mathcal{F}_{i,t}$, no inferencia causal intervencionista.
+
+Según la disponibilidad de observaciones de entrenamiento para la planta objetivo $i$, definimos dos regímenes experimentales:
+\begin{itemize}
+    \item \textbf{Evaluación intraplanta (IP):} el conjunto de entrenamiento $\mathcal{D}_{\mathrm{train}}$ contiene únicamente registros históricos de la misma planta $i$ cuyo periodo objetivo concluye antes o en $t$ (es decir, $s \le t$ en $D+1$ y recursivo, o $t_{\mathrm{origen}} + H \le t$ en esquema directo).
+    \item \textbf{Generalización espaciotemporal (ET):} validación \textit{leave-one-group-out} en la que se excluye por completo del entrenamiento a toda planta perteneciente al grupo espacial $g(i)$, entrenando únicamente con $\bigcup_{j : g(j) \ne g(i)} \mathcal{F}_{j,t}$. La planta evaluada aporta su propio historial previo exclusivamente para construir sus predictores de nivel al origen, nunca filas de ajuste.
+\end{itemize}
+
+Para evaluar el desempeño en flotas con coberturas temporales entre $251$ y $1\,032$ días útiles y capacidades entre $9{,}8$ y $388{,}0$~MW, utilizamos como métrica primaria el \textbf{error absoluto medio macro por planta}:
+\begin{equation}
+\mathrm{MAE}_{\mathrm{macro}}(m) := \frac{1}{M}\sum_{i=1}^{M}\frac{1}{|\mathcal{T}_i|}\sum_{t \in \mathcal{T}_i} e_{m,i,t},
+\label{eq:mae_macro}
+\end{equation}
+donde $e_{m,i,t} = |y_{i,t+1} - \hat{y}_{i,t+1 \mid t}|$ en $D+1$ ($\text{kWh/día}$), $e_{m,i,t} = \frac{1}{H}\sum_{h=1}^{H}|y_{i,t+h} - \hat{y}_{i,t+h \mid t}|$ en esquema recursivo ($\text{kWh/día}$), y $e_{m,i,t} = |Y_{i,t}^{(H)} - \hat{Y}_{i,t}^{(H)}|$ en esquema directo ($\text{kWh}$ totales, reportando además su versión normalizada por $H$ en $\text{kWh/día}$). La macroagregación otorga igual peso operativo a cada central de la flota en lugar de quedar dominada por la planta de mayor capacidad o mayor longitud de serie. De forma complementaria, el \textit{Skill Score} frente a la media móvil causal de $30$ días ($m_{\mathrm{MM30}}$) se define como $\mathrm{Skill}(m) := 100\% \times \big(1 - \mathrm{MAE}_{\mathrm{macro}}(m)/\mathrm{MAE}_{\mathrm{macro}}(m_{\mathrm{MM30}})\big)$.

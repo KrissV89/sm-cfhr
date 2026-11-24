@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sm-cfhr"
+version = "1.0.3"
+description = "Structured Monotone Capacity-Factor Huber Regressor (SM-CFHR / ASHR) for photovoltaic forecasting."
+readme = "src/sm_cfhr/README.md"
+requires-python = ">=3.11"
+license = {text = "PolyForm-Noncommercial-1.0.0"}
+authors = [
+    {name = "Enmanuel David Diaz Molinares"},
+]
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.13",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.8",
+    "joblib>=1.4",
+    "statsmodels>=0.14",
+    "optuna>=3.6",
+    "nbformat>=5.10",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+parquet = ["pyarrow>=15.0"]
+
+[project.scripts]
+sm-cfhr = "sm_cfhr.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["adaptive_structured_huber", "modelo_aditivo_huber", "prototipos_mecanismos"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["sm_cfhr*", "ashr_oof_pipeline*"]

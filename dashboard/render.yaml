@@ -1,0 +1,12 @@
+# Despliegue en Render (plan gratuito). La app solo carga data/ y artifacts/: no entrena nada al iniciar.
+services:
+  - type: web
+    name: pronostico-fc-solar        # nombre del servicio (define la URL: https://pronostico-fc-solar.onrender.com)
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:server --workers 1 --threads 2 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /
+    envVars:   # la versión de Python la fija .python-version (3.14; Render usa el último parche disponible)
+      - key: DASH_DEBUG
+        value: "0"

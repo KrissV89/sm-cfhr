@@ -1,0 +1,24 @@
+\section{Discusión}\label{sec:discusion}
+
+Una vez integrados los resultados definitivos, la discusión debe interpretar los hallazgos según el régimen observado sin forzar una narrativa uniforme de superioridad. A continuación se articulan los ejes interpretativos preparados para cualquier desenlace empírico.
+
+\subsection{Mecanismos físicos y estadísticos bajo distintos desenlaces posibles}
+
+El diseño de SM-CFHR introduce cuatro sesgos inductivos explícitos: normalización causal por $24\,000\,C_{i,t}$, pérdida de Huber con escala MAD, regularización $L_2$ anisotrópica y restricciones de signo no negativo. Su utilidad real depende del equilibrio entre heterogeneidad de flota, contaminación de registros y relación señal-ruido climática:
+\begin{itemize}
+    \item \textbf{Escenario favorable en generalización espaciotemporal (ET):} si \texttt{SM-CFHR-Fixed} reduce el error frente a los benchmarks en ET (especialmente con meteorología NWP), el mecanismo explicativo reside en la eliminación de la escala entre centrales ($9{,}8$--$388{,}0$~MW) y en el control de varianza sobre predictores climáticos degradables ($\alpha_{\mathrm{meteo}} = 0{,}10 > \alpha_{\mathrm{lin}} = 0{,}01$), evitando que plantas grandes dominen el ajuste o que errores del pronóstico subestacional amplifiquen las predicciones fuera de zona.
+    \item \textbf{Escenario mixto o desventaja en intraplanta (IP):} en modelos entrenados individualmente para una sola central con larga historia y meteorología local estable, la ausencia de términos no lineales (\texttt{n\_knots=0}) y la homogeneización por escala pueden ceder precisión frente a modelos flexibles como \texttt{BayesianRidge}, árboles potenciados o regresión local (\texttt{IWLAR}), que capturan relaciones no lineales específicas de sitio cuando no hay transferencia espacial de por medio.
+    \item \textbf{Escenario de paridad entre Fixed y HPO:} si \texttt{SM-CFHR-HPO} no supera de forma clara a \texttt{SM-CFHR-Fixed}, ello confirmaría que en un problema convexo de baja dimensión ($p \le 17$) con escala MAD estandarizada, la búsqueda bayesiana sobre $3$ hiperparámetros dentro de series cortas añade varianza de selección sin compensar el presupuesto $B=25$.
+\end{itemize}
+\texttt{[PENDIENTE: síntesis interpretativa tras observar la distribución real de victorias y derrotas en los 28 escenarios]}.
+
+\subsection{Limitaciones metodológicas y advertencias estructurales}
+
+Incluso antes de observar las métricas finales, la auditoría del diseño permite identificar cinco limitaciones que deben quedar explícitas:
+\begin{enumerate}
+    \item \textbf{Reutilización adaptativa del panel 2024--2026:} tanto los $22$ modelos de referencia como la arquitectura de SM-CFHR se desarrollaron y depuraron observando este mismo periodo histórico. Por tanto, la evaluación OOF definitiva mide desempeño fuera de muestra temporal y espacial dentro del panel histórico, pero no sustituye a una validación prospectiva sobre datos posteriores a octubre de 2026 \cite{cawley2010overfit}.
+    \item \textbf{Pocos conglomerados espaciales ($G=7$):} aunque \textit{leave-one-group-out} evita la fuga entre centrales vecinas a $<100\text{ km}$, siete zonas geográficas constituyen un número reducido de conglomerados independientes, lo que limita la potencia de generalización espacial y exige cautela al extrapolar a otras regiones climáticas \cite{cameron2015cluster}.
+    \item \textbf{Tamaño muestral efectivo en horizontes largos:} con orígenes contiguos no solapados cada $21$ o $28$ días sobre menos de tres años de datos, el número de orígenes independientes es reducido y varios escenarios de $H \in \{21, 28\}$ pueden caer por debajo de $T_{\mathrm{eff}} \ge 2H$, restringiendo la potencia inferencial.
+    \item \textbf{Matiz en la variante de ablación de escala:} la variante \texttt{escala\_std\_vs\_mad} en \texttt{robustness.py} reescala los predictores $X$ por media y desviación estándar externa antes de \texttt{fit}, mientras la respuesta $y$ sigue escalándose internamente por MAD; por su parte, la asimetría histórica del rollout interno de HPO presente en \texttt{v1.0.2} quedó corregida en \texttt{v1.0.3} al unificarse con \texttt{PlantRecursiveState}.
+    \item \textbf{Alcance exclusivamente solar:} la ausencia de conjuntos de datos tabulares externos ajenos al dominio fotovoltaico limita cualquier afirmación de validez fuera de la generación solar, quedando la suficiencia de este alcance sujeta a la revisión académica del protocolo.
+\end{enumerate}

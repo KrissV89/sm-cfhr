@@ -1,0 +1,43 @@
+\section{Demostraciones matemáticas}\label{ap:demos}
+
+\begin{proof}[Demostración del Teorema~\ref{thm:convexidad_existencia}]
+\textbf{(1)} El conjunto $\Omega = \mathbb{R} \times \mathcal{C}$ es producto cartesiano de $\mathbb{R}$ y el poliedro $\mathcal{C} = \bigcap_{j \in \mathcal{M}_+} \{\mathbf{w} \in \mathbb{R}^p : w_j \ge 0\}$. Cada semiespacio $\{\mathbf{w} : w_j \ge 0\}$ es cerrado y convexo; por tanto, su intersección $\mathcal{C}$ y el producto $\Omega$ son cerrados y convexos en $\mathbb{R}^{p+1}$.
+
+\textbf{(2)} La función de Huber $\rho_\delta$ es de clase $C^1(\mathbb{R})$ con derivada $\psi_\delta$ dada por \eqref{eq:psi_huber}. Además, $\rho_\delta$ es convexa por ser integral de la función no decreciente $\psi_\delta$, y $\psi_\delta$ es $1$-Lipschitz porque $|\psi_\delta(u) - \psi_\delta(v)| \le |u - v|$ para todo $u,v \in \mathbb{R}$. Sea $A := \begin{bmatrix} \mathbf{1}_n & Z \end{bmatrix} \in \mathbb{R}^{n \times (p+1)}$ y $\boldsymbol{\theta} := (b, \mathbf{w}) \in \mathbb{R}^{p+1}$. Cada término $\rho_\delta(\tilde{y}_k - (A\boldsymbol{\theta})_k)$ es composición de una función convexa $C^1$ con una transformación afín, luego es convexo y $C^1$. La penalización $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w}$ es cuadrática con $D_\alpha \succ 0$ (ya que $\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}} > 0$), luego es estrictamente convexa en $\mathbf{w}$ y de clase $C^\infty$. Por suma, $J \in C^1(\mathbb{R}^{p+1})$ es convexa. Para dos puntos $\boldsymbol{\theta}_1, \boldsymbol{\theta}_2 \in \mathbb{R}^{p+1}$ con $\mathbf{r}_1 = \tilde{\mathbf{y}} - A\boldsymbol{\theta}_1$ y $\mathbf{r}_2 = \tilde{\mathbf{y}} - A\boldsymbol{\theta}_2$:
+\begin{align*}
+\|\nabla J(\boldsymbol{\theta}_1) - \nabla J(\boldsymbol{\theta}_2)\|_2
+&\le \frac{1}{n}\|A^\top (\psi_\delta(\mathbf{r}_2) - \psi_\delta(\mathbf{r}_1))\|_2 + \|D_\alpha(\mathbf{w}_1 - \mathbf{w}_2)\|_2 \\
+&\le \frac{1}{n}\|A\|_2 \|\mathbf{r}_2 - \mathbf{r}_1\|_2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}\|\mathbf{w}_1 - \mathbf{w}_2\|_2 \\
+&\le \left(\frac{1}{n}\|A\|_2^2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}\right)\|\boldsymbol{\theta}_1 - \boldsymbol{\theta}_2\|_2.
+\end{align*}
+Esto demuestra que $\nabla J$ es globalmente Lipschitz continuo.
+
+\textbf{(3)} Como $\rho_\delta(r) \ge 0$ y $\mathbf{w}^\top D_\alpha \mathbf{w} \ge 0$, se cumple $J(b,\mathbf{w}) \ge 0$ para todo $(b,\mathbf{w}) \in \Omega$. Para probar la coercividad, sea $\{ (b_m, \mathbf{w}_m) \}_{m\ge 1} \subset \Omega$ una sucesión con $\|(b_m, \mathbf{w}_m)\|_2 \to \infty$. Denotando $\alpha_{\min} := \min\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\} > 0$, tenemos $J(b_m, \mathbf{w}_m) \ge \frac{\alpha_{\min}}{2}\|\mathbf{w}_m\|_2^2$. Si $\|\mathbf{w}_m\|_2 \to \infty$, entonces $J(b_m, \mathbf{w}_m) \to +\infty$. Si $\|\mathbf{w}_m\|_2$ permanece acotada por $K < \infty$, necesariamente $|b_m| \to \infty$; en ese caso, $|r_{m,k}| = |\tilde{y}_k - b_m - \mathbf{z}_k^\top \mathbf{w}_m| \ge |b_m| - \|\tilde{\mathbf{y}}\|_\infty - \|Z\|_\infty K \to +\infty$ para cada $k$, y como $\rho_\delta(r) \ge \delta(|r| - \frac{1}{2}\delta)$ para $|r| > \delta$, resulta $J(b_m, \mathbf{w}_m) \to +\infty$. Al ser $J$ continua, acotada inferiormente y coerciva sobre el conjunto cerrado $\Omega$, el teorema de Weierstrass garantiza la existencia de al menos un minimizador global $(b^*, \mathbf{w}^*) \in \Omega$.
+\end{proof}
+
+\begin{proof}[Demostración del Teorema~\ref{thm:unicidad}]
+\textbf{(1)} Supóngase que $(b_1, \mathbf{w}_1), (b_2, \mathbf{w}_2) \in \Omega$ son dos minimizadores globales con $J(b_1,\mathbf{w}_1) = J(b_2,\mathbf{w}_2) = J^*$ y $\mathbf{w}_1 \ne \mathbf{w}_2$. Por convexidad de $\Omega$, el punto medio $\bar{\boldsymbol{\theta}} = \big(\frac{b_1+b_2}{2}, \frac{\mathbf{w}_1+\mathbf{w}_2}{2}\big)$ pertenece a $\Omega$. Como la pérdida de Huber promedio es convexa y $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w}$ es estrictamente convexa en $\mathbf{w}$ ($D_\alpha \succ 0$), la desigualdad estricta en el término cuadrático produce $J(\bar{\boldsymbol{\theta}}) < \frac{1}{2}J(b_1,\mathbf{w}_1) + \frac{1}{2}J(b_2,\mathbf{w}_2) = J^*$, contradiciendo la optimalidad. Por tanto, $\mathbf{w}^*$ es único.
+
+\textbf{(2)} Fijado $\mathbf{w}^*$, la función $g(b) := J(b, \mathbf{w}^*)$ es convexa, continua y coerciva sobre $\mathbb{R}$; por tanto, su conjunto de minimizadores $\mathcal{B}^* = \{b \in \mathbb{R} : g(b) = J^*\}$ es cerrado, acotado y convexo, es decir, un intervalo compacto $[b_{\min}, b_{\max}]$. Supóngase que $b_{\min} < b_{\max}$ y que existe algún $k$ y $b^* \in [b_{\min}, b_{\max}]$ con $|r_k(b^*)| = |\tilde{y}_k - b^* - \mathbf{z}_k^\top \mathbf{w}^*| < \delta$. Por continuidad, existe un subintervalo abierto $(u, v) \subset [b_{\min}, b_{\max}]$ donde $|r_k(b)| < \delta$ para todo $b \in (u,v)$. En $(u,v)$, el término $\frac{1}{n}\rho_\delta(r_k(b)) = \frac{1}{2n}(c_k - b)^2$ es estrictamente convexo en $b$, lo que hace a $g(b)$ estrictamente convexa en $(u,v)$, contradiciendo que $g$ sea constante igual a $J^*$ en $[b_{\min}, b_{\max}]$. Luego $\mathcal{B}^*$ se reduce a un único punto $b^*$.
+
+\textbf{(3)} Considérese un ejemplo mínimo con $n=2$, $Z = \mathbf{0}$, $\tilde{\mathbf{y}} = (-2\delta, +2\delta)^\top$. Claramente $\mathbf{w}^* = \mathbf{0}$. Para todo $b \in [-\delta, \delta]$, ambos residuos cumplen $|\pm 2\delta - b| \ge \delta$, por lo que $g(b) = \frac{1}{2}[\delta(2\delta - b - \frac{\delta}{2}) + \delta(2\delta + b - \frac{\delta}{2})] = \frac{3}{2}\delta^2$ es constante en todo $[-\delta, \delta]$.
+\end{proof}
+
+\begin{proof}[Demostración de la Proposición~\ref{prop:kkt}]
+El problema \eqref{eq:objetivo_smcfhr} minimiza una función convexa diferenciable sobre el conjunto definido por las desigualdades afines $g_j(b, \mathbf{w}) = -w_j \le 0$ para $j \in \mathcal{M}_+$. Al ser todas las restricciones afines (y existir además puntos estrictamente interiores con $w_j > 0$), se cumple la condición de cualificación de Slater, de modo que las condiciones KKT son necesarias y suficientes para optimalidad global \cite{boyd2004convex}. El Lagrangiano es
+\[
+\mathcal{L}(b, \mathbf{w}, \boldsymbol{\lambda}) = J(b, \mathbf{w}) - \sum_{j \in \mathcal{M}_+} \lambda_j w_j, \qquad \lambda_j \ge 0.
+\]
+Igualando a cero el gradiente respecto a $b$ y a cada $w_j$ usando \eqref{eq:gradiente_smcfhr}, junto con la factibilidad primal $w_j^* \ge 0$, factibilidad dual $\lambda_j^* \ge 0$ y holgura complementaria $\lambda_j^* w_j^* = 0$, se obtienen exactamente \eqref{eq:kkt_b}--\eqref{eq:kkt_mono}. Si $w_j^* = 0$ para $j \in \mathcal{M}_+$, \eqref{eq:kkt_mono} da $-\frac{1}{n}(Z^\top \psi_\delta(\mathbf{r}^*))_j = \lambda_j^* \ge 0$.
+\end{proof}
+
+\begin{proposition}[Acotación de influencia y monotonía parcial física]\label{prop:influencia_mono}
+Sea $(b^*, \mathbf{w}^*)$ una solución óptima de \eqref{eq:objetivo_smcfhr}:
+\begin{enumerate}
+    \item \textbf{Influencia acotada en la respuesta:} la contribución al gradiente de cualquier observación $k$ satisface $\left|\frac{1}{n}\psi_\delta(r_k^*)\right| \le \frac{\delta}{n}$ y $\left\|\frac{1}{n}\mathbf{z}_k \psi_\delta(r_k^*)\right\|_\infty \le \frac{\delta}{n}\|\mathbf{z}_k\|_\infty$.
+    \item \textbf{Monotonía parcial y factibilidad física:} para todo $j \in \mathcal{M}_+$ con $\tilde{s}_j > 0$, si $\mathbf{x}_q' = \mathbf{x}_q + \Delta \mathbf{e}_j$ con $\Delta > 0$ (manteniendo constantes las demás coordenadas y $C_{i,t}$), entonces $\hat{y}(\mathbf{x}_q') \ge \hat{y}(\mathbf{x}_q)$ y $\hat{y}(\mathbf{x}_q) \in [0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(1) Se sigue directamente de $|\psi_\delta(r)| \le \delta$ para todo $r \in \mathbb{R}$. (2) Al variar solo la coordenada $j$, $z_{q,j}' - z_{q,j} = \Delta / \tilde{s}_j > 0$. Como $w_j^* \ge 0$ y $\sigma_y > 0$, la predicción latente satisface $\hat{\eta}(\mathbf{x}_q') - \hat{\eta}(\mathbf{x}_q) = \sigma_y w_j^* \Delta / \tilde{s}_j \ge 0$. Dado que $\clip(\cdot, 0, 1)$ es no decreciente y $24\,000\,C_{i,t} H_{\mathrm{dir}} > 0$, se preserva la desigualdad y el rango físico $[0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$.
+\end{proof}

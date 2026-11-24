@@ -1,0 +1,22 @@
+\section{Correspondencia código--manuscrito y discrepancias documentadas}\label{ap:codigo}
+
+La Tabla~\ref{tab:codigo_manuscrito} resume la trazabilidad entre las formulaciones matemáticas del artículo y la implementación congelada en \texttt{v1.0.2} (commit \texttt{615a5af}), explicitando las cinco divergencias o matices observados durante la auditoría sin alterar el código experimental.
+
+\begin{table}[!htbp]
+\caption{Matriz resumida de correspondencia código--manuscrito y matices auditados.}\label{tab:codigo_manuscrito}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{@{}p{2.7cm}p{3.2cm}L@{}}
+\toprule
+Elemento del artículo & Archivo / Función & Estado y matiz documentado \\
+\midrule
+Normalización $24\,000\,C_{i,t}$ y características & \texttt{oof\_runner.py::} \texttt{extract\_cf\_features} & Concordancia exacta ($p=7$ sin clima, $p=17$ con clima, \texttt{LEAD\_DAMPING=0.85}). \\
+Escalado MAD y estandarización & \texttt{modelo\_aditivo\_huber.py::} \texttt{\_robust\_target\_stats}, \texttt{\_fit\_single} & Concordancia exacta ($1{,}4826\,\MAD$, umbral $10^{-8}$ en $X$, $10^{-6}$ en $\sigma_y$). \\
+Objetivo Huber + $L_2$ y gradiente & \texttt{adaptive\_structured\_huber.py::} \texttt{\_objective\_and\_grad\_debug} & Concordancia exacta con L-BFGS-B. \\
+Unicidad global (docstring vs.\ Teorema~\ref{thm:unicidad}) & \texttt{sm\_cfhr/estimator.py} (docstring) & \textbf{Matiz:} el docstring llama al problema «estrictamente convexo»; el Teorema~\ref{thm:unicidad} precisa que $\mathbf{w}^*$ es único siempre, pero $b^*$ puede no serlo si todo $|r_k| \ge \delta$. \\
+Rollout recursivo interno HPO vs.\ externo & \texttt{optimizacion\_hiperparametros.py::} \texttt{\_rollout\_recursive\_val} y \texttt{oof\_runner.py::} \texttt{rollout\_recursive\_from\_origin} & \textbf{Unificado en \texttt{v1.0.3}:} HPO interno comparte exactamente \texttt{PlantRecursiveState} / \texttt{PlantRecursiveWeatherState} y ventanas deslizantes reales (se rechazan estudios SQLite de \texttt{v1.0.2}). \\
+Ablación \texttt{escala\_std\_vs\_mad} & \texttt{robustness.py::} \texttt{run\_ablation\_suite} & \textbf{Matiz:} reescala $X$ por media/std externa antes de \texttt{fit}, mientras la respuesta $y$ sigue escalándose internamente por MAD. \\
+Prueba GW bajo autocorrelación & \texttt{inference.py::} \texttt{giacomini\_white\_audited} & \textbf{Calibración:} GW con $\tau=1$ sobrerrechaza ($0{,}208$) bajo AR(1); se excluye de R3 si $|\hat{\rho}_1|>0{,}15$. \\
+\bottomrule
+\end{tabularx}
+\end{table}

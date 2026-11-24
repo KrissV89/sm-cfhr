@@ -1,0 +1,54 @@
+# Configuración del libro para Jupyter Book 2 (mystmd). Es la que se usa para construir el informe:
+#   ./construir.sh            (desde book/; equivale a jupyter-book build --html --execute)
+# _config.yml y _toc.yml son el equivalente para Jupyter Book 1 y no se usan en la construcción.
+version: 1
+project:
+  id: informe-fc-solar-d1
+  title: "Pronóstico D+1 del factor de capacidad fotovoltaico en Colombia: informe técnico"
+  subject: Machine Learning, Entregable 3
+  description: Informe técnico del proyecto (modelos K1 y W1 frente a modelos de librería), con celdas que reproducen las tablas desde resultados/.
+  authors:
+    - name: Enmanuel David Diaz Molinares
+      affiliations:
+        - Departamento de Matemáticas y Ciencia de Datos, Programa de Ciencia de Datos, Universidad del Norte, Barranquilla, Colombia
+  date: 2026-11-16
+  github: https://github.com/KrissV89/sm-cfhr
+  keywords:
+    - energía fotovoltaica
+    - factor de capacidad
+    - pronóstico del día siguiente
+    - regresión local ponderada
+  bibliography:
+    - references.bib
+  exclude:
+    - _build/**
+    - scripts/**
+    - README.md
+  numbering:
+    headings: true
+    figure:
+      template: Figura %s
+    table:
+      template: Tabla %s
+    equation:
+      template: (%s)
+    proof:algorithm:
+      template: Algoritmo %s
+    proof:proposition:
+      template: Proposición %s
+  toc:
+    - file: intro.md
+    - file: 01_correcciones.md
+    - file: 02_datos.md
+    - file: 03_benchmarks.md
+    - file: 04_literatura.md
+    - file: 05_modelo_original.md
+    - file: 06_validacion.md
+    - file: 07_evaluacion_ampliada.md
+    - file: 08_dashboard.md
+    - file: 09_conclusiones.md
+    - file: 10_reproducibilidad.md
+site:
+  template: book-theme
+  options:
+    hide_footer_links: false
