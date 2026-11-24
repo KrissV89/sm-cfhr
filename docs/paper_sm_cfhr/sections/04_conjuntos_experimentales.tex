@@ -74,7 +74,7 @@ En los escenarios recursivos ($H \in \{7,14,21,28\}$), tanto la validación inte
 \centering
 \fbox{\begin{minipage}{0.95\textwidth}
 \small
-\textbf{Algoritmo 1: Despliegue recursivo causal exacto desde el origen $t_0$ ($\text{horizonte } H$)}\label{alg:rollout}
+\refstepcounter{algoritmo}\label{alg:rollout}\textbf{Algoritmo~\thealgoritmo: Despliegue recursivo causal exacto desde el origen $t_0$ ($\text{horizonte } H$)}
 \begin{enumerate}
     \item \textbf{Inicialización al origen $t_0$:} fijar la capacidad constante al origen $C_{i,t_0}$, la cota energética $E^{\max}_{i,t_0} = 24\,000\,C_{i,t_0}$, la línea base climática de $30$ días $\bar{\mathbf{z}}^{(30)}_{i,t_0}$ y el búfer histórico con las últimas $30$ observaciones reales $\tilde{B}_{t_0} = (y_{i,t_0-29}, \dots, y_{i,t_0})$.
     \item \textbf{Para $h = 1, \dots, H$:}

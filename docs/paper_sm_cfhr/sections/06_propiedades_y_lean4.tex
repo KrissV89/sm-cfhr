@@ -42,7 +42,7 @@ Las propiedades básicas de convexidad y optimalidad de SM-CFHR se deducen de la
 Supóngase $n \ge 1$, $\delta > 0$, $\alpha_{\mathrm{lin}} > 0$ y $\alpha_{\mathrm{meteo}} > 0$. Entonces:
 \begin{enumerate}
     \item El conjunto factible $\Omega := \mathbb{R} \times \mathcal{C}$ es cerrado y convexo en $\mathbb{R}^{p+1}$.
-    \item La función objetivo $J(b,\mathbf{w})$ es convexa y $C^1$ en $\mathbb{R}^{p+1}$, con gradiente globalmente Lipschitz continuo de constante $L_J \le \frac{1}{n}\left\|\begin{bmatrix}\mathbf{1}_n & Z\end{bmatrix}\right\|_2^2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}$.
+    \item La función objetivo $J(b,\mathbf{w})$ es convexa y $C^1$ en $\mathbb{R}^{p+1}$, con gradiente globalmente Lipschitz continuo de constante $L_J \le \frac{1}{n}\left\|\begin{bmatrix}\mathbf{1}_n & Z\end{bmatrix}\right\|_2^2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}$ (demostrada analíticamente en el Apéndice~\ref{ap:demos}; la Sección~\ref{sec:lean4_resumen} precisa qué parte de esta regularidad se encuentra formalizada en Lean~4).
     \item $J$ es coerciva sobre $\Omega$ ($J(b,\mathbf{w}) \to +\infty$ cuando $\|(b,\mathbf{w})\|_2 \to \infty$) y acotada inferiormente por $0$; por consiguiente, existe al menos un minimizador global $(b^*, \mathbf{w}^*) \in \Omega$.
 \end{enumerate}
 \end{theorem}

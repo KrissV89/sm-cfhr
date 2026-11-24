@@ -25,7 +25,7 @@ Sea $\mathcal{D}_{\mathrm{train}} = \{(\mathbf{x}_k, y_k)\}_{k=1}^n$ el conjunto
     \tilde{y}_k := \frac{y_k - m_y}{\sigma_y}.
     \label{eq:mad_scale}
     \end{equation}
-    La constante $1{,}4826 = 1/\Phi^{-1}(0{,}75)$ hace consistente a $\sigma_y$ con la desviación estándar bajo normalidad y preserva un punto de ruptura del $50\%$ en la rama regular $\mathrm{MAD}(\mathbf{y}) > 0$ \cite{rousseeuw1993mad}; en el caso degenerado $\mathrm{MAD}(\mathbf{y}) = 0$ (más de la mitad de las observaciones coinciden exactamente en $m_y$), el respaldo mediante $\operatorname{std}(\mathbf{y})$ reduce el punto de ruptura de la escala a $0\%$.
+    La constante $1{,}4826 = 1/\Phi^{-1}(0{,}75)$ hace consistente a $\sigma_y$ con la desviación estándar bajo normalidad; el estimador MAD clásico posee punto de ruptura asintótico del $50\%$ \cite{rousseeuw1993mad}. En la implementación en NumPy (\texttt{\_robust\_target\_stats}), $m_y$ y $\mathrm{MAD}(\mathbf{y})$ se calculan mediante \texttt{np.median}, y cuando $\mathrm{MAD}(\mathbf{y}) = 0$ (cuando al menos la mitad de las observaciones coincide exactamente en $m_y$, contaminación por implosión) se activa el respaldo mediante la desviación estándar poblacional \texttt{np.std(..., ddof=0)} con piso numérico $10^{-6}$. Dado que la desviación estándar tiene punto de ruptura $0\%$ frente a valores atípicos, \emph{no} se demuestra ni se atribuye un punto de ruptura incondicional del $50\%$ al procedimiento compuesto por tramos \eqref{eq:mad_scale}.
 \end{enumerate}
 
 \subsection{Función objetivo, regularización estructurada y restricciones de signo}
@@ -67,7 +67,7 @@ Desde el punto de vista estadístico, \eqref{eq:objetivo_smcfhr} extiende la reg
 El modelo se evalúa bajo dos presupuestos experimentales bien delimitados:
 \begin{itemize}
     \item \textbf{SM-CFHR-Fixed ($B=0$):} configuración congelada con $\delta = 1{,}35$, $\alpha_{\mathrm{lin}} = 0{,}01$ y $\alpha_{\mathrm{meteo}} = 0{,}10$ (en ausencia de meteorología, $d_j = \alpha_{\mathrm{lin}}$ para todo $j$), sin búsqueda interna de hiperparámetros.
-    \item \textbf{SM-CFHR-HPO ($B=25$):} optimización bayesiana TPE mediante Optuna dentro de cada pliegue externo sobre el espacio continuo $\delta \in [0{,}5, 3{,}0]$, $\alpha_{\mathrm{lin}} \in [10^{-4}, 1{,}0]$ (escala logarítmica) y, cuando hay meteorología, $\alpha_{\mathrm{meteo}} \in [10^{-3}, 10{,}0]$ (escala logarítmica). En los escenarios recursivos, la validación interna evalúa cada candidato mediante el mismo Algoritmo~1 de despliegue causal exacto.
+    \item \textbf{SM-CFHR-HPO ($B=25$):} optimización bayesiana TPE mediante Optuna dentro de cada pliegue externo sobre el espacio continuo $\delta \in [0{,}5, 3{,}0]$, $\alpha_{\mathrm{lin}} \in [10^{-4}, 1{,}0]$ (escala logarítmica) y, cuando hay meteorología, $\alpha_{\mathrm{meteo}} \in [10^{-3}, 10{,}0]$ (escala logarítmica). En los escenarios recursivos, la validación interna evalúa cada candidato mediante el mismo Algoritmo~\ref{alg:rollout} de despliegue causal exacto.
 \end{itemize}
 
 \subsection{Reconstrucción física y modos de despliegue}
@@ -81,7 +81,7 @@ Para un vector de consulta $\mathbf{x}_q \in \mathbb{R}^p$, se aplica la imputac
 \end{equation}
 con respaldo al promedio histórico $\bar{y}^{(30)}_{i,t}\,H_{\mathrm{dir}}$ si $C_{i,t}$ no fuese finita, acotado al intervalo físico $[0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$.
 
-La Figura~\ref{fig:despliegue_mh} contrasta los tres modos de despliegue: (1) $D+1$ ($H=1$, $H_{\mathrm{dir}}=1$), que evalúa \eqref{eq:pred_fisica} una sola vez; (2) el esquema directo acumulado ($H \in \{7,14,21,28\}$, $H_{\mathrm{dir}}=H$), que entrena y predice directamente sobre la energía total de la ventana $[t+1, t+H]$ sin realimentación; y (3) el esquema recursivo multihorizonte ($H \in \{7,14,21,28\}$, $H_{\mathrm{dir}}=1$), que entrena en $h=1$ e itera el Algoritmo~1 realimentando exclusivamente sus propias predicciones. Conviene subrayar que, aunque el ajuste interno \eqref{eq:objetivo_smcfhr} es un programa convexo, la composición recursiva de $H$ pasos realimentando $\hat{y}_{i,t_0+h \mid t_0}$ es una función no lineal y no convexa de los parámetros.
+La Figura~\ref{fig:despliegue_mh} contrasta los tres modos de despliegue: (1) $D+1$ ($H=1$, $H_{\mathrm{dir}}=1$), que evalúa \eqref{eq:pred_fisica} una sola vez; (2) el esquema directo acumulado ($H \in \{7,14,21,28\}$, $H_{\mathrm{dir}}=H$), que entrena y predice directamente sobre la energía total de la ventana $[t+1, t+H]$ sin realimentación; y (3) el esquema recursivo multihorizonte ($H \in \{7,14,21,28\}$, $H_{\mathrm{dir}}=1$), que entrena en $h=1$ e itera el Algoritmo~\ref{alg:rollout} realimentando exclusivamente sus propias predicciones. Conviene subrayar que, aunque el ajuste interno \eqref{eq:objetivo_smcfhr} es un programa convexo, la composición recursiva de $H$ pasos realimentando $\hat{y}_{i,t_0+h \mid t_0}$ es una función no lineal y no convexa de los parámetros.
 
 \begin{figure}[!htbp]
 \centering
