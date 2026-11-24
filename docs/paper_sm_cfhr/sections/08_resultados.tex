@@ -4,7 +4,7 @@ Al cierre de este manuscrito, la evaluación fuera de muestra definitiva de \tex
 
 \subsection{Desempeño global en las 28 configuraciones experimentales}
 
-La comparación primaria confronta a \texttt{SM-CFHR-Fixed} ($B=0$) frente a los $22$ modelos de referencia sobre $\mathrm{MAE}_{\mathrm{macro}}$, $\mathrm{RMSE}$, $\mathrm{MBE}$, $\mathrm{MAE}_{\mathrm{top5}}$, $\mathrm{Skill}$ frente a \texttt{MM30} y rango ordinal sobre $23$ competidores. La Tabla~\ref{tab:res_familias} resume la estructura por familia de escenarios; el desglose completo por escenario corresponde a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_FIXED]} y su contraparte ajustada por TPE a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_HPO]}.
+La comparación primaria confronta a \texttt{SM-CFHR-Fixed} ($B=0$) frente a los $22$ modelos de referencia sobre $\mathrm{MAE}_{\mathrm{macro}}$, $\mathrm{MAE}_{\mathrm{CF}}$, $\mathrm{RMSE}$, $\mathrm{MBE}$, $\mathrm{MAE}_{\mathrm{top5}}$, $\mathrm{Skill}$ frente a \texttt{MM30} y rango ordinal sobre $23$ competidores (complementando el contraste frente a la mejor referencia seleccionada \textit{ex post} con comparaciones frente a líneas base fijadas \textit{a priori}). La Tabla~\ref{tab:res_familias} resume la estructura por familia de escenarios; el desglose completo por escenario corresponde a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_FIXED]} y su contraparte ajustada por TPE a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_HPO]}.
 
 \begin{table}[!htbp]
 \caption{Resumen comparativo por familia de escenarios entre \texttt{SM-CFHR-Fixed} ($B=0$), \texttt{SM-CFHR-HPO} ($B=25$) y la mejor referencia de biblioteca (pendiente de integración OOF).}\label{tab:res_familias}
@@ -35,7 +35,7 @@ Sobre los escenarios con tamaño muestral efectivo $T_{\mathrm{eff}} \ge 2H$, la
 Los seis estudios diagnósticos post-OOF cuantificarán la contribución individual de cada decisión de diseño: la Tabla~\ref{tab:res_ablaciones} recogerá el estudio de ablación controlada (\texttt{[PENDIENTE: RES\_ABLACIONES\_6]}), complementado con los barridos 1D de sensibilidad (\texttt{[PENDIENTE: RES\_SENSIBILIDAD\_HP]}), las pruebas de estrés ante $0\%, 5\%, 10\%$ de atípicos (\texttt{[PENDIENTE: RES\_ESTRES\_ATIPICOS]}), la estabilidad en $10$ semillas (\texttt{[PENDIENTE: RES\_ESTABILIDAD\_SEMILLAS]}), las curvas de aprendizaje y escalabilidad (\texttt{[PENDIENTE: RES\_APRENDIZAJE\_ESCALABILIDAD]}), la calibración de intervalos conformes temporales al $80\%$ y $90\%$ en la Tabla~\ref{tab:res_conformal} (\texttt{[PENDIENTE: RES\_CONFORMAL\_80\_90]}), la descomposición aditiva exacta de predictores (\texttt{[PENDIENTE: RES\_INTERPRETABILIDAD]}) y el coste computacional y verificación entre máquinas (\texttt{[PENDIENTE: RES\_COSTE\_Y\_REPRO\_INDEPENDIENTE]}).
 
 \begin{table}[!htbp]
-\caption{Estudio de ablación controlada en seis variantes estructurales.}\label{tab:res_ablaciones}
+\caption{Estudio de ablación controlada: modelo completo y cinco modificaciones estructurales ($6$ variantes).}\label{tab:res_ablaciones}
 \centering
 \input{tables/tab_res_ablaciones}
 \end{table}

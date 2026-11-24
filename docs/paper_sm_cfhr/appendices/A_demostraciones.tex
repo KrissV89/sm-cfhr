@@ -13,7 +13,20 @@ Este apéndice presenta las demostraciones completas de los resultados de la Sec
 \end{align*}
 verificando la cota global de Lipschitz para $\nabla J$.
 
-\textbf{(3) (Especialización específica para intercepto no penalizado).} Como $\rho_\delta(r) \ge 0$ y $\mathbf{w}^\top D_\alpha \mathbf{w} \ge 0$, se cumple $J(b,\mathbf{w}) \ge 0$ en $\Omega$. Sea $\{(b_m, \mathbf{w}_m)\}_{m\ge 1} \subset \Omega$ con $\|(b_m, \mathbf{w}_m)\|_2 \to \infty$ y sea $\alpha_{\min} := \min\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\} > 0$. Si $\|\mathbf{w}_m\|_2 \to \infty$, entonces $J(b_m, \mathbf{w}_m) \ge \frac{\alpha_{\min}}{2}\|\mathbf{w}_m\|_2^2 \to +\infty$. Si $\|\mathbf{w}_m\|_2 \le K < \infty$, necesariamente $|b_m| \to \infty$; al ser $n \ge 1$, para cualquier observación $k$ se tiene $|r_{m,k}| = |\tilde{y}_k - b_m - \mathbf{z}_k^\top \mathbf{w}_m| \ge |b_m| - \|\tilde{\mathbf{y}}\|_\infty - \|Z\|_\infty K \to +\infty$, y como $\rho_\delta(r) \ge \delta(|r| - \frac{1}{2}\delta)$ para $|r| > \delta$, resulta $J(b_m, \mathbf{w}_m) \to +\infty$. Al ser $J$ continua, acotada inferiormente y coerciva sobre el cerrado $\Omega$, el teorema de Weierstrass garantiza la existencia de al menos un minimizador global $(b^*, \mathbf{w}^*) \in \Omega$.
+\textbf{(3) (Especialización específica para intercepto no penalizado).} Como $\rho_\delta(r) \ge 0$ y $\mathbf{w}^\top D_\alpha \mathbf{w} \ge 0$, se cumple $J(b,\mathbf{w}) \ge 0$ en $\Omega$. Para demostrar coercividad sobre $\Omega$ sin restringir el comportamiento asintótico de $\mathbf{w}$, sea $C \in \mathbb{R}$ arbitrario y defínanse $C_+ := \max\{C, 0\} + 1 > 0$, $\alpha_{\min} := \min\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\} > 0$,
+\[
+R_w := \sqrt{\frac{2 C_+}{\alpha_{\min}}} + 1, \qquad
+R_b := \|\tilde{\mathbf{y}}\|_\infty + \|Z\|_{\infty,2}\,R_w + n\left(\frac{C_+}{\delta} + \frac{\delta}{2}\right) + 1,
+\]
+donde $\|Z\|_{\infty,2} := \max_{1 \le k \le n} \|\mathbf{z}_k\|_2$. Fijemos $R := \max\{R_w, R_b\}$ y consideremos cualquier punto $(b, \mathbf{w}) \in \Omega$ con $\|(b, \mathbf{w})\|_2 > \sqrt{2}\,R$. Necesariamente se cumple una de dos alternativas excluyentes:
+\begin{itemize}
+    \item Si $\|\mathbf{w}\|_2 > R_w$, entonces $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w} \ge \frac{\alpha_{\min}}{2}\|\mathbf{w}\|_2^2 > \frac{\alpha_{\min}}{2} R_w^2 > C_+ > C$, luego $J(b, \mathbf{w}) > C$.
+    \item Si $\|\mathbf{w}\|_2 \le R_w$, entonces $|b| > R \ge R_b$ (pues en caso contrario $\|(b,\mathbf{w})\|_2^2 = b^2 + \|\mathbf{w}\|_2^2 \le 2R^2$). Como $n \ge 1$, para cualquier índice fijo $k \in \{1,\dots,n\}$ la desigualdad triangular y Cauchy--Schwarz dan $|r_k| = |\tilde{y}_k - b - \mathbf{z}_k^\top \mathbf{w}| \ge |b| - \|\tilde{\mathbf{y}}\|_\infty - \|Z\|_{\infty,2} R_w > n(C_+/\delta + \delta/2) > \delta/2$. Usando $\rho_\delta(r) \ge \delta(|r| - \delta/2)$ para todo $r \in \mathbb{R}$ (inmediato tanto para $|r| > \delta$ por igualdad como para $|r| \le \delta$ porque $\frac{1}{2}(|r|-\delta)^2 \ge 0$), se obtiene
+    \[
+    J(b, \mathbf{w}) \ge \frac{1}{n}\rho_\delta(r_k) \ge \frac{\delta}{n}\left(|r_k| - \frac{\delta}{2}\right) > C_+ + \frac{n - 1}{n}\cdot\frac{\delta^2}{2} \ge C_+ > C.
+    \]
+\end{itemize}
+Por tanto, toda sucesión divergente $\{(b_m, \mathbf{w}_m)\}_{m \ge 1} \subset \Omega$ con $\|(b_m, \mathbf{w}_m)\|_2 \to \infty$ abandona eventualmente cualquier bola de radio $\sqrt{2}\,R$, satisfaciendo $J(b_m, \mathbf{w}_m) \to +\infty$. Al ser $J$ continua, acotada inferiormente y coerciva sobre el cerrado $\Omega$, el teorema de Weierstrass garantiza la existencia de al menos un minimizador global $(b^*, \mathbf{w}^*) \in \Omega$.
 \end{proof}
 
 \begin{proof}[Demostración del Teorema~\ref{thm:unicidad}]

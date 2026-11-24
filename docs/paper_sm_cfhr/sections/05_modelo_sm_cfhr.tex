@@ -25,7 +25,7 @@ Sea $\mathcal{D}_{\mathrm{train}} = \{(\mathbf{x}_k, y_k)\}_{k=1}^n$ el conjunto
     \tilde{y}_k := \frac{y_k - m_y}{\sigma_y}.
     \label{eq:mad_scale}
     \end{equation}
-    La constante $1{,}4826 = 1/\Phi^{-1}(0{,}75)$ hace consistente a $\sigma_y$ con la desviación estándar bajo normalidad, preservando un punto de ruptura del $50\%$ \cite{rousseeuw1993mad}.
+    La constante $1{,}4826 = 1/\Phi^{-1}(0{,}75)$ hace consistente a $\sigma_y$ con la desviación estándar bajo normalidad y preserva un punto de ruptura del $50\%$ en la rama regular $\mathrm{MAD}(\mathbf{y}) > 0$ \cite{rousseeuw1993mad}; en el caso degenerado $\mathrm{MAD}(\mathbf{y}) = 0$ (más de la mitad de las observaciones coinciden exactamente en $m_y$), el respaldo mediante $\operatorname{std}(\mathbf{y})$ reduce el punto de ruptura de la escala a $0\%$.
 \end{enumerate}
 
 \subsection{Función objetivo, regularización estructurada y restricciones de signo}

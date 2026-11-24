@@ -17,7 +17,7 @@ El proyecto compila $26$ declaraciones verificadas sin marcadores incompletos ni
 \midrule
 Ecs.~\eqref{eq:cf_diario}, \eqref{eq:pred_fisica} & \texttt{Clipping.lean}, \texttt{Monotonicity.lean} & \texttt{clip01\_nonneg}, \texttt{clip01\_le\_one}, \texttt{clip01\_mono}, \texttt{predictCF\_bounds}, \texttt{predictEnergy\_bounds} \\
 Ecs.~\eqref{eq:huber}, \eqref{eq:psi_huber} & \texttt{Huber.lean} & \texttt{huber\_nonneg}, \texttt{psi\_abs\_le}, \texttt{psi\_lipschitz}, \texttt{hasDerivAt\_huber}, \texttt{convexOn\_huber}, \texttt{strictConvexOn\_huber\_band} \\
-Teorema~\ref{thm:convexidad_existencia} (1)--(2) & \texttt{Model.lean}, \texttt{Gradient.lean} & \texttt{convex\_feasibleSet}, \texttt{isClosed\_feasibleSet}, \texttt{convexOn\_objective}, \texttt{hasDerivAt\_objective\_line}, \texttt{objective\_subgradient}, \texttt{gradB\_lipschitz} \\
+Teorema~\ref{thm:convexidad_existencia} (1)--(2) & \texttt{Model.lean}, \texttt{Gradient.lean} & \texttt{convex\_feasibleSet}, \texttt{isClosed\_feasibleSet}, \texttt{convexOn\_objective}, \texttt{hasDerivAt\_objective\_line}, \texttt{objective\_subgradient}, \texttt{gradB\_lipschitz} (solo componente $\partial J/\partial b$; la cota espectral completa $L_J$ de $\nabla J$ figura en el Apéndice~\ref{ap:demos}) \\
 Teorema~\ref{thm:convexidad_existencia} (3) & \texttt{Optimality.lean} & \texttt{objective\_coercive}, \texttt{exists\_global\_minimizer} \\
 Teorema~\ref{thm:unicidad} (1)--(3) & \texttt{Optimality.lean} & \texttt{unique\_weights}, \texttt{unique\_intercept\_of\_interior\_residual}, \texttt{intercept\_nonunique\_counterexample} \\
 Proposición~\ref{prop:kkt} & \texttt{Optimality.lean} & \texttt{kkt\_iff\_isMinOn} \\
