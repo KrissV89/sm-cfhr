@@ -27,4 +27,9 @@ datos_pronostico_multihorizonte/
 resultados/benchmark_*/
 resultados/evaluacion_ashr_oof/
 resultados/preflight_ashr/
+results/oof_v1_0_0/
+results/oof_paralelo_*/
+results/runs/
+results/**/*.parquet
+results/**/events.jsonl
 .ipynb_checkpoints/

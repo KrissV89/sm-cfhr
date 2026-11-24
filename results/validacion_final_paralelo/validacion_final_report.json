@@ -1,0 +1,119 @@
+{
+  "benchmark_25trials_dev": [
+    {
+      "workers": 4,
+      "n_units": 16,
+      "n_trials": 25,
+      "wall_time_s": 45.894,
+      "units_per_s": 0.3487,
+      "cpu_percent_sys": 40.4,
+      "rss_coord_start_mb": 187.94,
+      "rss_coord_end_mb": 188.57,
+      "peak_coord_rss_mb": 188.64,
+      "peak_worker_rss_mb": 267.89,
+      "peak_aggregate_rss_mb": 1247.64,
+      "worker_recycles": 8,
+      "load_time_sum_s": 14.531,
+      "compute_time_sum_s": 124.134,
+      "write_time_sum_s": 0.797,
+      "spawn_overhead_s": 0.067,
+      "errors": 0
+    },
+    {
+      "workers": 6,
+      "n_units": 16,
+      "n_trials": 25,
+      "wall_time_s": 44.149,
+      "units_per_s": 0.3625,
+      "cpu_percent_sys": 54.2,
+      "rss_coord_start_mb": 188.54,
+      "rss_coord_end_mb": 188.67,
+      "peak_coord_rss_mb": 188.79,
+      "peak_worker_rss_mb": 273.89,
+      "peak_aggregate_rss_mb": 1717.26,
+      "worker_recycles": 8,
+      "load_time_sum_s": 15.917,
+      "compute_time_sum_s": 184.55,
+      "write_time_sum_s": 0.695,
+      "spawn_overhead_s": 0.069,
+      "errors": 0
+    },
+    {
+      "workers": 8,
+      "n_units": 16,
+      "n_trials": 25,
+      "wall_time_s": 36.067,
+      "units_per_s": 0.4438,
+      "cpu_percent_sys": 58.7,
+      "rss_coord_start_mb": 188.67,
+      "rss_coord_end_mb": 188.79,
+      "peak_coord_rss_mb": 188.97,
+      "peak_worker_rss_mb": 274.34,
+      "peak_aggregate_rss_mb": 2166.35,
+      "worker_recycles": 8,
+      "load_time_sum_s": 23.3,
+      "compute_time_sum_s": 180.481,
+      "write_time_sum_s": 0.744,
+      "spawn_overhead_s": 0.058,
+      "errors": 0
+    }
+  ],
+  "equivalence_summary": {
+    "seq_status": "COMPLETED",
+    "par_status": "COMPLETED",
+    "resume_status": "COMPLETED",
+    "resume_recovered_orphaned_locks": 1,
+    "resume_executed_now": 2,
+    "hashes_seq_eq_par": true,
+    "hashes_seq_eq_res": true,
+    "partial_manifest_state": "INVALID",
+    "partial_manifest_estatus": "OOF_PARCIAL",
+    "partial_manifest_procedencia": "OOF_DEFINITIVO_REAL",
+    "per_scenario": [
+      {
+        "scenario_id": "D1_espaciotemporal_cinco_variables",
+        "n_trials_seq": 25,
+        "n_trials_par": 25,
+        "max_pred_diff_1w_vs_4w": 0.0,
+        "max_pred_diff_1w_vs_resume": 0.0,
+        "max_trial_mae_diff": 0.0,
+        "mae_seq": 69048.728572,
+        "mae_par": 69048.728572,
+        "benchmark_aligned_rows": 3982
+      },
+      {
+        "scenario_id": "DirectoSinClima_espaciotemporal_14d",
+        "n_trials_seq": 25,
+        "n_trials_par": 25,
+        "max_pred_diff_1w_vs_4w": 0.0,
+        "max_pred_diff_1w_vs_resume": 0.0,
+        "max_trial_mae_diff": 0.0,
+        "mae_seq": 610120.068261,
+        "mae_par": 610120.068261,
+        "benchmark_aligned_rows": 22
+      },
+      {
+        "scenario_id": "RecSinClima_intraplanta_14d",
+        "n_trials_seq": 25,
+        "n_trials_par": 25,
+        "max_pred_diff_1w_vs_4w": 0.0,
+        "max_pred_diff_1w_vs_resume": 0.0,
+        "max_trial_mae_diff": 0.0,
+        "mae_seq": 166063.028149,
+        "mae_par": 166063.028149,
+        "benchmark_aligned_rows": 308
+      },
+      {
+        "scenario_id": "RecGEFSv12_espaciotemporal_14d",
+        "n_trials_seq": 25,
+        "n_trials_par": 25,
+        "max_pred_diff_1w_vs_4w": 0.0,
+        "max_pred_diff_1w_vs_resume": 0.0,
+        "max_trial_mae_diff": 0.0,
+        "mae_seq": 89672.345937,
+        "mae_par": 89672.345937,
+        "benchmark_aligned_rows": 550
+      }
+    ]
+  }
+}
