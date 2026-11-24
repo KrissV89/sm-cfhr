@@ -1,0 +1,62 @@
+\section{Protocolo de evaluación e inferencia estadística}\label{sec:inferencia}
+
+Esta sección detalla la estrategia de comparación justa entre modelos, el esquema de validación cruzada anidada, las métricas de evaluación, las pruebas estadísticas calibradas ante dependencia temporal, las hipótesis científicas pre-registradas y los estudios complementarios de diagnóstico.
+
+\subsection{Métricas, validación anidada y transparencia de presupuestos}
+
+Para evaluar el desempeño en una flota con coberturas heterogéneas ($251$ a $1\,032$ días útiles) y capacidades entre $9{,}8$ y $388{,}0$~MW, adoptamos como métrica primaria el \textbf{error absoluto medio macro por planta}:
+\begin{equation}
+\mathrm{MAE}_{\mathrm{macro}}(m) := \frac{1}{M}\sum_{i=1}^{M}\frac{1}{|\mathcal{T}_i^{\mathrm{eval}}|}\sum_{t \in \mathcal{T}_i^{\mathrm{eval}}} e_{m,i,t},
+\label{eq:mae_macro}
+\end{equation}
+donde $e_{m,i,t} = |y_{i,t+1} - \hat{y}_{i,t+1 \mid t}|$ en $D+1$ ($\text{kWh/día}$), $e_{m,i,t} = \frac{1}{H}\sum_{h=1}^{H}|y_{i,t+h} - \hat{y}_{i,t+h \mid t}|$ en esquema recursivo ($\text{kWh/día}$) y $e_{m,i,t} = |Y_{i,t}^{(H)} - \hat{Y}_{i,t}^{(H)}|$ en esquema directo ($\text{kWh}$ totales, reportando además su equivalente normalizado por $H$ en $\text{kWh/día}$). Complementariamente se reportan $\mathrm{RMSE}$, sesgo medio ($\mathrm{MBE}$), error en las cinco mayores plantas ($\mathrm{MAE}_{\mathrm{top5}}$), rango ordinal entre los $23$ competidores y el \textit{Skill Score} frente a la media móvil causal de $30$ días: $\mathrm{Skill}(m) := 100\% \times \big(1 - \mathrm{MAE}_{\mathrm{macro}}(m)/\mathrm{MAE}_{\mathrm{macro}}(m_{\mathrm{MM30}})\big)$.
+
+Para controlar el sesgo de selección \cite{varma2006bias,cawley2010overfit} y transparentar las diferencias de presupuesto de búsqueda entre variantes, distinguimos dos niveles de comparación sobre las $28$ configuraciones experimentales (Figura~\ref{fig:validacion_anidada}):
+\begin{itemize}
+    \item \textbf{Comparación primaria (\texttt{SM-CFHR-Fixed}, $B=0$):} evalúa la configuración fija ($\delta = 1{,}35$, $\alpha_{\mathrm{lin}} = 0{,}01$, $\alpha_{\mathrm{meteo}} = 0{,}10$) sin optimización de hiperparámetros frente a los $22$ modelos de referencia (los cuales emplearon una rejilla acotada de $4$ configuraciones).
+    \item \textbf{Comparación secundaria (\texttt{SM-CFHR-HPO}, $B=25$):} evalúa la variante optimizada mediante $25$ ensayos Optuna TPE dentro de cada pliegue externo sobre $3$ particiones causales internas (embargo de $30$ días en $D+1$, $t_{\mathrm{end}} \le t_{\mathrm{val}}$ en multihorizonte, y exclusión espacial estricta en ET). Reportar por separado $B=0$ y $B=25$ evita atribuir a la arquitectura del modelo ganancias que pudieran provenir de un mayor presupuesto de búsqueda.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_validacion_anidada.pdf}
+\caption{Esquema de validación cruzada causal anidada: separación temporal y espacial externa (\textit{leave-one-group-out} en ET) con brecha de embargo causal de $30$ días y validación interna de $3$ particiones para Optuna TPE.}
+\label{fig:validacion_anidada}
+\end{figure}
+
+\subsection{Contrastes pareados, multiplicidad y calibración ante autocorrelación}
+
+Para comparar dos procedimientos $m_A$ y $m_B$ sobre series temporales alineadas (agregadas por fecha en $D+1$ y por origen en multihorizonte), definimos el diferencial de pérdida $d_t := L_{m_A, t} - L_{m_B, t}$ para $t = 1,\dots,T$ (valores negativos favorecen a $m_A$). Ante la autocorrelación serial propia de series diarias y de horizontes solapados $H$, la varianza de largo plazo se estima mediante el estimador HAC de Newey--West \cite{newey1987} con núcleo de Bartlett hasta el rezago $L = \max\{1, \lfloor 4(T/100)^{2/9} \rfloor\}$:
+\begin{equation}
+\hat{\Omega}_{\mathrm{HAC}} := \hat{\gamma}_0 + 2\sum_{k=1}^{L}\left(1 - \frac{k}{L+1}\right)\hat{\gamma}_k, \qquad
+\hat{\gamma}_k := \frac{1}{T}\sum_{t=k+1}^{T}(d_t - \bar{d})(d_{t-k} - \bar{d}),
+\label{eq:hac}
+\end{equation}
+y el tamaño muestral efectivo se cuantifica como
+\begin{equation}
+T_{\mathrm{eff}} := \frac{T}{\max\!\left\{1,\; 1 + 2\sum_{k=1}^{L}\left(1 - \frac{k}{L+1}\right)\frac{\hat{\gamma}_k}{\hat{\gamma}_0}\right\}}.
+\end{equation}
+Cuando $T_{\mathrm{eff}} < 2H$ (frecuente en horizontes $H \in \{21, 28\}$ días con orígenes no solapados), el escenario se declara con tamaño muestral efectivo insuficiente y se excluye de las conclusiones inferenciales confirmatorias.
+
+Sobre los escenarios que superan $T_{\mathrm{eff}} \ge 2H$, se aplican cinco procedimientos complementarios:
+\begin{enumerate}
+    \item \textbf{Diebold--Mariano con corrección HLN y varianza HAC:} estadístico bilateral frente a $t_{T-1}$ bajo $H_0 : \mathbb{E}[d_t] = 0$ \cite{diebold1995,harvey1997,newey1987}.
+    \item \textbf{Model Confidence Set (MCS):} eliminación secuencial al nivel $\alpha = 0{,}10$ con estadístico $T_{\max}$ sobre los $23$ modelos simultáneos mediante $500$ réplicas de bootstrap estacionario con longitud media de bloque $7$ \cite{hansen2011mcs,politis1994stationary}.
+    \item \textbf{Prueba global SPA:} contraste de capacidad predictiva superior con recienteo consistente y $500$ réplicas de bootstrap estacionario para controlar el sesgo de comparaciones múltiples sobre un conjunto de competidores \cite{hansen2005spa}.
+    \item \textbf{Giacomini--White (GW) auditada:} contraste de capacidad predictiva condicional con instrumentos $(1, d_{t-1})$ \cite{giacomini2006tests}. Un experimento de calibración bajo $H_0$ ($120$ simulaciones Monte Carlo, $T=120$, errores $\mathrm{AR}(1)$ con $\rho=0{,}4$) mostró que a horizonte $\tau=1$ ($L=0$) la prueba GW sobrerrechaza ($0{,}2083$ frente a $0{,}05$ nominal) cuando existe autocorrelación residual, mientras que DM--HLN--HAC ($0{,}0167$) y MCS ($0{,}9333$ de supervivencia) permanecen bien calibrados. En consecuencia, GW se excluye como prueba confirmatoria siempre que $\tau=1$ y $|\hat{\rho}_1| > 0{,}15$.
+    \item \textbf{Clark--West (CW):} reservada estrictamente para comparaciones entre modelos anidados \cite{clark2007nested}.
+\end{enumerate}
+
+Para controlar las comparaciones múltiples dentro de cada familia de escenarios, se aplican la corrección secuencial de Holm--Bonferroni \cite{holm1979} (control de FWER) y el ajuste de Benjamini--Hochberg \cite{benjamini1995fdr} (control de FDR) únicamente sobre los escenarios con $T_{\mathrm{eff}} \ge 2H$. La magnitud práctica de las diferencias se cuantifica mediante $\bar{d}$ con intervalo de confianza al $95\%$ por bootstrap estacionario ($1\,000$ réplicas), la $d$ de Cohen pareada y el delta de Cliff no paramétrico \cite{cliff1993dominance}, manteniendo cautela inferencial por tratarse de $G=7$ conglomerados espaciales \cite{cameron2015cluster}.
+
+\subsection{Hipótesis científicas pre-registradas y estudios complementarios}
+
+El protocolo evalúa cuatro hipótesis científicas contrastables tras obtener los resultados fuera de muestra:
+\begin{itemize}
+    \item \textbf{H1 (Ventaja de normalización en transferencia espacial):} en generalización espaciotemporal (ET), la normalización causal por factor de capacidad reduce el $\mathrm{MAE}_{\mathrm{macro}}$ frente a regresores globales entrenados sin normalización de escala.
+    \item \textbf{H2 (Significancia y tamaño del efecto bajo dependencia temporal):} sobre los escenarios con $T_{\mathrm{eff}} \ge 2H$, SM-CFHR alcanza diferencias estadísticamente significativas frente a la mejor referencia de biblioteca tras corrección de Holm ($p_{\mathrm{Holm}} < 0{,}05$), supervivencia en MCS ($\alpha = 0{,}10$), rechazo en SPA ($p_{\mathrm{SPA}} < 0{,}05$) y un tamaño del efecto no trivial ($|d_{\mathrm{Cohen}}| \ge 0{,}20$ o $|\delta_{\mathrm{Cliff}}| \ge 0{,}147$) en la mayoría de los escenarios válidos.
+    \item \textbf{H3 (Contribución de componentes estructurales):} la pérdida de Huber ($\delta=1{,}35$), la regularización anisotrópica ($\alpha_{\mathrm{meteo}} > \alpha_{\mathrm{lin}}$) y las restricciones de monotonía no negativa aportan mejoras verificables o mayor estabilidad ante atípicos respecto a sus versiones ablacionadas.
+    \item \textbf{H4 (Compromiso entre configuración fija y HPO):} la optimización bayesiana TPE ($B=25$) mejora o iguala a la configuración fija congelada ($B=0$) en regímenes con señal meteorológica suficiente sin incurrir en sobreajuste por varianza de selección.
+\end{itemize}
+
+Adicionalmente, una vez generadas las predicciones definitivas, se ejecutan seis estudios diagnósticos sobre datos reales: (1) \textbf{ablación controlada} de seis variantes (modelo completo, pérdida cuadrática $L_2$, regularización uniforme, sin restricciones de monotonía, estandarización externa de $X$ con MAD en $y$, y ajuste en energía bruta); (2) \textbf{sensibilidad unidimensional y estabilidad} sobre $\delta, \alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}$ y $10$ semillas aleatorias ($2026$--$2035$); (3) \textbf{estrés ante atípicos y ruido} inyectando $0\%$, $5\%$ y $10\%$ de perturbaciones severas en la respuesta ($\pm 0{,}6$ en factor de capacidad) y ruido gaussiano ($\sigma=0{,}10$) en predictores; (4) \textbf{curvas de aprendizaje y escalabilidad} al $10\%, 25\%, 50\%$ y $100\%$ de la muestra; (5) \textbf{incertidumbre conforme temporal} al $80\%$ y $90\%$ nominales mediante cuantiles finitos de residuos absolutos de calibración \cite{vovk2005conformal,lei2018conformal,barber2023nonexchangeable}; y (6) \textbf{interpretabilidad aditiva exacta}, dada en el espacio estandarizado por $\phi_{q,j} = \sigma_y (z_{q,j} - \bar{z}_{\mathrm{train},j})\,\hat{w}_j$.

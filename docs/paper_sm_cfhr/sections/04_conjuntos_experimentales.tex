@@ -1,0 +1,90 @@
+\section{Construcción matemática de los conjuntos experimentales}\label{sec:conjuntos}
+
+Los $28$ escenarios evaluados en este estudio \textbf{no constituyen $28$ conjuntos de datos independientes}, sino $28$ configuraciones experimentales derivadas sistemáticamente del mismo panel auditado de $17$ centrales mediante combinaciones de horizonte, estrategia de predicción, disponibilidad meteorológica y régimen de generalización. Esta sección formaliza las operaciones matemáticas que generan cada muestra de entrenamiento, validación interna y evaluación externa sin fuga de información.
+
+\subsection{Panel base, unidades físicas y filtración causal}
+
+Sea $\mathcal{P} = \{1,\dots,M\}$ ($M=17$) el conjunto de centrales y $\mathcal{T} \subset \mathbb{Z}$ el calendario diario discreto desde el 1 de enero de 2024 hasta el 31 de octubre de 2026 ($|\mathcal{T}| = 1\,035$ días). Cada planta $i \in \mathcal{P}$ pertenece a una zona espacial fija $g(i) \in \{1,\dots,G\}$ ($G=7$). Para cada día válido $s \in \mathcal{T}_i \subseteq \mathcal{T}$, se observa la energía diaria generada $y_{i,s} > 0$ ($\text{kWh/día}$) y la capacidad efectiva neta $C_{i,s} > 0$ ($\text{MW}$). Si la central operara a potencia neta nominal durante $24$ horas continuas, su cota energética diaria es:
+\begin{equation}
+E^{\max}_{i,s} := C_{i,s}\;\text{MW} \times 1\,000\;\frac{\text{kW}}{\text{MW}} \times 24\;\frac{\text{h}}{\text{día}} = 24\,000\,C_{i,s} \quad (\text{kWh/día}).
+\label{eq:emax}
+\end{equation}
+
+Al cierre operativo de una fecha de origen $t \in \mathcal{T}_i$, el denominador causal vigente es $E^{\max}_{i,t} = 24\,000\,C_{i,t}$, evitando anticipar ampliaciones posteriores de capacidad $C_{i,t+h}$ ($h \ge 1$). La información disponible al origen $t$ constituye la filtración causal
+\begin{equation}
+\mathcal{F}_{i,t} := \sigma\!\left(\{y_{i,s}, C_{i,s} : s \le t\},\; \{\mathbf{z}_{i,u \mid s} : s \le t,\; u > s\},\; \text{calendario}\right),
+\end{equation}
+donde $\mathbf{z}_{i,u \mid s} \in \mathbb{R}^5$ denota el vector de pronóstico meteorológico emitido en $s \le t$ para la fecha objetivo $u > s$. En todo el manuscrito, el término «causal» designa estrictamente no anticipación temporal respecto a $\mathcal{F}_{i,t}$.
+
+\subsection{Definición de objetivos diarios, acumulados y representación de entrada}
+
+Para una unidad observacional caracterizada por planta $i$, fecha de origen $t$ y horizonte $H \in \{1,7,14,21,28\}$ días, distinguimos dos formulaciones del objetivo físico:
+\begin{enumerate}
+    \item \textbf{Objetivo diario ($D+1$ con $H=1$ y esquema recursivo con $H \in \{7,14,21,28\}$):} para cada paso $h \in \{1,\dots,H\}$ (fecha objetivo $t+h$), la respuesta física es la energía diaria $y_{i,t+h}$ ($\text{kWh/día}$, factor de escala $H_{\mathrm{dir}} = 1$), cuyo factor de capacidad causal truncado al dominio físico es:
+    \begin{equation}
+    c_{i,t+h \mid t} := \clip\!\left(\frac{y_{i,t+h}}{24\,000\,C_{i,t}},\, 0,\, 1\right),
+    \qquad \clip(u,0,1) := \min\{\max\{u,0\},1\}.
+    \label{eq:cf_diario}
+    \end{equation}
+    \item \textbf{Objetivo acumulado (esquema directo con $H \in \{7,14,21,28\}$):} en un único paso se predice la energía total acumulada sobre la ventana completa $[t+1, t+H]$ (restringida a ventanas con los $H$ días válidos):
+    \begin{equation}
+    Y_{i,t}^{(H)} := \sum_{h=1}^{H} y_{i,t+h} \quad (\text{kWh}),
+    \qquad
+    c_{i,t}^{(H)} := \clip\!\left(\frac{Y_{i,t}^{(H)}}{24\,000\,H\,C_{i,t}},\, 0,\, 1\right),
+    \label{eq:y_directo}
+    \end{equation}
+    con factor de escala $H_{\mathrm{dir}} = H$. Para comparar errores directos y recursivos en la misma unidad diaria ($\text{kWh/día}$), los errores acumulados en $\text{kWh}$ se dividen por $H$.
+\end{enumerate}
+
+A partir de las observaciones disponibles en $\mathcal{F}_{i,t}$, sean $\bar{y}^{(30)}_{i,t}$, $\bar{y}^{(7)}_{i,t}$ y $y^{\mathrm{ult}}_{i,t}$ las medias móviles causales de $30$ días, $7$ días y el último registro válido hasta $t$, respectivamente. Normalizando por $E^{\max}_{i,t}$ se obtienen los niveles recientes acotados:
+\begin{equation}
+\mathrm{cf}_{30}(i,t) := \clip\!\left(\frac{\bar{y}^{(30)}_{i,t}}{E^{\max}_{i,t}}, 0, 1\right),\quad
+\mathrm{cf}_{7}(i,t) := \clip\!\left(\frac{\bar{y}^{(7)}_{i,t}}{E^{\max}_{i,t}}, 0, 1\right),\quad
+\mathrm{cf}_{1}(i,t) := \clip\!\left(\frac{y^{\mathrm{ult}}_{i,t}}{E^{\max}_{i,t}}, 0, 1\right),
+\label{eq:cf_hist}
+\end{equation}
+con respaldos jerárquicos ante valores faltantes en los primeros días de operación ($\mathrm{cf}_{30} \leftarrow 0{,}15$, $\mathrm{cf}_7 \leftarrow \mathrm{cf}_{30}$, $\mathrm{cf}_1 \leftarrow \mathrm{cf}_7$). Para una fecha objetivo $t+h$, el vector de predictores $\mathbf{x}_{i,t+h \mid t} \in \mathbb{R}^p$ incorpora:
+\begin{itemize}
+    \item \textbf{Sin meteorología ($p = 7$):} cuatro armónicos anuales de calendario evaluados en $t+h$ ---$\sin(2\pi m/12)$, $\cos(2\pi m/12)$, $\sin(2\pi\,\mathrm{doy}/365{,}25)$ y $\cos(2\pi\,\mathrm{doy}/365{,}25)$--- seguidos de tres términos de dinámica autorregresiva:
+    \begin{equation}
+    x_5 = \mathrm{cf}_{30}(i,t),\quad
+    x_6 = \gamma_h \big(\mathrm{cf}_{7}(i,t) - \mathrm{cf}_{30}(i,t)\big),\quad
+    x_7 = \gamma_h \big(\mathrm{cf}_{1}(i,t) - \mathrm{cf}_{7}(i,t)\big),
+    \label{eq:features_din}
+    \end{equation}
+    donde $\gamma_h := 0{,}85^{h-1}$ es el amortiguamiento geométrico de paso.
+    \item \textbf{Con meteorología ($p = 17$):} se concatenan las cinco variables pronosticadas $\mathbf{z}_{i,t+h \mid t}$ (irradiación horizontal, temperatura a $2\text{ m}$, nubosidad total, humedad relativa y velocidad del viento a $10\text{ m}$) y cinco anomalías causales $\mathbf{a}_{i,t+h \mid t} = \mathbf{z}_{i,t+h \mid t} - \bar{\mathbf{z}}^{(30)}_{i,t}$, calculadas restando la media móvil de $30$ días de los pronósticos emitidos hasta $t$.
+\end{itemize}
+
+\subsection{Particiones externas, validación interna y actualización recursiva exacta}
+
+Las $28$ configuraciones experimentales resultan de cruzar cuatro familias de tarea con dos regímenes de generalización:
+\begin{itemize}
+    \item \textbf{Régimen intraplanta (IP):} para evaluar la fecha u origen $t_0$ de la planta $i$, el conjunto de entrenamiento $\mathcal{D}_{\mathrm{train}}(i,t_0)$ incluye únicamente observaciones de la misma planta $i$ cuyo periodo objetivo concluye antes o en $t_0$ ($t_{\mathrm{obj}} \le t_0$ en $D+1$ y recursivo; $t_{\mathrm{origen}} + H \le t_0$ en directo).
+    \item \textbf{Régimen espaciotemporal (ET):} validación \textit{leave-one-group-out} sobre los $G=7$ conglomerados espaciales. Al evaluar la planta $i$, $\mathcal{D}_{\mathrm{train}}(i,t_0)$ excluye por completo a toda central del grupo $g(i)$, entrenando sobre $\bigcup_{j : g(j) \ne g(i)} \mathcal{F}_{j,t_0}$. La planta $i$ solo aporta su historial previo hasta $t_0$ para construir sus propios predictores al origen.
+\end{itemize}
+
+En detalle, las cuatro familias comprenden: (1) horizonte $D+1$ con y sin pronóstico archivado a $24\text{ h}$ en ET e IP ($4$ configuraciones), evaluado sobre tres bloques trimestrales contiguos entre noviembre de 2025 y julio de 2026; (2) esquema recursivo sin meteorología para $H \in \{7,14,21,28\}$ días en ET e IP ($8$ configuraciones), con orígenes no solapados tras un calentamiento inicial de $90$ días; (3) esquema directo acumulado sin meteorología para $H \in \{7,14,21,28\}$ en ET e IP ($8$ configuraciones); y (4) esquema recursivo con meteorología GEFSv12 para $H \in \{7,14,21,28\}$ en ET e IP ($8$ configuraciones).
+
+Para la variante con ajuste de hiperparámetros (\texttt{SM-CFHR-HPO}), toda búsqueda ocurre estrictamente dentro de $\mathcal{D}_{\mathrm{train}}$ mediante validación cruzada causal de $3$ particiones temporales con brecha de embargo de $30$ días en $D+1$ y $t_{\mathrm{end}} \le t_{\mathrm{val}}$ en multihorizonte. En el régimen ET, cada partición interna mantiene además separación espacial estricta excluyendo del entrenamiento interno al grupo espacial validado, descartando particiones que incumplan los tamaños mínimos ($n_{\mathrm{tr}} \ge 15$, $n_{\mathrm{va}} \ge 5$).
+
+En los escenarios recursivos ($H \in \{7,14,21,28\}$), tanto la validación interna de hiperparámetros como la evaluación externa ejecutan exactamente el mismo procedimiento de actualización causal de estado desde un origen $t_0$, formalizado en el Algoritmo~\ref{alg:rollout}.
+
+\begin{figure}[!htbp]
+\centering
+\fbox{\begin{minipage}{0.95\textwidth}
+\small
+\textbf{Algoritmo 1: Despliegue recursivo causal exacto desde el origen $t_0$ ($\text{horizonte } H$)}\label{alg:rollout}
+\begin{enumerate}
+    \item \textbf{Inicialización al origen $t_0$:} fijar la capacidad constante al origen $C_{i,t_0}$, la cota energética $E^{\max}_{i,t_0} = 24\,000\,C_{i,t_0}$, la línea base climática de $30$ días $\bar{\mathbf{z}}^{(30)}_{i,t_0}$ y el búfer histórico con las últimas $30$ observaciones reales $\tilde{B}_{t_0} = (y_{i,t_0-29}, \dots, y_{i,t_0})$.
+    \item \textbf{Para $h = 1, \dots, H$:}
+    \begin{enumerate}
+        \item Calcular $\bar{y}^{(30)}$ (media de los últimos $30$ elementos de $\tilde{B}_{t_0+h-1}$), $\bar{y}^{(7)}$ (últimos $7$) y $y^{\mathrm{ult}}$ (último elemento), y obtener $(\mathrm{cf}_{30}, \mathrm{cf}_7, \mathrm{cf}_1)$ mediante \eqref{eq:cf_hist}.
+        \item Construir $\mathbf{x}_{i,t_0+h \mid t_0}$ con los armónicos de fecha $t_0+h$, el amortiguamiento $\gamma_h = 0{,}85^{h-1}$ en \eqref{eq:features_din} y, si hay meteorología, el pronóstico GEFSv12 emitido en $t_0$ para $t_0+h$ y su anomalía respecto a $\bar{\mathbf{z}}^{(30)}_{i,t_0}$.
+        \item Evaluar el estimador entrenado para obtener la predicción física truncada $\hat{y}_{i,t_0+h \mid t_0} \in [0, E^{\max}_{i,t_0}]$.
+        \item Actualizar el búfer causal desplazando la ventana un día e insertando únicamente la predicción propia: $\tilde{B}_{t_0+h} \leftarrow \text{append}(\tilde{B}_{t_0+h-1}[2:30],\; \hat{y}_{i,t_0+h \mid t_0})$.
+    \end{enumerate}
+    \item \textbf{Salida:} trayectoria $\{\hat{y}_{i,t_0+h \mid t_0}\}_{h=1}^H$ sin acceso a observaciones posteriores a $t_0$.
+\end{enumerate}
+\end{minipage}}
+\end{figure}

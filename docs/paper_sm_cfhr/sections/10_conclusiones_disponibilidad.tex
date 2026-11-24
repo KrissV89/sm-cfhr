@@ -1,0 +1,23 @@
+\section{Conclusiones y disponibilidad}\label{sec:conclusiones}
+
+Este trabajo ha formalizado el modelo \textbf{SM-CFHR} (\textit{Structured Monotone Capacity-Factor Huber Regressor}), su análisis matemático completo, su verificación mecánica en Lean~4 y su protocolo experimental pre-registrado para el pronóstico fotovoltaico multi-planta y multi-horizonte.
+
+En el plano teórico y formal ---completado y verificado independientemente de la ejecución empírica en curso---, se establecen tres resultados principales:
+\begin{enumerate}
+    \item \textbf{Normalización causal y representación unificada:} expresar objetivos diarios y acumulados directos en el espacio adimensional $[0,1]$ mediante la capacidad vigente al origen ($24\,000\,C_{i,t}$) elimina la distorsión de escala de $39{,}6\times$ entre centrales sin anticipar ampliaciones futuras de potencia neta.
+    \item \textbf{Garantías analíticas del programa convexo:} la función objetivo que combina pérdida de Huber con escalado MAD, penalización cuadrática anisotrópica ($\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}} > 0$) y restricciones de signo no negativo es continuamente diferenciable ($C^1$) con gradiente globalmente Lipschitz, convexa y coerciva para $n \ge 1$. Esto garantiza la existencia de solución global, la unicidad exacta del vector de coeficientes $\mathbf{w}^*$, la unicidad del intercepto $b^*$ bajo existencia de al menos un residuo interior ($|r_{k_0}^*| < \delta$) ---junto con la caracterización explícita de su no unicidad degenerada--- y la equivalencia exacta de optimalidad mediante condiciones KKT. Todas estas propiedades están verificadas en Lean~4 (\texttt{v4.36.0}) sin axiomas personalizados.
+    \item \textbf{Alcance delimitado de robustez y monotonía:} SM-CFHR acota la contribución de cada residuo atípico en el gradiente de la respuesta (sin proteger frente a puntos de apalancamiento arbitrarios en los predictores) y preserva monotonía parcial no decreciente respecto a los predictores restringidos \textit{ceteris paribus} tras el truncamiento físico en $[0,1]$.
+\end{enumerate}
+
+En el plano empírico, dado que la evaluación fuera de muestra definitiva sobre las $28$ configuraciones experimentales se encuentra en ejecución independiente, las conclusiones de desempeño comparativo frente a los $22$ modelos de referencia y la resolución de las hipótesis H1--H4 permanecen abiertas: \texttt{[PENDIENTE: veredicto empírico definitivo de SM-CFHR-Fixed y SM-CFHR-HPO tras integrar el paquete de resultados OOF]}.
+
+\subsection*{Disponibilidad de código y reproducibilidad}
+
+El código fuente del estimador, el protocolo experimental, las pruebas automatizadas, la formalización en Lean~4 y el manuscrito están disponibles en el repositorio oficial \url{https://github.com/KrissV89/sm-cfhr} (etiqueta de publicación \texttt{v1.0.3-polyform}, protocolo científico \texttt{v1.0.3}, con huella SHA-256 verificable del núcleo matemático). El software original se distribuye bajo la licencia \textbf{PolyForm Noncommercial~1.0.0}, que permite el uso gratuito para investigación académica, estudio y reproducción científica; todo uso comercial o con ánimo de lucro requiere licencia comercial aparte (\texttt{edmolinares@soulspacers.com}). Los datos originales de generación del operador colombiano XM y los pronósticos históricos asociados no se redistribuyen en el repositorio por sus condiciones de uso y tamaño ($603{,}70$~MB sin comprimir), proveyéndose un flujo de importación y verificación de integridad mediante sumas SHA-256 para reproducción independiente (Figura~\ref{fig:pipeline_repro}).
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_pipeline_reproduccion.pdf}
+\caption{Arquitectura de ejecución resumible, verificación de integridad mediante SHA-256 y comparación numérica entre máquinas independientes.}
+\label{fig:pipeline_repro}
+\end{figure}

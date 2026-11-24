@@ -1,29 +1,22 @@
 \section{Resultados}\label{sec:resultados}
 
-Al momento de cerrar este manuscrito, la evaluación fuera de muestra definitiva de \texttt{SM-CFHR-Fixed} y \texttt{SM-CFHR-HPO} sobre los $28$ escenarios oficiales se encuentra en ejecución independiente bajo la versión congelada \texttt{v1.0.2}. En cumplimiento estricto del principio de no fabricación de evidencia, esta sección presenta la estructura analítica completa vinculada a los identificadores de \texttt{resultados\_pendientes.yaml}, manteniendo marcadores explícitos que serán poblados automáticamente por \texttt{scripts/integrate\_results.py} una vez recibido y verificado el paquete de resultados.
+Al cierre de este manuscrito, la evaluación fuera de muestra definitiva de \texttt{SM-CFHR-Fixed} ($B=0$) y \texttt{SM-CFHR-HPO} ($B=25$) sobre las $28$ configuraciones experimentales se encuentra en ejecución independiente bajo el protocolo científico congelado (\texttt{v1.0.3-polyform}). En estricto cumplimiento del principio de no fabricación de evidencia empírica, esta sección presenta la estructura tabular y analítica pre-registrada para integrar automáticamente los resultados reales una vez concluida la ejecución.
 
-\subsection{Desempeño global en los 28 escenarios (comparación primaria y secundaria)}
+\subsection{Desempeño global en las 28 configuraciones experimentales}
 
-La evaluación primaria confronta a \texttt{SM-CFHR-Fixed} ($B=0$) frente al universo de $22$ modelos de referencia sobre $\mathrm{MAE}_{\mathrm{macro}}$, $\mathrm{RMSE}$, $\mathrm{MBE}$, $\mathrm{MAE}_{\mathrm{top5}}$, $\mathrm{Skill}$ respecto a \texttt{MM30} y rango ordinal sobre $23$ competidores. La Tabla~\ref{tab:res_familias} sintetiza el desempeño agregado por familia de escenarios, mientras que la tabla desagregada por escenario individual corresponde al identificador \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_FIXED]} y su contraparte ajustada por TPE al identificador \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_HPO]}.
+La comparación primaria confronta a \texttt{SM-CFHR-Fixed} ($B=0$) frente a los $22$ modelos de referencia sobre $\mathrm{MAE}_{\mathrm{macro}}$, $\mathrm{RMSE}$, $\mathrm{MBE}$, $\mathrm{MAE}_{\mathrm{top5}}$, $\mathrm{Skill}$ frente a \texttt{MM30} y rango ordinal sobre $23$ competidores. La Tabla~\ref{tab:res_familias} resume la estructura por familia de escenarios; el desglose completo por escenario corresponde a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_FIXED]} y su contraparte ajustada por TPE a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_HPO]}.
 
 \begin{table}[!htbp]
-\caption{Resumen comparativo por familia de escenarios entre \texttt{SM-CFHR-Fixed} ($B=0$), \texttt{SM-CFHR-HPO} ($B=25$) y la mejor biblioteca de referencia (marcadores pendientes de integración OOF).}\label{tab:res_familias}
+\caption{Resumen comparativo por familia de escenarios entre \texttt{SM-CFHR-Fixed} ($B=0$), \texttt{SM-CFHR-HPO} ($B=25$) y la mejor referencia de biblioteca (pendiente de integración OOF).}\label{tab:res_familias}
 \centering
 \input{tables/tab_res_familias}
 \end{table}
 
-El análisis por familia permitirá contrastar cuatro hipótesis operativas concretas:
-\begin{enumerate}
-    \item \textbf{Horizonte $D+1$ ($4$ escenarios):} en el régimen espaciotemporal (\texttt{D1\_espaciotemporal\_cinco\_variables} y \texttt{sin\_meteorologia}), se reportará si la normalización por factor de capacidad y las restricciones de signo mejoran la transferencia entre zonas frente a modelos globales no normalizados: \texttt{[PENDIENTE: MAE\_macro y Skill de SM-CFHR-Fixed vs.\ Mejor\_Bib en D+1 ET e IP]}.
-    \item \textbf{Recursivo sin clima ($7$--$28$ días, $8$ escenarios):} se examinará la tasa de degradación del error con el horizonte $H$ bajo realimentación propia y amortiguamiento $\gamma_h = 0{,}85^{h-1}$: \texttt{[PENDIENTE: trayectoria de MAE\_macro en H=7,14,21,28d sin clima]}.
-    \item \textbf{Directo sin clima ($7$--$28$ días, $8$ escenarios):} se comparará el error acumulado en kWh totales (y su equivalente normalizado $\mathrm{MAE}_{\mathrm{macro}}/H$ en kWh/día) frente al esquema recursivo sin clima sobre las mismas ventanas válidas: \texttt{[PENDIENTE: contraste Directo vs.\ Recursivo sin clima en kWh/día]}.
-    \item \textbf{Recursivo con clima GEFSv12 ($7$--$28$ días, $8$ escenarios):} se evaluará si la penalización diferenciada $\alpha_{\mathrm{meteo}} > \alpha_{\mathrm{lin}}$ mitiga la pérdida de habilidad NWP a $14$--$28$ días: \texttt{[PENDIENTE: desempeño y rango en RecGEFSv12 7--28d]}.
-\end{enumerate}
-Asimismo, la comparación pareada entre \texttt{SM-CFHR-Fixed} y \texttt{SM-CFHR-HPO} determinará si el presupuesto de $25$ evaluaciones TPE aporta una ganancia consistente que compense el mayor coste computacional o si la configuración fija congelada resulta competitiva sin ajuste por pliegue: \texttt{[PENDIENTE: diferencial Fixed vs.\ HPO y distribución de hiperparámetros seleccionados]}.
+Los resultados por familia permitirán examinar directamente las cuatro dimensiones operativas del estudio: (1) desempeño en horizonte $D+1$ ($4$ escenarios) en transferencia espacial (ET) e intraplanta (IP) (\texttt{[PENDIENTE: MAE\_macro y Skill de SM-CFHR-Fixed vs.\ Mejor\_Bib en D+1 ET e IP]}); (2) degradación del esquema recursivo sin clima en $H \in \{7,14,21,28\}$ días (\texttt{[PENDIENTE: trayectoria de MAE\_macro en H=7,14,21,28d sin clima]}); (3) contraste entre esquema directo acumulado y recursivo sin clima en $\text{kWh/día}$ (\texttt{[PENDIENTE: contraste Directo vs.\ Recursivo sin clima en kWh/día]}); y (4) efecto de acoplar pronósticos NOAA GEFSv12 con regularización diferenciada $\alpha_{\mathrm{meteo}}$ en $7$--$28$ días (\texttt{[PENDIENTE: desempeño y rango en RecGEFSv12 7--28d]}), junto con la comparación pareada directa entre \texttt{SM-CFHR-Fixed} y \texttt{SM-CFHR-HPO} (\texttt{[PENDIENTE: diferencial Fixed vs.\ HPO y distribución de hiperparámetros seleccionados]}).
 
-\subsection{Inferencia estadística y veredicto formal R3}
+\subsection{Inferencia estadística y contraste de hipótesis}
 
-Sobre los escenarios que superen el umbral de longitud efectiva $T_{\mathrm{eff}} \ge 2H$, la Tabla~\ref{tab:res_inferencia} recogerá los resultados de DM--HLN--HAC con corrección de Holm--Bonferroni por familia, la supervivencia en el conjunto MCS ($\alpha = 0{,}10$), el contraste global SPA y la magnitud del efecto pareada ($d$ de Cohen e intervalo de confianza por bootstrap estacionario). El diagnóstico de autocorrelación de primer orden $\hat{\rho}_1$ para la prueba auditada de Giacomini--White se reportará junto al número de escenarios excluidos por $T_{\mathrm{eff}} < 2H$ (\texttt{[PENDIENTE: RES\_MCS\_SPA\_GW]}).
+Sobre los escenarios con tamaño muestral efectivo $T_{\mathrm{eff}} \ge 2H$, la Tabla~\ref{tab:res_inferencia} reportará los resultados de DM--HLN--HAC con corrección de Holm--Bonferroni, supervivencia en MCS ($\alpha = 0{,}10$), prueba global SPA y magnitud del efecto ($d$ de Cohen e intervalo por bootstrap estacionario), junto con el diagnóstico $\hat{\rho}_1$ para GW auditada (\texttt{[PENDIENTE: RES\_MCS\_SPA\_GW]}). La Tabla~\ref{tab:res_hipotesis} sintetiza el estado de las hipótesis científicas H1--H4 a la espera de los artefactos finales.
 
 \begin{table}[!htbp]
 \caption{Inferencia estadística pareada y múltiple frente al mejor modelo de biblioteca por familia de escenarios.}\label{tab:res_inferencia}
@@ -31,25 +24,18 @@ Sobre los escenarios que superen el umbral de longitud efectiva $T_{\mathrm{eff}
 \input{tables/tab_res_inferencia}
 \end{table}
 
-Aplicando la regla estricta de cuatro condiciones descrita en la Sección~\ref{sec:inferencia}, la Tabla~\ref{tab:res_veredicto_r3} presenta el estado actual del veredicto R3. Hasta integrar los artefactos verificados de OOF, el veredicto permanece en estado \texttt{NO\_VERIFICABLE}.
-
 \begin{table}[!htbp]
-\caption{Evaluación formal de las cuatro condiciones de superioridad R3 (\texttt{evaluate\_r3\_superiority}).}\label{tab:res_veredicto_r3}
+\caption{Evaluación de las hipótesis científicas pre-registradas H1--H4.}\label{tab:res_hipotesis}
 \centering
-\input{tables/tab_res_veredicto_r3}
+\input{tables/tab_res_hipotesis}
 \end{table}
 
 \subsection{Ablaciones, sensibilidad, robustez, incertidumbre e interpretabilidad}
 
-Los estudios complementarios post-OOF cuantificarán la contribución individual de cada componente del estimador:
-\begin{itemize}
-    \item \textbf{Ablación controlada:} la Tabla~\ref{tab:res_ablaciones} aislará el efecto incremental de la pérdida Huber frente a $L_2$, la regularización diferenciada frente a uniforme, la restricción de monotonía, el escalado robusto y la normalización por factor de capacidad (\texttt{[PENDIENTE: RES\_ABLACIONES\_6]}).
-    \item \textbf{Sensibilidad y estrés:} los barridos 1D sobre $\delta, \alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}$ (\texttt{[PENDIENTE: RES\_SENSIBILIDAD\_HP]}), la prueba de estrés ante $0\%, 5\%, 10\%$ de atípicos (\texttt{[PENDIENTE: RES\_ESTRES\_ATIPICOS]}), la estabilidad en $10$ semillas (\texttt{[PENDIENTE: RES\_ESTABILIDAD\_SEMILLAS]}) y las curvas de aprendizaje y escalabilidad (\texttt{[PENDIENTE: RES\_APRENDIZAJE\_ESCALABILIDAD]}) verificarán la estabilidad numérica y la ventaja relativa de Huber bajo contaminación.
-    \item \textbf{Incertidumbre conforme e interpretabilidad:} la Tabla~\ref{tab:res_conformal} reportará la cobertura empírica global y por planta frente a los niveles nominales $80\%$ y $90\%$ (\texttt{[PENDIENTE: RES\_CONFORMAL\_80\_90]}), y la importancia global exacta junto con tres explicaciones aditivas locales resumirán el peso relativo de $\mathrm{cf}_{30}$, las anomalías térmicas/radiativas y las cotas activas (\texttt{[PENDIENTE: RES\_INTERPRETABILIDAD]}).
-\end{itemize}
+Los seis estudios diagnósticos post-OOF cuantificarán la contribución individual de cada decisión de diseño: la Tabla~\ref{tab:res_ablaciones} recogerá el estudio de ablación controlada (\texttt{[PENDIENTE: RES\_ABLACIONES\_6]}), complementado con los barridos 1D de sensibilidad (\texttt{[PENDIENTE: RES\_SENSIBILIDAD\_HP]}), las pruebas de estrés ante $0\%, 5\%, 10\%$ de atípicos (\texttt{[PENDIENTE: RES\_ESTRES\_ATIPICOS]}), la estabilidad en $10$ semillas (\texttt{[PENDIENTE: RES\_ESTABILIDAD\_SEMILLAS]}), las curvas de aprendizaje y escalabilidad (\texttt{[PENDIENTE: RES\_APRENDIZAJE\_ESCALABILIDAD]}), la calibración de intervalos conformes temporales al $80\%$ y $90\%$ en la Tabla~\ref{tab:res_conformal} (\texttt{[PENDIENTE: RES\_CONFORMAL\_80\_90]}), la descomposición aditiva exacta de predictores (\texttt{[PENDIENTE: RES\_INTERPRETABILIDAD]}) y el coste computacional y verificación entre máquinas (\texttt{[PENDIENTE: RES\_COSTE\_Y\_REPRO\_INDEPENDIENTE]}).
 
 \begin{table}[!htbp]
-\caption{Estudio de ablación controlada en seis variantes sobre el panel de desarrollo.}\label{tab:res_ablaciones}
+\caption{Estudio de ablación controlada en seis variantes estructurales.}\label{tab:res_ablaciones}
 \centering
 \input{tables/tab_res_ablaciones}
 \end{table}
@@ -59,5 +45,3 @@ Los estudios complementarios post-OOF cuantificarán la contribución individual
 \centering
 \input{tables/tab_res_conformal}
 \end{table}
-
-Finalmente, el coste computacional total (tiempo de ejecución por variante, memoria residente máxima RSS y comparación numérica entre máquinas mediante \texttt{compare-runs}) quedará consignado en \texttt{[PENDIENTE: RES\_COSTE\_Y\_REPRO\_INDEPENDIENTE]}.

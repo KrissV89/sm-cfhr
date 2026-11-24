@@ -54,30 +54,27 @@
 
 \affil*[1]{\orgdiv{Departamento de Matemáticas y Ciencia de Datos, Programa de Ciencia de Datos}, \orgname{Universidad del Norte}, \orgaddress{\city{Barranquilla}, \country{Colombia}}}
 
-\abstract{El pronóstico determinístico diario ($D+1$) y subestacional ($7$ a $28$ días) de generación fotovoltaica en flotas reales enfrenta heterogeneidad de escala cercana a cuarenta veces entre centrales, valores atípicos por desconexiones o restricciones operativas y degradación progresiva de los pronósticos numéricos del tiempo con el horizonte. Este trabajo formaliza, demuestra las propiedades matemáticas y establece el protocolo de evaluación definitiva del modelo \textit{Structured Monotone Capacity-Factor Huber Regressor} (SM-CFHR) sobre una cohorte auditada de $17$ centrales solares colombianas agrupadas en $7$ zonas espaciales (enero de 2024 a octubre de 2026; capacidades efectivas entre $9{,}8$ y $388{,}0$~MW). El estimador normaliza de manera causal la energía diaria y acumulada por la capacidad máxima nominal al origen ($24\,000\,C_{i,t}$), escala la respuesta mediante la mediana y la desviación absoluta mediana (MAD), y minimiza la pérdida robusta de Huber bajo una penalización $L_2$ diferenciada por familia de predictores ($\alpha_{\mathrm{lin}}$ para dinámica temporal y calendario; $\alpha_{\mathrm{meteo}}$ para variables meteorológicas) sujeta a restricciones de signo no negativo sobre la persistencia reciente y la irradiación pronosticada, resuelta mediante L-BFGS-B con gradiente analítico exacto. Se demuestran la convexidad global, la existencia de soluciones, las condiciones exactas de unicidad, las condiciones de Karush--Kuhn--Tucker, la acotación de influencia en la respuesta y las garantías de monotonía parcial tras la proyección física al intervalo $[0,1]$. El protocolo experimental compara dos presupuestos ---la configuración congelada \texttt{SM-CFHR-Fixed} ($B=0$) y su variante ajustada mediante optimización bayesiana TPE dentro de validación cruzada causal anidada \texttt{SM-CFHR-HPO} ($B=25$)--- frente a $22$ procedimientos de referencia en $28$ escenarios oficiales. Dado que la evaluación fuera de muestra definitiva se encuentra actualmente en ejecución independiente, los apartados empíricos preservan marcadores tipados para integrar los artefactos verificados sin introducir cifras simuladas ni reutilizar resultados de modelos previos.}
+\abstract{El pronóstico determinístico diario ($D+1$) y subestacional ($7$ a $28$ días) de generación fotovoltaica en flotas reales enfrenta heterogeneidad de escala cercana a cuarenta veces entre centrales, valores atípicos por desconexiones o episodios de bajo rendimiento y degradación progresiva de los pronósticos numéricos del tiempo con el horizonte. Este trabajo formaliza, analiza matemáticamente, verifica formalmente en Lean~4 y establece el protocolo experimental pre-registrado del modelo \textit{Structured Monotone Capacity-Factor Huber Regressor} (SM-CFHR) sobre una cohorte auditada de $17$ centrales solares colombianas agrupadas en $7$ zonas espaciales (enero de 2024 a octubre de 2026; capacidades efectivas entre $9{,}8$ y $388{,}0$~MW). El estimador normaliza de manera causal la energía diaria y acumulada por la capacidad máxima nominal vigente al origen ($24\,000\,C_{i,t}$), escala la respuesta mediante mediana y desviación absoluta mediana (MAD), y minimiza la pérdida robusta de Huber bajo una penalización $L_2$ diferenciada por familia de predictores ($\alpha_{\mathrm{lin}}$ para dinámica temporal y calendario; $\alpha_{\mathrm{meteo}}$ para variables meteorológicas) sujeta a restricciones de signo no negativo sobre la persistencia reciente y la irradiación pronosticada, resuelta mediante L-BFGS-B con gradiente analítico exacto. Se demuestran la convexidad global, la existencia de soluciones, las condiciones exactas de unicidad (incluyendo un contraejemplo de no unicidad del intercepto), las condiciones de Karush--Kuhn--Tucker, la acotación de influencia en la respuesta y las garantías de monotonía parcial tras la proyección física al intervalo $[0,1]$, respaldadas por una formalización compilada en Lean~4 (\texttt{v4.36.0}) con cero axiomas adicionales. El protocolo experimental compara la configuración congelada \texttt{SM-CFHR-Fixed} ($B=0$) y su variante ajustada mediante optimización bayesiana TPE en validación cruzada causal anidada con estado recursivo exacto \texttt{SM-CFHR-HPO} ($B=25$) frente a $22$ procedimientos de referencia en $28$ configuraciones derivadas del mismo panel de estudio. Dado que la evaluación fuera de muestra definitiva se encuentra en ejecución independiente, los apartados empíricos preservan una estructura pre-registrada de integración sin introducir resultados simulados.}
 
-\keywords{Pronóstico fotovoltaico, Factor de capacidad, Pérdida de Huber, Regularización estructurada, Restricciones de monotonía, Validación causal anidada}
+\keywords{Pronóstico fotovoltaico, Factor de capacidad, Pérdida de Huber, Regularización estructurada, Restricciones de monotonía, Verificación formal en Lean~4}
 
 \maketitle
 
 \input{sections/01_introduccion}
 \input{sections/02_fundamentos_estado_arte}
-\input{sections/03_formulacion_problema}
-\input{sections/04_modelo_sm_cfhr}
-\input{sections/05_propiedades_matematicas}
-\input{sections/06_datos_protocolo}
-\input{sections/07_inferencia_estudios}
+\input{sections/03_datos_eda}
+\input{sections/04_conjuntos_experimentales}
+\input{sections/05_modelo_sm_cfhr}
+\input{sections/06_propiedades_y_lean4}
+\input{sections/07_protocolo_inferencia}
 \input{sections/08_resultados}
 \input{sections/09_discusion}
-\input{sections/10_conclusiones}
-\input{sections/11_reproducibilidad}
+\input{sections/10_conclusiones_disponibilidad}
 
 \begin{appendices}
 \input{appendices/A_demostraciones}
 \input{appendices/B_escenarios_benchmarks}
-\input{appendices/C_correspondencia_codigo}
-\input{appendices/D_eda_complementario}
-\input{appendices/E_verificacion_lean4}
+\input{appendices/C_verificacion_lean4}
 \end{appendices}
 
 \bibliography{bibliography/bibliography}
