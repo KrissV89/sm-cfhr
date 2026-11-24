@@ -1,6 +1,6 @@
 \section{Propiedades matemáticas y verificación formal}\label{sec:propiedades}
 
-Esta sección analiza la estructura diferencial, convexa, de optimalidad y de robustez del problema \eqref{eq:objetivo_smcfhr}, junto con su verificación mecánica en Lean~4. Las demostraciones completas figuran en el Apéndice~\ref{ap:demos}, manteniendo aquí las derivaciones analíticas, los teoremas centrales y sus consecuencias prácticas.
+El programa de optimización \eqref{eq:objetivo_smcfhr} admite una caracterización analítica completa en términos de regularidad diferencial, convexidad, existencia y unicidad de soluciones, condiciones de optimalidad y cotas de sensibilidad (con demostraciones completas en el Apéndice~\ref{ap:demos}).
 
 \subsection{Estructura diferencial, gradiente analítico y optimización}
 
@@ -74,7 +74,7 @@ La Proposición~\ref{prop:influencia_mono} (demostrada en el Apéndice~\ref{ap:d
 \begin{enumerate}
     \item \textbf{Cota de gradiente en la respuesta frente a apalancamiento en predictores:} de acuerdo con la teoría clásica de funciones de influencia \cite{huber1964,hampel1986robust,huber2009robust}, como $|\psi_\delta(r_k)| \le \delta$, la contribución de cualquier observación $k$ al gradiente está acotada por $\delta/n$ en el intercepto y por $(\delta/n)\|\mathbf{z}_k\|_\infty$ en los coeficientes. Sin embargo, SM-CFHR \emph{no} posee una función de influencia globalmente acotada frente a puntos de apalancamiento arbitrariamente grandes $\|\mathbf{z}_k\|$, pues no aplica pesos de tipo Mallows o Schweppe sobre $Z$; su diseño asume predictores meteorológicos y autorregresivos acotados o imputados por mediana, concentrándose la protección robusta en anomalías de la energía observada.
     \item \textbf{Monotonía parcial y factibilidad física:} para todo índice restringido $j \in \mathcal{M}_+$ con $\tilde{s}_j > 0$, la predicción energética $\hat{y}_q$ es monótona no decreciente respecto a $x_{q,j}$ \textit{ceteris paribus} y permanece confinada a $[0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$. Esta garantía no implica monotonía conjunta cuando varias covariables correlacionadas varían simultáneamente (por ejemplo, si un incremento de radiación coincide con aumentos de temperatura de celda).
-    \item \textbf{Complejidad computacional:} cada evaluación de $J$ y $\nabla J$ tiene coste temporal $O(np)$ ($p \in \{7,17\}$) y memoria $O(np + mp)$ para almacenar $Z$ y los $m$ pares de curvatura de L-BFGS-B.
+    \item \textbf{Complejidad computacional:} cada evaluación individual del objetivo $J$ y de su gradiente $\nabla J$ requiere dos productos matriz-vector con $Z \in \mathbb{R}^{n \times p}$, con coste temporal $O(np)$ ($p \in \{7,17\}$). Para un ajuste completo mediante $K$ iteraciones de L-BFGS-B (con $m=10$ pares de curvatura recientes en memoria), el coste de entrenamiento es $O(np + Knp)$ en tiempo y $O(np + mp)$ en memoria, tras un preprocesamiento único $O(np)$. Bajo ajuste bayesiano anidado con $B=25$ ensayos TPE sobre $K_{\mathrm{cv}}=3$ particiones internas, el coste de búsqueda escala como $O(B \cdot K_{\mathrm{cv}} \cdot Knp)$, mientras que el despliegue recursivo de horizonte $H$ añade $O(Hp)$ operaciones por origen de pronóstico.
 \end{enumerate}
 
 \subsection{Verificación formal en Lean~4}\label{sec:lean4_resumen}

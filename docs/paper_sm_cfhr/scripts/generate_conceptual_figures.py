@@ -1,4 +1,11 @@
-"""Generate clean vector conceptual/mathematical figures for the SM-CFHR paper."""
+"""Generate clean vector conceptual/mathematical figures for the SM-CFHR paper.
+
+Graphical standard:
+- Vector PDF with embedded TrueType fonts (pdf.fonttype = 42, 0 Type 3 fonts).
+- Sans-serif typography at 12-13 pt reference scale.
+- All labels, units, titles, annotations, and legends in English.
+- Grayscale-distinguishable line styles, markers, and hatches.
+"""
 
 from __future__ import annotations
 
@@ -11,83 +18,87 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 import numpy as np
 
 plt.rcParams.update({
-    "font.family": "serif",
-    "font.size": 9.5,
-    "axes.titlesize": 10.5,
-    "axes.labelsize": 9.5,
-    "xtick.labelsize": 8.5,
-    "ytick.labelsize": 8.5,
-    "legend.fontsize": 8.5,
+    "font.family": "sans-serif",
+    "font.sans-serif": ["DejaVu Sans", "Arial", "Helvetica"],
+    "font.size": 12.0,
+    "axes.titlesize": 13.0,
+    "axes.labelsize": 12.0,
+    "xtick.labelsize": 11.0,
+    "ytick.labelsize": 11.0,
+    "legend.fontsize": 10.5,
     "figure.dpi": 300,
     "pdf.fonttype": 42,
+    "ps.fonttype": 42,
+    "axes.spines.top": False,
+    "axes.spines.right": False,
 })
 
 OUT_DIR = Path(__file__).resolve().parents[1] / "figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _box(ax, x, y, w, h, text, fc="#F5F7FA", ec="#2B4C7E", lw=1.2, fs=8.5, bold=False):
+def _box(ax, x, y, w, h, text, fc="#F5F7FA", ec="#2B4C7E", lw=1.3, fs=11.0, bold=False, ls="-"):
     patch = FancyBboxPatch(
         (x, y), w, h,
-        boxstyle="round,pad=0.02,rounding_size=0.04",
-        facecolor=fc, edgecolor=ec, linewidth=lw,
+        boxstyle="round,pad=0.04,rounding_size=0.08",
+        facecolor=fc, edgecolor=ec, linewidth=lw, linestyle=ls,
     )
     ax.add_patch(patch)
     weight = "bold" if bold else "normal"
     ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, fontweight=weight, color="#1A202C")
 
 
-def _arrow(ax, x1, y1, x2, y2, color="#2D3748", lw=1.2, style="-|>"):
-    arr = FancyArrowPatch((x1, y1), (x2, y2), arrowstyle=style, mutation_scale=11, color=color, linewidth=lw)
+def _arrow(ax, x1, y1, x2, y2, color="#2D3748", lw=1.4, style="-|>"):
+    arr = FancyArrowPatch((x1, y1), (x2, y2), arrowstyle=style, mutation_scale=13, color=color, linewidth=lw)
     ax.add_patch(arr)
 
 
 def make_fig_arquitectura() -> None:
-    fig, ax = plt.subplots(figsize=(10.5, 4.4))
-    ax.set_xlim(0, 10.5)
-    ax.set_ylim(0, 4.4)
+    fig, ax = plt.subplots(figsize=(13.0, 5.6))
+    ax.set_xlim(0, 13.0)
+    ax.set_ylim(0, 5.6)
     ax.axis("off")
 
-    _box(ax, 0.2, 2.7, 2.1, 1.2,
-         "1. Magnitudes físicas\ny origen $t$\n$y_{i,s}$ (kWh/día), $C_{i,t}$ (MW)\n$E^{\\max}_{i,t} = 24000\\,C_{i,t}$",
-         fc="#EDF2F7", ec="#2B4C7E", bold=False)
+    _box(ax, 0.25, 3.25, 2.75, 1.6,
+         "1. Physical inputs at origin t\n$y_{i,s}$ (kWh/day), $C_{i,t}$ (MW)\n$E^{\\max}_{i,t} = 24000\\,C_{i,t}$",
+         fc="#EDF2F7", ec="#2B4C7E", fs=11.0)
 
-    _box(ax, 2.7, 2.7, 2.3, 1.2,
-         "2. Espacio adimensional\n$\\mathrm{cf}_{i,s} \\in [0,1]$\nCalendario (4) + $\\mathrm{cf}_{30}$\n+ $\\Delta_{7,30},\\Delta_{1,7}$ (amort.)\n+ NWP (5) + Anom. (5)",
-         fc="#EBF8FF", ec="#2B6CB0")
+    _box(ax, 3.45, 3.25, 2.95, 1.6,
+         "2. Dimensionless CF space\nCalendar (4) + $\\mathrm{cf}_{30}$\n$+\\,\\gamma_h\\Delta_{7,30},\\,\\gamma_h\\Delta_{1,7}$\n+ NWP (5) + Anomalies (5)",
+         fc="#EBF8FF", ec="#2B6CB0", fs=11.0)
 
-    _box(ax, 5.4, 2.7, 2.3, 1.2,
-         "3. Preprocesamiento\n(solo entrenamiento)\nMediana $\\mu_{\\mathrm{train}}$\n$Z = (X - \\bar{X}) / s_X$\n$\\tilde{y} = (y_{\\mathrm{cf}} - m_y) / \\sigma_{\\mathrm{MAD}}$",
-         fc="#E6FFFA", ec="#2C7A7B")
+    _box(ax, 6.85, 3.25, 2.85, 1.6,
+         "3. Fold preprocessing\nMedian imputation $\\mu_{\\mathrm{train}}$\n$Z = (X - \\bar{X}) / \\tilde{s}$\n$\\tilde{y} = (y_{\\mathrm{cf}} - m_y) / \\sigma_{\\mathrm{MAD}}$",
+         fc="#E6FFFA", ec="#2C7A7B", fs=11.0)
 
-    _box(ax, 8.1, 2.7, 2.2, 1.2,
-         "4. Optimización convexa\nL-BFGS-B ($O(np)$)\nPérdida Huber $\\rho_\\delta$\n$L_2$ diag. $(\\alpha_{\\mathrm{lin}}, \\alpha_{\\mathrm{meteo}})$\nCotas $w_j \\geq 0\\;(j\\in\\mathcal{M}_+)$",
-         fc="#FFF5F5", ec="#9B2C2C")
+    _box(ax, 10.15, 3.25, 2.6, 1.6,
+         "4. Convex optimization\nL-BFGS-B ($O(np)$/eval)\nHuber $\\rho_\\delta$ + diag. $L_2$\n$w_j \\geq 0\\;(j \\in \\mathcal{M}_+)$",
+         fc="#FFF5F5", ec="#9B2C2C", fs=11.0)
 
-    _box(ax, 1.6, 0.5, 3.3, 1.25,
-         "5. Reconstrucción y clipping físico\n$\\hat{y}_{\\mathrm{cf}} = \\mathrm{clip}(m_y + \\sigma_{\\mathrm{MAD}}(\\hat{b} + \\mathbf{z}^\\top \\hat{\\mathbf{w}}),\\, 0,\\, 1)$\n$\\hat{Y} = \\hat{y}_{\\mathrm{cf}} \\cdot 24000\\,C_{i,t} \\cdot H_{\\mathrm{dir}}$ (kWh)",
-         fc="#FEFCBF", ec="#975A16")
+    _box(ax, 1.5, 0.55, 4.7, 1.65,
+         "5. Physical reconstruction and clipping\n$\\widehat{\\mathrm{cf}}_q = \\mathrm{clip}(m_y + \\sigma_{\\mathrm{MAD}}(\\hat{b} + \\mathbf{z}_q^\\top \\hat{\\mathbf{w}}),\\, 0,\\, 1)$\n$\\hat{y}_q = \\widehat{\\mathrm{cf}}_q \\cdot 24000\\,C_{i,t} \\cdot H_{\\mathrm{dir}}$ (kWh)",
+         fc="#FEFCBF", ec="#975A16", fs=11.0)
 
-    _box(ax, 5.5, 0.5, 3.6, 1.25,
-         "6. Modos de evaluación congelados\n• SM-CFHR-Fixed ($B=0$): $\\delta=1.35, \\alpha_{\\mathrm{lin}}=0.01, \\alpha_{\\mathrm{meteo}}=0.10$\n• SM-CFHR-HPO ($B=25$): TPE en CV causal anidada\n• Despliegue $D+1$, Directo ($H_{\\mathrm{dir}}=H$) y Recursivo",
-         fc="#F0FFF4", ec="#276749")
+    _box(ax, 6.9, 0.55, 4.8, 1.65,
+         "6. Evaluation configurations\nFixed ($B=0$): $\\delta=1.35,\\,\\alpha_{\\mathrm{lin}}=0.01,\\,\\alpha_{\\mathrm{meteo}}=0.10$\nHPO ($B=25$): Optuna TPE in nested causal CV\nModes: $D+1$, Direct ($H_{\\mathrm{dir}}=H$), Recursive",
+         fc="#F0FFF4", ec="#276749", fs=11.0)
 
-    _arrow(ax, 2.3, 3.3, 2.7, 3.3)
-    _arrow(ax, 5.0, 3.3, 5.4, 3.3)
-    _arrow(ax, 7.7, 3.3, 8.1, 3.3)
-    _arrow(ax, 9.2, 2.7, 9.2, 2.15)
-    _arrow(ax, 9.2, 2.15, 3.25, 2.15)
-    _arrow(ax, 3.25, 2.15, 3.25, 1.75)
-    _arrow(ax, 4.9, 1.12, 5.5, 1.12)
+    _arrow(ax, 3.0, 4.05, 3.45, 4.05)
+    _arrow(ax, 6.4, 4.05, 6.85, 4.05)
+    _arrow(ax, 9.7, 4.05, 10.15, 4.05)
+    _arrow(ax, 11.45, 3.25, 11.45, 2.6)
+    _arrow(ax, 11.45, 2.6, 3.85, 2.6)
+    _arrow(ax, 3.85, 2.6, 3.85, 2.2)
+    _arrow(ax, 6.2, 1.37, 6.9, 1.37)
 
-    ax.set_title("Arquitectura matemática y flujo de estimación de SM-CFHR", pad=8, fontweight="bold")
+    ax.set_title("Mathematical Architecture and Estimation Pipeline of SM-CFHR", pad=10, fontweight="bold")
     fig.tight_layout()
     fig.savefig(OUT_DIR / "fig_sm_cfhr_arquitectura.pdf", bbox_inches="tight")
     plt.close(fig)
 
 
 def make_fig_huber_estructura() -> None:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.2, 4.0))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.2, 4.8))
 
     r = np.linspace(-3.5, 3.5, 500)
     delta = 1.35
@@ -95,39 +106,39 @@ def make_fig_huber_estructura() -> None:
     quad = 0.5 * r**2
     psi = np.where(np.abs(r) <= delta, r, delta * np.sign(r))
 
-    ax1.plot(r, quad, "--", color="#718096", lw=1.4, label=r"Cuadrática $\frac{1}{2}r^2$")
-    ax1.plot(r, huber, "-", color="#2B6CB0", lw=2.0, label=r"Huber $\rho_\delta(r)$ ($\delta=1.35$)")
-    ax1.plot(r, psi, "-.", color="#C53030", lw=1.7, label=r"Influencia $\psi_\delta(r)$")
-    ax1.axvline(-delta, color="#A0AEC0", ls=":", lw=1.0)
-    ax1.axvline(delta, color="#A0AEC0", ls=":", lw=1.0)
-    ax1.text(delta + 0.08, 4.6, r"$+\delta$", fontsize=8.5, color="#4A5568")
-    ax1.text(-delta - 0.35, 4.6, r"$-\delta$", fontsize=8.5, color="#4A5568")
-    ax1.set_ylim(-1.8, 5.2)
-    ax1.set_xlabel(r"Residuo estandarizado $r$")
-    ax1.set_ylabel("Valor / Gradiente")
-    ax1.set_title("(a) Pérdida de Huber y función de influencia")
+    ax1.plot(r, quad, "--", color="#4A5568", lw=2.0, label=r"Quadratic $\frac{1}{2}r^2$")
+    ax1.plot(r, huber, "-", color="#1A365D", lw=2.4, label=r"Huber $\rho_\delta(r)$ ($\delta=1.35$)")
+    ax1.plot(r, psi, "-.", color="#9B2C2C", lw=2.0, label=r"Derivative $\psi_\delta(r)$")
+    ax1.axvline(-delta, color="#718096", ls=":", lw=1.2)
+    ax1.axvline(delta, color="#718096", ls=":", lw=1.2)
+    ax1.text(delta + 0.1, 4.6, r"$+\delta$", fontsize=11.5, color="#2D3748")
+    ax1.text(-delta - 0.48, 4.6, r"$-\delta$", fontsize=11.5, color="#2D3748")
+    ax1.set_ylim(-1.8, 5.4)
+    ax1.set_xlabel(r"Standardized residual $r$")
+    ax1.set_ylabel("Loss / Gradient value")
+    ax1.set_title("(a) Huber loss and bounded derivative")
     ax1.legend(frameon=True, loc="upper center")
     ax1.grid(alpha=0.25)
 
     w_cf = np.linspace(-0.4, 1.2, 200)
     w_rad = np.linspace(-0.4, 1.2, 200)
     W_CF, W_RAD = np.meshgrid(w_cf, w_rad)
-    # Anisotropic L2 contours around an unconstrained minimum
     Z_obj = 0.5 * (0.01 * (W_CF - 0.65)**2 + 0.10 * (W_RAD + 0.12)**2) + 0.002 * (W_CF - 0.65) * (W_RAD + 0.12)
 
-    ax2.axvspan(0, 1.2, ymin=0.25, ymax=1.0, color="#EBF8FF", alpha=0.65, label=r"Región factible $\mathcal{C}$ ($w_{\mathrm{cf30}}\geq 0,\, w_{\mathrm{rad}}\geq 0$)")
-    cs = ax2.contour(W_CF, W_RAD, Z_obj, levels=10, colors="#2C5282", linewidths=1.0)
-    ax2.clabel(cs, inline=True, fontsize=7, fmt="%.3f")
-    ax2.axhline(0, color="#9B2C2C", lw=1.5)
-    ax2.axvline(0, color="#9B2C2C", lw=1.5)
-    ax2.plot(0.65, -0.12, "o", color="#718096", ms=6, label="Óptimo sin restricción")
-    ax2.plot(0.65, 0.0, "s", color="#C53030", ms=7, label="Óptimo KKT factible (cota activa)")
+    ax2.axvspan(0, 1.2, ymin=0.27, ymax=1.0, color="#EBF8FF", alpha=0.7,
+                label=r"Feasible set $\mathcal{C}$ ($w_{\mathrm{cf30}}\geq 0,\, w_{\mathrm{rad}}\geq 0$)")
+    cs = ax2.contour(W_CF, W_RAD, Z_obj, levels=9, colors="#2C5282", linewidths=1.1, linestyles="-")
+    ax2.clabel(cs, inline=True, fontsize=9.5, fmt="%.3f")
+    ax2.axhline(0, color="#9B2C2C", lw=1.8, ls="-")
+    ax2.axvline(0, color="#9B2C2C", lw=1.8, ls="-")
+    ax2.plot(0.65, -0.12, "o", color="#4A5568", ms=8, label="Unconstrained optimum")
+    ax2.plot(0.65, 0.0, "s", color="#9B2C2C", ms=8, label="Constrained KKT optimum")
     ax2.set_xlim(-0.35, 1.15)
     ax2.set_ylim(-0.35, 0.95)
     ax2.set_xlabel(r"$w_{\mathrm{cf30}}$ ($\alpha_{\mathrm{lin}} = 0.01$)")
-    ax2.set_ylabel(r"$w_{\mathrm{rad\_pron}}$ ($\alpha_{\mathrm{meteo}} = 0.10$)")
-    ax2.set_title(r"(b) Penalización $L_2$ anisotrópica y cota activa")
-    ax2.legend(frameon=True, loc="upper right", fontsize=7.5)
+    ax2.set_ylabel(r"$w_{\mathrm{rad}}$ ($\alpha_{\mathrm{meteo}} = 0.10$)")
+    ax2.set_title(r"(b) Anisotropic $L_2$ contours and active bound")
+    ax2.legend(frameon=True, loc="upper right", fontsize=9.8)
     ax2.grid(alpha=0.25)
 
     fig.tight_layout()
@@ -136,110 +147,108 @@ def make_fig_huber_estructura() -> None:
 
 
 def make_fig_validacion_anidada() -> None:
-    fig, ax = plt.subplots(figsize=(10.2, 4.2))
-    ax.set_xlim(0, 10.2)
-    ax.set_ylim(0, 4.2)
+    fig, ax = plt.subplots(figsize=(12.4, 5.2))
+    ax.set_xlim(0, 12.4)
+    ax.set_ylim(0, 5.2)
     ax.axis("off")
 
-    # Timeline bar
-    ax.text(0.3, 3.65, "Esquema externo (Outer CV): separación temporal causal + Leave-One-Group-Out en ET ($G=7$ zonas)",
-            fontsize=9.5, fontweight="bold", color="#1A202C")
+    ax.text(0.3, 4.55, "Outer cross-validation: causal temporal split + leave-one-group-out in ST (G = 7 spatial zones)",
+            fontsize=12.0, fontweight="bold", color="#1A202C")
 
-    _box(ax, 0.3, 2.75, 4.4, 0.65, "Entrenamiento externo $\\mathcal{D}_{\\mathrm{train}}$\n$t \\leq t_{\\mathrm{origen}}$ (y $g(j) \\neq g(i)$ en ET)", fc="#EBF8FF", ec="#2B6CB0")
-    _box(ax, 4.85, 2.75, 1.3, 0.65, "Embargo causal\n(30 días / $t_{\\mathrm{end}} \\leq t_0$)", fc="#FEFCBF", ec="#B7791F")
-    _box(ax, 6.3, 2.75, 3.6, 0.65, "Evaluación externa OOF (intocable por HPO)\n• $D+1$: bloques $D_1, D_2, D_3$\n• Multihorizonte: orígenes contiguos ($H\\in\\{7,14,21,28\\}$)", fc="#F0FFF4", ec="#276749")
+    _box(ax, 0.3, 3.4, 5.2, 0.85, "Outer training set $\\mathcal{D}_{\\mathrm{train}}$\n$t \\leq t_{\\mathrm{origin}}$ (and $g(j) \\neq g(i)$ in ST)", fc="#EBF8FF", ec="#2B6CB0", fs=11.0)
+    _box(ax, 5.7, 3.4, 1.7, 0.85, "Causal embargo\n(30 d / $t_{\\mathrm{end}} \\leq t_0$)", fc="#FEFCBF", ec="#B7791F", fs=10.5, ls="--")
+    _box(ax, 7.6, 3.4, 4.5, 0.85, "Outer OOF evaluation (unseen by HPO)\nD+1 blocks | Contiguous origins (7-28 d)", fc="#F0FFF4", ec="#276749", fs=10.8)
 
-    # Inner CV block
-    ax.text(0.3, 2.05, "Validación interna anidada (solo para SM-CFHR-HPO, 25 trials TPE dentro de $\\mathcal{D}_{\\mathrm{train}}$):",
-            fontsize=9.0, fontweight="bold", color="#2D3748")
+    ax.text(0.3, 2.65, "Inner nested validation (SM-CFHR-HPO only: 25 TPE trials inside $\\mathcal{D}_{\\mathrm{train}}$):",
+            fontsize=11.5, fontweight="bold", color="#2D3748")
 
-    for k, (y0, lbl) in enumerate([(1.35, "Pliegue interno 1"), (0.75, "Pliegue interno 2"), (0.15, "Pliegue interno 3")]):
-        w_tr = 2.6 + 0.55 * (2 - k)
-        _box(ax, 0.3, y0, w_tr, 0.45, f"{lbl}: Train interno (y $g \\neq g_k$ en ET)", fc="#EDF2F7", ec="#4A5568", fs=8.0)
-        _box(ax, 0.35 + w_tr, y0, 0.85, 0.45, "Gap $\\geq 30$d", fc="#FEFCBF", ec="#B7791F", fs=7.5)
-        _box(ax, 1.25 + w_tr, y0, 1.5, 0.45, "Val. interna (rollout)", fc="#FFF5F5", ec="#9B2C2C", fs=8.0)
+    for k, (y0, lbl) in enumerate([(1.75, "Inner fold 1"), (0.98, "Inner fold 2"), (0.2, "Inner fold 3")]):
+        w_tr = 3.0 + 0.65 * (2 - k)
+        _box(ax, 0.3, y0, w_tr, 0.58, f"{lbl}: Inner train (g != g_k in ST)", fc="#EDF2F7", ec="#4A5568", fs=10.0)
+        _box(ax, 0.4 + w_tr, y0, 1.1, 0.58, "Gap >= 30d", fc="#FEFCBF", ec="#B7791F", fs=9.5, ls="--")
+        _box(ax, 1.6 + w_tr, y0, 1.9, 0.58, "Inner val (exact)", fc="#FFF5F5", ec="#9B2C2C", fs=10.0)
 
-    _box(ax, 6.5, 0.35, 3.4, 1.35,
-         "Presupuesto y equidad\n• SM-CFHR-Fixed: $B = 0$ (sin CV interna)\n• SM-CFHR-HPO: $B = 25$ (Optuna TPE)\n• Benchmarks: rejilla de $4$ configs.\n• Imputación y MAD reajustados por pliegue",
-         fc="#FAF5FF", ec="#553C9A", fs=8.0)
+    _box(ax, 8.0, 0.3, 4.1, 1.95,
+         "Search budgets and fairness\nFixed: B = 0 (no inner CV)\nHPO: B = 25 (Optuna TPE)\nReferences: 4-config grid\nImputation & MAD refit per fold",
+         fc="#FAF5FF", ec="#553C9A", fs=10.5)
 
-    _arrow(ax, 5.9, 1.55, 6.5, 1.02)
-    ax.set_title("Protocolo de validación cruzada causal anidada (sin fuga temporal ni espacial)", pad=6, fontweight="bold")
+    _arrow(ax, 7.2, 2.04, 8.0, 1.28)
+    ax.set_title("Nested Causal Cross-Validation Protocol (Zero Temporal or Spatial Leakage)", pad=8, fontweight="bold")
     fig.tight_layout()
     fig.savefig(OUT_DIR / "fig_validacion_anidada.pdf", bbox_inches="tight")
     plt.close(fig)
 
 
 def make_fig_despliegue_multihorizonte() -> None:
-    fig, ax = plt.subplots(figsize=(10.2, 4.3))
-    ax.set_xlim(0, 10.2)
-    ax.set_ylim(0, 4.3)
+    fig, ax = plt.subplots(figsize=(12.4, 5.2))
+    ax.set_xlim(0, 12.4)
+    ax.set_ylim(0, 5.2)
     ax.axis("off")
 
-    _box(ax, 0.25, 2.8, 9.7, 1.05,
-         "A. Esquema Directo ($H \\in \\{7, 14, 21, 28\\}$ días, sin meteorología)\n"
-         "Entrenamiento con $t_{\\mathrm{end}} = t_{\\mathrm{origen}} + H \\leq t_0$; objetivo escalado $Y_{i,t}^{(H)} / (H \\cdot 24000\\,C_{i,t}) \\in [0,1]$.\n"
-         "Predicción en un solo paso ($h=1$, $H_{\\mathrm{dir}}=H$) $\\longrightarrow \\hat{Y}_{i,t}^{(H)}$ en kWh totales (o MWh) sin realimentación.",
-         fc="#EBF8FF", ec="#2B6CB0", fs=8.5)
+    _box(ax, 0.25, 3.45, 11.9, 1.25,
+         "A. Direct Cumulative Scheme ($H \\in \\{7, 14, 21, 28\\}$ days, without meteorology)\n"
+         "Trained on complete windows ($t_{\\mathrm{end}} = t_{\\mathrm{origin}} + H \\leq t_0$); scaled target $Y_{i,t}^{(H)} / (24000\\,H\\,C_{i,t}) \\in [0,1]$.\n"
+         "Single-step forecast ($H_{\\mathrm{dir}}=H$) $\\longrightarrow \\hat{Y}_{i,t}^{(H)}$ in total kWh without feedback.",
+         fc="#EBF8FF", ec="#2B6CB0", fs=11.0)
 
-    _box(ax, 0.25, 0.35, 9.7, 2.1, "", fc="#F7FAFC", ec="#276749", lw=1.3)
-    ax.text(5.1, 2.22, "B. Esquema Recursivo ($H \\in \\{7, 14, 21, 28\\}$ días, sin clima o con GEFSv12)",
-            ha="center", va="center", fontsize=9.2, fontweight="bold", color="#22543D")
+    _box(ax, 0.25, 0.35, 11.9, 2.7, "", fc="#F7FAFC", ec="#276749", lw=1.4)
+    ax.text(6.2, 2.75, "B. Causal Recursive Scheme ($H \\in \\{7, 14, 21, 28\\}$ days, with or without GEFSv12)",
+            ha="center", va="center", fontsize=11.8, fontweight="bold", color="#22543D")
 
-    _box(ax, 0.45, 0.65, 2.1, 1.25,
-         "Estado al origen $t_0$\n$C_{i,t_0}$ fija\nVentanas $y_s$ ($s \\leq t_0$)\nBase NWP 30d ($\\leq t_0$)",
-         fc="#EDF2F7", ec="#4A5568", fs=8.0)
+    _box(ax, 0.5, 0.75, 2.55, 1.65,
+         "State at origin $t_0$\nFixed $C_{i,t_0}$\n30d buffer $y_s$ ($s \\leq t_0$)\n30d NWP mean ($\\leq t_0$)",
+         fc="#EDF2F7", ec="#4A5568", fs=10.2)
 
-    _box(ax, 2.9, 0.65, 2.3, 1.25,
-         "Paso $h \\in \\{1,\\dots,H\\}$\nAmortiguamiento $0.85^{h-1}$\nsobre $\\Delta_{7,30}, \\Delta_{1,7}$\n+ Pronóstico GEFSv12($t_0+h$)",
-         fc="#E6FFFA", ec="#2C7A7B", fs=8.0)
+    _box(ax, 3.45, 0.75, 2.85, 1.65,
+         "Step $h \\in \\{1,\\dots,H\\}$\nDamping $\\gamma_h = 0.85^{h-1}$\nfor $\\Delta_{7,30},\\,\\Delta_{1,7}$\n+ GEFSv12($t_0+h$)",
+         fc="#E6FFFA", ec="#2C7A7B", fs=10.2)
 
-    _box(ax, 5.55, 0.65, 2.0, 1.25,
-         "Estimador SM-CFHR\n$\\hat{\\mathrm{cf}}_{i,t_0+h\\mid t_0} \\in [0,1]$\n$\\hat{y}_{i,t_0+h\\mid t_0}$ (kWh/día)",
-         fc="#FFF5F5", ec="#9B2C2C", fs=8.0)
+    _box(ax, 6.7, 0.75, 2.45, 1.65,
+         "SM-CFHR Predictor\n$\\widehat{\\mathrm{cf}}_{i,t_0+h\\mid t_0} \\in [0,1]$\n$\\hat{y}_{i,t_0+h\\mid t_0}$ (kWh/d)",
+         fc="#FFF5F5", ec="#9B2C2C", fs=10.2)
 
-    _box(ax, 7.9, 0.65, 1.85, 1.25,
-         "Actualización causal\nSolo usa $\\hat{y}_{i,t_0+h\\mid t_0}$\n(nunca $y$ real futuro)\npara paso $h+1$",
-         fc="#FEFCBF", ec="#975A16", fs=8.0)
+    _box(ax, 9.55, 0.75, 2.35, 1.65,
+         "Causal Buffer Update\nAppend $\\hat{y}_{i,t_0+h\\mid t_0}$\n(never future $y$)\nfor step $h+1$",
+         fc="#FEFCBF", ec="#975A16", fs=10.2)
 
-    _arrow(ax, 2.55, 1.27, 2.9, 1.27)
-    _arrow(ax, 5.2, 1.27, 5.55, 1.27)
-    _arrow(ax, 7.55, 1.27, 7.9, 1.27)
-    _arrow(ax, 8.82, 0.65, 8.82, 0.45)
-    _arrow(ax, 8.82, 0.45, 4.05, 0.45)
-    _arrow(ax, 4.05, 0.45, 4.05, 0.65)
+    _arrow(ax, 3.05, 1.57, 3.45, 1.57)
+    _arrow(ax, 6.3, 1.57, 6.7, 1.57)
+    _arrow(ax, 9.15, 1.57, 9.55, 1.57)
+    _arrow(ax, 10.72, 0.75, 10.72, 0.48)
+    _arrow(ax, 10.72, 0.48, 4.87, 0.48)
+    _arrow(ax, 4.87, 0.48, 4.87, 0.75)
 
-    ax.set_title("Despliegue multihorizonte: formulación directa acumulada frente a realimentación recursiva causal", pad=6, fontweight="bold")
+    ax.set_title("Multi-Horizon Deployment: Direct Cumulative vs. Causal Recursive Feedback", pad=8, fontweight="bold")
     fig.tight_layout()
     fig.savefig(OUT_DIR / "fig_despliegue_multihorizonte.pdf", bbox_inches="tight")
     plt.close(fig)
 
 
 def make_fig_pipeline_reproduccion() -> None:
-    fig, ax = plt.subplots(figsize=(10.2, 3.6))
-    ax.set_xlim(0, 10.2)
-    ax.set_ylim(0, 3.6)
+    fig, ax = plt.subplots(figsize=(12.2, 4.2))
+    ax.set_xlim(0, 12.2)
+    ax.set_ylim(0, 4.2)
     ax.axis("off")
 
-    _box(ax, 0.25, 1.85, 2.1, 1.15,
-         "1. Datos y manifiesto\n`import_local_data.py`\nVerificación SHA-256\n(`doctor`)", fc="#EDF2F7", ec="#2B4C7E", fs=8.0)
-    _box(ax, 2.75, 1.85, 2.2, 1.15,
-         "2. OOF resumible\nFragmentos Parquet\nOptuna SQLite (`RDB`)\nGuardia de memoria RSS", fc="#EBF8FF", ec="#2B6CB0", fs=8.0)
-    _box(ax, 5.35, 1.85, 2.2, 1.15,
-         "3. Post-OOF (8 etapas)\nInferencia (DM, MCS, SPA)\nAblaciones y Conformal\nVeredicto R3 estricto", fc="#F0FFF4", ec="#276749", fs=8.0)
-    _box(ax, 7.95, 1.85, 2.0, 1.15,
-         "4. Reproducibilidad\n`repro-bundle`\n`compare-runs`\nIntegración al paper", fc="#FAF5FF", ec="#553C9A", fs=8.0)
+    _box(ax, 0.3, 2.05, 2.55, 1.45,
+         "1. Data & Integrity\nSHA-256 verification\nPanel & 28 scenarios\n22 reference baselines", fc="#EDF2F7", ec="#2B4C7E", fs=10.5)
+    _box(ax, 3.3, 2.05, 2.65, 1.45,
+         "2. Causal OOF Engine\nFixed (B = 0) & HPO (B = 25)\nExact recursive rollout\nCheckpointed execution", fc="#EBF8FF", ec="#2B6CB0", fs=10.5)
+    _box(ax, 6.4, 2.05, 2.65, 1.45,
+         "3. Statistical Inference\nDM-HLN-HAC, MCS, SPA\nHolm / BH multiplicity\nAblations & Conformal", fc="#F0FFF4", ec="#276749", fs=10.5)
+    _box(ax, 9.5, 2.05, 2.4, 1.45,
+         "4. Reproducibility\nIndependent machine\ncross-check (Fixed/HPO)\nPaper artifact sync", fc="#FAF5FF", ec="#553C9A", fs=10.5)
 
-    _box(ax, 1.4, 0.3, 7.4, 0.9,
-         "Invariantes de trazabilidad: tag congelado `v1.0.2` (commit `615a5af`)  |  Escritura atómica (`fsync` + `os.replace`)\n"
-         "Prohibición de datos sintéticos en modo confirmatorio  |  Alineación estricta sin descartes silenciosos",
-         fc="#FEFCBF", ec="#975A16", fs=8.2)
+    _box(ax, 1.2, 0.35, 9.8, 1.1,
+         "Traceability invariants: Frozen core math (SHA-256 verified) | Formal Lean 4 proofs (v4.36.0)\n"
+         "Strict key alignment without silent row drops | Zero synthetic fallbacks in confirmatory mode",
+         fc="#FEFCBF", ec="#975A16", fs=10.8)
 
-    _arrow(ax, 2.35, 2.42, 2.75, 2.42)
-    _arrow(ax, 4.95, 2.42, 5.35, 2.42)
-    _arrow(ax, 7.55, 2.42, 7.95, 2.42)
+    _arrow(ax, 2.85, 2.77, 3.3, 2.77)
+    _arrow(ax, 5.95, 2.77, 6.4, 2.77)
+    _arrow(ax, 9.05, 2.77, 9.5, 2.77)
 
-    ax.set_title("Arquitectura de ejecución resumible, verificación de integridad y reproducción independiente", pad=6, fontweight="bold")
+    ax.set_title("Reproducible Evaluation Pipeline and Integrity Verification Architecture", pad=8, fontweight="bold")
     fig.tight_layout()
     fig.savefig(OUT_DIR / "fig_pipeline_reproduccion.pdf", bbox_inches="tight")
     plt.close(fig)
