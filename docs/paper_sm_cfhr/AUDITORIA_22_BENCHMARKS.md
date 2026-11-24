@@ -1,0 +1,29 @@
+# Auditoría de los 22 Modelos de Referencia (Benchmarks) — SM-CFHR
+
+**Fuente de verificación:** `InvML/scripts/evaluacion/produccion_multihorizonte.py` (líneas 328–474), `evaluar_d1.py` y `iwlar_produccion.py`.
+
+## 1. Resumen por familia
+- **9 estimadores estándar de biblioteca (`scikit-learn` y `xgboost`):** entrenados directamente sobre energía bruta $y$ ($\text{kWh/día}$), sin transformación residual respecto a $\bar{y}^{(30)}$.
+- **12 adaptaciones personalizadas del proyecto:** todas modelan el **residuo estandarizado** $r_{\mathrm{std}} = ((y - \text{nivel}) - \bar{r}) / s_r$ sobre predictores estandarizados con mediana-imputada y `StandardScaler`, reconstruyendo $\hat{y} = \text{nivel} + \bar{r} + s_r \hat{r}_{\mathrm{std}}$.
+- **1 referencia causal ingenua:** `Media móvil de 30 días` (`MM30`).
+
+## 2. Auditoría detallada de los 12 modelos personalizados
+
+| Sigla | Arquitectura estadística real en código | Fuente(s) primaria(s) | Qué toma de la literatura vs. modificación propia | Corrección bibliográfica aplicada | Papel comparativo frente a SM-CFHR |
+|---|---|---|---|---|---|
+| **RLAC** | `Ridge(alpha)` sobre residuo estandarizado $y - \bar{y}^{(30)}$ | Hoerl & Kennard (1970) | Penalización $L_2$ estándar aplicada al residuo sobre media móvil 30d en kWh | Citado explícitamente con `hoerl1970` | Contrasta Ridge residual en kWh frente a Huber + FC + restricciones |
+| **IWLAR** | Regresión local ponderada con kernel exponencial por distancia + indicador de planta/grupo + `Ridge` interno | Cleveland (1979); Atkeson et al. (1997) | Ponderación local tipo LOESS/LWL modificada con distancia espacial/de grupo discreta | Mantener `cleveland1979robust,atkeson1997locally` aclarando adaptación propia | Evalúa si la ponderación local por planta supera a un modelo global paramétrico en IP |
+| **WCFC** | Combinación convexa fija $(1-w)\hat{y}_{\mathrm{Ridge}} + w\hat{y}_{\mathrm{Huber}}$ sobre residuo | Bates & Granger (1969); Huber (1964); Hoerl & Kennard (1970) | **No usa Elastic Net** (solo mezcla lineal Ridge + Huber) | **Eliminada** `nikodinoska2022elastic`; reemplazada por `bates1969combination,huber1964,hoerl1970` | Contrasta mezcla lineal $L_2$/Huber en residuo frente a pérdida Huber + $L_2$ unificada |
+| **ABGPR** | `GaussianProcessRegressor` con núcleo `Constant*RBF(length) + WhiteKernel(0.2)` sin optimización (`optimizer=None`) sobre subconjunto reciente estratificado | Rasmussen & Williams (2006) | GP clásico adaptado con submuestreo estratificado reciente para escalabilidad | Mantener `rasmussen2006gpml` aclarando adaptación | Evalúa modelo bayesiano no paramétrico con núcleo suave |
+| **HARC** | Sistema lineal cerrado $(A^\top A + \text{diag}(\text{penalty}))\beta = A^\top r_{\mathrm{std}}$ con efectos fijos/penalizados por grupo y planta + interacción con radiación | Laird & Ware (1982); Hoerl & Kennard (1970) | **No usa `lme4`/REML**; es Ridge jerárquico en forma cerrada | **Eliminada** `bates2015lme4`; reemplazada por `laird1982random,hoerl1970` | Evalúa efectos jerárquicos por grupo/planta frente a normalización por FC |
+| **SRMOS** | `Ridge(alpha=1)` sobre columna nula en ventana reciente de $w$ días (constante de corrección de sesgo reciente) | Glahn & Lowry (1972) | Inspirado en posprocesamiento MOS de ventana móvil, simplificado a corrección de nivel constante | Mantener `glahn1972mos` aclarando adaptación simplificada | Referencia mínima de calibración de sesgo reciente |
+| **ELAC** | `Ridge(alpha=1)` sobre residuo respecto a nivel EWMA (`ewma_alpha`) | Brown (1959) | Suavizamiento exponencial clásico como nivel base + ajuste Ridge | Mantener `brown1959statistical` | Evalúa nivel EWMA frente a media móvil de 30d |
+| **KLAC** | `Ridge(alpha=1)` sobre residuo respecto a serie filtrada por Kalman 1D (`kalman_q`) | Kalman (1960); Harvey (1989) | Filtro de Kalman escalar de estado local + Ridge residual | Mantener `kalman1960approach,harvey1989forecasting` | Evalúa nivel dinámico por filtro de Kalman frente a $\mathrm{cf}_{30}$ |
+| **RARC** | `HuberRegressor(epsilon)` sobre residuo estandarizado en kWh | Huber (1964) | Pérdida de Huber estándar en residuo kWh (sin FC, sin $L_2$ anisotrópica, sin monotonía) | Mantener `huber1964` | Control directo: aísla qué aporta el paso de Huber en kWh a SM-CFHR en FC |
+| **RQRF** | `RandomForestRegressor` + distribución empírica de residuos en hojas (`leaf_res`) para estimación cuantílica/mediana | Koenker & Bassett (1978); Meinshausen (2006) | Bosques cuantílicos tipo Meinshausen sobre residuos kWh | Mantener `koenker1978quantiles,meinshausen2006` | Evalúa alternativa no paramétrica robusta basada en árboles |
+| **PDEC** | `Ridge(alpha)` sobre residuo añadiendo `deviation_D` | Hyndman & Athanasopoulos (2021); Hoerl & Kennard (1970) | Descomposición nivel/desviación + Ridge residual | Citado con `hyndman2021fpp3,hoerl1970` | Evalúa descomposición aditiva lineal simple |
+| **MARB** | `XGBRegressor` (`reg:squarederror`, `monotone_constraints=0`) sobre residuo estandarizado | Chen & Guestrin (2016) | XGBoost sobre residuo en kWh (restricciones de monotonía desactivadas a cero en `produccion_multihorizonte.py`) | Citado con `chen2016` | Contrasta gradient boosting sobre residuo frente a modelo lineal robusto |
+
+## 3. Los 9 modelos de biblioteca y la referencia ingenua
+- **9 bibliotecas (`scikit-learn` / `xgboost`):** `XGBoost` (`chen2016`), `Random Forest` (`breiman2001`), `Ridge` (`hoerl1970`), `SVR` (`drucker1997svr`), `HistGradientBoosting` (`friedman2001gbm`), `k-NN` (`cover1967nearest`), `Lasso` (`tibshirani1996`), `BayesianRidge` (`mackay1992`), `DecisionTree` (`breiman1984cart`), implementados vía `scikit-learn` (`pedregosa2011sklearn`) y `xgboost`.
+- **1 referencia ingenua:** `Media móvil de 30 días` (`MM30`), línea base causal para calcular el *Skill Score*.
