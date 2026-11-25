@@ -1,56 +1,34 @@
-# Guía de Reproducción — `SM-CFHR` / `ASHR` y Pipeline OOF
+# Guía de Reproducción — `SM-CFHR` (`sm-cfhr 1.0.3`) y Análisis OOF Definitivo
 
-## 1. Requisitos e instalación
+## 1. Requisitos, versiones e identificadores
+- **Repositorio oficial:** `sm-cfhr` (`PolyForm-Noncommercial-1.0.0`, etiqueta `v1.0.3-polyform`)
+- **Versión del paquete:** `sm-cfhr 1.0.3` (`pyproject.toml` y `sm_cfhr.__version__`)
+- **Protocolo científico HPO:** `v1.0.3-exact-recursive-state`, semilla `2026`
+- **Entorno validado:** Python `3.11.15` (`conda` env `solarpv-eda`), Windows 11 (`spawn`)
 
-Entorno validado: **Python `3.11.15`** (`solarpv-eda`). Todos los comandos deben ejecutarse desde la **raíz del repositorio** (`InvML/`):
-
-```bash
-pip install -r requirements-ashr.txt
-```
-
-Para registrar el kernel de Jupyter:
-
-```bash
+```powershell
+# Desde la raíz del repositorio sm-cfhr
+python -m pip install -r requirements-lock.txt
+python -m pip install -e . --no-build-isolation --no-deps
 python -m ipykernel install --user --name solarpv-eda --display-name "Python (solarpv-eda)"
 ```
 
-## 2. Verificación integral previa (20+ pruebas, no ejecuta OOF definitivo)
+## 2. Reproducción exclusiva del análisis desde los artefactos OOF cerrados (sin reentrenar)
+Los resultados OOF definitivos consolidados (`Fixed` + `HPO`, `14,625` unidades por variante, `28` escenarios) residen en `resultados/evaluacion_ashr_oof/`. Para regenerar todas las tablas, estudios diagnósticos (etapas 2–8), figuras y el notebook científico de **19 secciones** sin repetir el entrenamiento OOF:
 
-```bash
-python -m pytest tests/test_adaptive_structured_huber.py tests/test_selector_ashr_v2.py tests/test_ashr_oof_pipeline.py tests/test_auditoria_integral_entregable3.py -v
-python scripts/evaluacion/ejecutar_oof_definitivo_ashr.py
-```
+```powershell
+# 1. Regenerar tablas, inferencia, estudios diagnósticos reales y figuras (etapas 2-8)
+python -m sm_cfhr.cli report
 
-## 3. Ejecución del OOF definitivo (solo cuando esté autorizada)
-
-```bash
-python scripts/evaluacion/ejecutar_oof_definitivo_ashr.py --ejecutar-oof-definitivo
-```
-
-Artefactos generados por esa corrida:
-- `resultados/evaluacion_ashr_oof/predicciones/*.csv` (28 escenarios alineados)
-- `resultados/evaluacion_ashr_oof/manifest_ashr_oof.json` (estatus, tiempos y SHA-256)
-
-## 4. Reproducción del notebook científico (16 secciones, modo dual A/B)
-
-Ubicación del notebook: `notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb`.
-
-Ejecutar el notebook **nunca** lanza entrenamientos OOF definitivos:
-- **Estado A** (sin `resultados/evaluacion_ashr_oof/`): verifica configuración, compatibilidad `scikit-learn` e inventario de 28 escenarios, reportando estado `PENDIENTE`.
-- **Estado B** (con manifiesto OOF válido): carga los 28 escenarios, exporta tablas en `resultados/evaluacion_ashr_oof/tablas_paper/` y figuras en `figuras/ashr_oof/`.
-
-Para regenerar y ejecutar desde un kernel limpio:
-
-```bash
+# 2. Regenerar el notebook desde su fuente y ejecutarlo desde kernel limpio
 python scripts/evaluacion/generar_notebook_ashr.py
-jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel_name=solarpv-eda --inplace notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb
+python -m jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel_name=solarpv-eda --ExecutePreprocessor.timeout=1800 --inplace notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb
 ```
 
-## 5. Documentos de auditoría y protocolo pre-registrado
+## 3. Verificación automatizada
+```powershell
+python -m pytest tests/test_notebook_audit_fixes.py tests/test_parallel_oof.py tests/test_adaptive_structured_huber.py tests/test_selector_ashr_v2.py -v
+```
 
-- `experiments/protocolo.md`
-- `docs/auditoria_entregable3/MATRIZ_CUMPLIMIENTO_ENTREGABLE3.md`
-- `docs/auditoria_entregable3/AUDITORIA_R1_R2_R3.md`
-- `docs/auditoria_entregable3/AUDITORIA_BENCHMARKS_Y_PRESUPUESTOS.md`
-- `docs/auditoria_entregable3/PROTOCOLO_OPTIMIZACION_ASHR.md`
-- `docs/auditoria_entregable3/AUDITORIA_DASHBOARD_Y_E2.md`
+## 4. Reejecución OOF paralela (solo referencia de auditoría)
+Ver los comandos exactos, hashes SHA-256, política de reciclaje y telemetría observada (`Fixed`: `499.748 s`, `8` workers; `HPO`: `29,550.293 s` en dos sesiones, `12` workers) en `docs/reproducibilidad/CONDICIONES_COMPUTACIONALES_OOF.md`.

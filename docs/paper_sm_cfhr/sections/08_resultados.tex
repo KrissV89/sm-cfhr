@@ -1,47 +1,64 @@
 \section{Resultados}\label{sec:resultados}
 
-Al cierre de este manuscrito (versión pre-resultados), la evaluación fuera de muestra definitiva de \texttt{SM-CFHR-Fixed} ($B=0$) y \texttt{SM-CFHR-HPO} ($B=25$) sobre las $28$ configuraciones experimentales se encuentra en ejecución independiente bajo el protocolo científico congelado (\texttt{v1.0.3-polyform}). En estricto cumplimiento del principio de no fabricación de evidencia empírica, esta sección presenta la estructura tabular y analítica preespecificada para integrar automáticamente los resultados reales una vez concluida la ejecución.
+La evaluación fuera de muestra definitiva de \texttt{SM-CFHR-Fixed} ($B=0$) y \texttt{SM-CFHR-HPO} ($B=25$) concluyó sobre las $28$ configuraciones experimentales ($14\,625$ unidades por variante, $206\,073$ filas de predicción consolidadas por variante, cero unidades faltantes o inválidas) bajo el protocolo científico congelado (\texttt{v1.0.3-exact-recursive-state}).
 
-\subsection{Desempeño global en las 28 configuraciones experimentales}
+\subsection{Desempeño global en las 28 configuraciones y comparación Fixed vs.\ HPO}
 
-La comparación primaria confronta a \texttt{SM-CFHR-Fixed} ($B=0$) frente a los $22$ modelos de referencia sobre las métricas exportadas automáticamente por el flujo OOF ($\mathrm{MAE}_{\mathrm{macro}}$, $\mathrm{RMSE}$, $\mathrm{MBE}$, $\mathrm{MAE}_{\mathrm{top5}}$, $\mathrm{Skill}$ frente a la línea base preespecificada \texttt{MM30} y rango ordinal sobre $23$ competidores), complementando el contraste frente a la mejor referencia seleccionada \textit{ex post} con comparaciones exploratorias frente a referencias individuales de biblioteca (y dejando $\mathrm{MAE}_{\mathrm{CF}}$ como métrica derivada post-hoc sobre las predicciones guardadas, al no exportarse en el resumen OOF principal). La Tabla~\ref{tab:res_familias} resume la estructura por familia de escenarios; el desglose completo por escenario corresponde a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_FIXED]} y su contraparte ajustada por TPE a \texttt{[PENDIENTE: RES\_28\_ESCENARIOS\_HPO]}.
+Sobre el soporte común alineado con los $22$ modelos de referencia oficiales, \texttt{SM-CFHR-Fixed} ($B=0$) alcanza un rango ordinal medio de $\mathbf{2{,}93/23}$, obtiene $\mathbf{18/28}$ victorias descriptivas frente al mejor modelo de biblioteca ($10/28$ derrotas), $\mathbf{22/28}$ frente al mejor modelo personalizado (\textit{custom}) y $\mathbf{15/28}$ frente a la línea base causal \texttt{MM30} (Tabla~\ref{tab:res_familias}). Por régimen y familia, el desempeño es marcadamente asimétrico:
+\begin{itemize}
+    \item \textbf{Horizonte $D+1$ y generalización espaciotemporal (ET):} en $D+1$ ET con cinco variables logra el primer lugar ($1/23$) con una reducción de $-22{,}16\%$ frente al mejor competidor de biblioteca ($59\,803{,}6$ frente a $76\,831{,}1$~kWh/día, $\mathrm{Skill}=28{,}80\%$ sobre \texttt{MM30}). En $D+1$ intraplanta con clima obtiene $61\,297{,}1$~kWh/día (rango $12/23$, $-0{,}22\%$ frente a biblioteca).
+    \item \textbf{Esquema recursivo sin clima ($7$--$28$~días):} mantiene rango medio $2{,}0/23$ en ET ($4/4$ victorias sobre biblioteca, $-1{,}70\%$ medio) y $1{,}5/23$ en intraplanta ($3/4$ victorias sobre biblioteca, $-0{,}27\%$ medio), aunque por debajo de \texttt{MM30} en ET.
+    \item \textbf{Esquema directo acumulado sin clima ($7$--$28$~días):} es competitivo en ET ($3/4$ victorias frente a biblioteca, rango medio $3{,}25/23$, $-1{,}63\%$ medio), pero se degrada en intraplanta ($1/4$ victorias, $+13{,}27\%$ medio, alcanzando $+24{,}24\%$ en $H=28$~días).
+    \item \textbf{Acoplamiento con NOAA GEFSv12 ($7$--$28$~días):} en ET alcanza el rango $\mathbf{1{,}0/23}$ en los cuatro horizontes ($4/4$ victorias frente a biblioteca y \texttt{MM30}, $-11{,}84\%$ medio frente a biblioteca); en intraplanta obtiene rango medio $2{,}0/23$ ($0/4$ frente a biblioteca pero $4/4$ sobre \texttt{MM30}, $+1{,}04\%$ frente a biblioteca).
+\end{itemize}
 
 \begin{table}[!htbp]
-\caption{Resumen comparativo por familia de escenarios entre \texttt{SM-CFHR-Fixed} ($B=0$), \texttt{SM-CFHR-HPO} ($B=25$) y la mejor referencia de biblioteca (pendiente de integración OOF).}\label{tab:res_familias}
+\caption{Resumen comparativo por familia de escenarios de \texttt{SM-CFHR-Fixed} ($B=0$) sobre el soporte común alineado ($28$ escenarios, $23$ modelos).}\label{tab:res_familias}
 \centering
-\input{tables/tab_res_familias}
+\begin{tabular}{llccccc}
+\hline
+Familia & Tarea & Esc. & Rango medio & Vic.\ vs.\ Bib. & Vic.\ vs.\ MM30 & $\Delta$ medio vs.\ Bib. (\%) \\
+\hline
+$D+1$ & Espaciotemporal & $2$ & $1{,}00$ & $2/2$ & $2/2$ & $-11{,}30\%$ \\
+$D+1$ & Intraplanta & $2$ & $7{,}50$ & $1/2$ & $2/2$ & $+0{,}07\%$ \\
+Directo sin clima & Espaciotemporal & $4$ & $3{,}25$ & $3/4$ & $0/4$ & $-1{,}63\%$ \\
+Directo sin clima & Intraplanta & $4$ & $6{,}50$ & $1/4$ & $0/4$ & $+13{,}27\%$ \\
+Rec.\ sin clima & Espaciotemporal & $4$ & $2{,}00$ & $4/4$ & $0/4$ & $-1{,}70\%$ \\
+Rec.\ sin clima & Intraplanta & $4$ & $1{,}50$ & $3/4$ & $3/4$ & $-0{,}27\%$ \\
+Rec.\ + GEFSv12 & Espaciotemporal & $4$ & $1{,}00$ & $4/4$ & $4/4$ & $-11{,}84\%$ \\
+Rec.\ + GEFSv12 & Intraplanta & $4$ & $2{,}00$ & $0/4$ & $4/4$ & $+1{,}04\%$ \\
+\hline
+\end{tabular}
 \end{table}
 
-Los resultados por familia permitirán examinar directamente las cuatro dimensiones operativas del estudio: (1) desempeño en horizonte $D+1$ ($4$ escenarios) en transferencia espacial (ET) e intraplanta (IP) (\texttt{[PENDIENTE: MAE\_macro y Skill de SM-CFHR-Fixed vs.\ Mejor\_Bib en D+1 ET e IP]}); (2) degradación del esquema recursivo sin clima en $H \in \{7,14,21,28\}$ días (\texttt{[PENDIENTE: trayectoria de MAE\_macro en H=7,14,21,28d sin clima]}); (3) contraste entre esquema directo acumulado y recursivo sin clima en $\text{kWh/día}$ (\texttt{[PENDIENTE: contraste Directo vs.\ Recursivo sin clima en kWh/día]}); y (4) efecto de acoplar pronósticos NOAA GEFSv12 con regularización diferenciada $\alpha_{\mathrm{meteo}}$ en $7$--$28$ días (\texttt{[PENDIENTE: desempeño y rango en RecGEFSv12 7--28d]}), junto con la comparación pareada directa entre \texttt{SM-CFHR-Fixed} y \texttt{SM-CFHR-HPO} (\texttt{[PENDIENTE: diferencial Fixed vs.\ HPO y distribución de hiperparámetros seleccionados]}).
+Al comparar directamente ambas variantes mediante la métrica confirmatoria $\mathrm{MAE}_{\mathrm{macro}}$, \texttt{SM-CFHR-HPO} ($B=25$, $14\,552$ estudios Optuna con $25$ ensayos válidos cada uno y $73$ unidades sin historial suficiente para HPO) solo mejora a \texttt{SM-CFHR-Fixed} ($B=0$) en $\mathbf{9/28}$ escenarios ---todos ellos de régimen intraplanta---, mientras \texttt{Fixed} vence en $14/14$ escenarios espaciotemporales y $5/14$ intraplanta, logrando mejor rango medio ($2{,}93$ frente a $3{,}86/23$) y $18/28$ victorias frente a biblioteca (frente a $13/28$ de \texttt{HPO}), con un coste de pared $59\times$ menor.
 
 \subsection{Inferencia estadística y contraste de hipótesis}
 
-Sobre los escenarios con tamaño muestral efectivo $T_{\mathrm{eff}} \ge 2H$, la Tabla~\ref{tab:res_inferencia} reportará los resultados integrados en el flujo OOF de DM--HLN--HAC con corrección de Holm--Bonferroni, pertenencia al MCS ($\alpha = 0{,}10$, $B=200$) y magnitud del efecto ($d$ de Cohen e intervalo por bootstrap estacionario), junto con el diagnóstico $\hat{\rho}_1$ para GW auditada y la prueba global SPA ($B=500$) como análisis complementario post-hoc (\texttt{[PENDIENTE: RES\_MCS\_SPA\_GW]}). La Tabla~\ref{tab:res_hipotesis} sintetiza el estado de las hipótesis científicas H1--H4 a la espera de los artefactos finales.
+Sobre los $15$ escenarios que cumplen $T_{\mathrm{eff}} \ge 2H$ ($13$ escenarios de horizontes largos $21$--$28$~días quedan excluidos de inferencia confirmatoria por $T_{\mathrm{eff}} < 2H$), únicamente $\mathbf{2/15}$ contrastes pareados DM--HLN--HAC frente al mejor modelo de biblioteca alcanzan significancia tras la corrección de Holm--Bonferroni ($p_{\mathrm{Holm}} < 0{,}05$), y $\mathbf{0/15}$ superan el criterio descriptivo de magnitud del efecto $|d_{\mathrm{Cohen}}| \ge 0{,}20$. En el Model Confidence Set ($\alpha = 0{,}10$, $B=200$), \texttt{SM-CFHR-Fixed} sobrevive en $\mathbf{27/28}$ escenarios (siendo único superviviente en $D+1$ ET con clima), quedando excluido únicamente en $D+1$ intraplanta con clima ($p_{\mathrm{MCS}} = 0{,}04$). En la prueba global SPA post-hoc ($B=500$), \texttt{MM30} es rechazada ($p_{\mathrm{SPA}} < 0{,}05$) en los $4$ escenarios $D+1$ y en $4/4$ escenarios \texttt{RecGEFSv12} intraplanta, mientras que cuando \texttt{ASHR} actúa como $H_0$ no se rechaza en $20/28$ escenarios. En coherencia con la evidencia, el evaluador conservador R3 declara \textbf{no demostrada} la superioridad estadística general: Condición~1 (\texttt{NO\_CUMPLE}, $18/28$), Condición~2 (\texttt{NO\_VERIFICABLE}, Holm$=2$, $\mathrm{MCS}_{\mathrm{excl}}=1$), Condición~3 (\texttt{NO\_CUMPLE}, $0/15$ con $|d| \ge 0{,}20$) y Condición~4 (\texttt{PENDIENTE\_AUTORIZACION} de alcance solar).
+
+\subsection{Estudios diagnósticos complementarios: ablación, robustez, incertidumbre e interpretabilidad}
+
+De manera complementaria al OOF confirmatorio, los estudios diagnósticos ejecutados sobre el panel real $D+1$ con corte cronológico estricto ($\max t_{\mathrm{train}} < \min t_{\mathrm{val}}$) muestran (Tabla~\ref{tab:res_ablaciones}):
+\begin{enumerate}
+    \item \textbf{Ablación controlada:} suprimir la normalización por factor de capacidad (\texttt{energia\_bruta\_vs\_cf}) multiplica el error por $4{,}45\times$ ($270\,035{,}5$ frente a $60\,631{,}2$~kWh/día; $0{,}2306$ frente a $0{,}0349$ CF). La pérdida de Huber mejora marginalmente sobre $L_2$ en datos limpios ($60\,631{,}2$ frente a $60\,784{,}0$~kWh/día), mientras que la monotonía y el escalado MAD coinciden con sus variantes sin restricción en este corte porque los coeficientes naturales de \texttt{cf30} ($+0{,}4591$) y \texttt{rad\_pron} ($+0{,}0863$) ya resultaron positivos.
+    \item \textbf{Sensibilidad, semillas y estrés ante atípicos:} \texttt{SM-CFHR-Fixed} es $100\%$ determinista en las $10$ semillas ($56\,437{,}8$~kWh/día constantes), frente a la variabilidad de \texttt{HPO} ($55\,660{,}9$--$59\,124{,}8$~kWh/día). Bajo contaminación del $5\%$ y $10\%$ de atípicos en entrenamiento, Huber mantiene estable el error en validación limpia ($0{,}03488 \to 0{,}03491$ CF) mientras $L_2$ se degrada ($0{,}03496 \to 0{,}03749$ CF).
+    \item \textbf{Incertidumbre conforme temporal e interpretabilidad:} sobre $n_{\mathrm{cal}}=1\,720$ residuos pasados, los intervalos conformes alcanzan coberturas empíricas de $83{,}24\%$ (para $90\%$ nominal, semiancho $0{,}0662$ CF) y $69{,}25\%$ (para $80\%$ nominal, semiancho $0{,}0480$ CF), reflejando deriva temporal entre bloques. En interpretabilidad global aditiva exacta, los predictores dominantes son \texttt{cf30} ($0{,}0255$ CF), \texttt{anom\_rad} ($0{,}0107$) y \texttt{anom\_nube} ($0{,}0107$), cumpliendo estrictamente las cotas monótonas.
+\end{enumerate}
 
 \begin{table}[!htbp]
-\caption{Inferencia estadística pareada y múltiple frente al mejor modelo de biblioteca por familia de escenarios.}\label{tab:res_inferencia}
+\caption{Estudio diagnóstico de ablación controlada sobre el panel real $D+1$ con corte cronológico estricto.}\label{tab:res_ablaciones}
 \centering
-\input{tables/tab_res_inferencia}
-\end{table}
-
-\begin{table}[!htbp]
-\caption{Evaluación de las hipótesis científicas preespecificadas H1--H4.}\label{tab:res_hipotesis}
-\centering
-\input{tables/tab_res_hipotesis}
-\end{table}
-
-\subsection{Ablaciones, sensibilidad, robustez, incertidumbre e interpretabilidad}
-
-La Tabla~\ref{tab:res_ablaciones} recogerá el estudio de ablación controlada (configuración completa más cinco modificaciones estructurales, \texttt{[PENDIENTE: RES\_ABLACIONES\_6]}), separado de los estudios diagnósticos complementarios de sensibilidad 1D (\texttt{[PENDIENTE: RES\_SENSIBILIDAD\_HP]}), estrés ante $0\%, 5\%, 10\%$ de atípicos (\texttt{[PENDIENTE: RES\_ESTRES\_ATIPICOS]}), estabilidad en $10$ semillas (\texttt{[PENDIENTE: RES\_ESTABILIDAD\_SEMILLAS]}), curvas de aprendizaje y escalabilidad (\texttt{[PENDIENTE: RES\_APRENDIZAJE\_ESCALABILIDAD]}), calibración de intervalos conformes temporales al $80\%$ y $90\%$ en la Tabla~\ref{tab:res_conformal} (\texttt{[PENDIENTE: RES\_CONFORMAL\_80\_90]}), descomposición aditiva exacta de predictores (\texttt{[PENDIENTE: RES\_INTERPRETABILIDAD]}) y coste computacional y verificación entre máquinas (\texttt{[PENDIENTE: RES\_COSTE\_Y\_REPRO\_INDEPENDIENTE]}).
-
-\begin{table}[!htbp]
-\caption{Estudio de ablación controlada: modelo completo y cinco modificaciones estructurales ($6$ variantes).}\label{tab:res_ablaciones}
-\centering
-\input{tables/tab_res_ablaciones}
-\end{table}
-
-\begin{table}[!htbp]
-\caption{Calibración empírica de intervalos conformes temporales al $80\%$ y $90\%$ nominales.}\label{tab:res_conformal}
-\centering
-\input{tables/tab_res_conformal}
+\begin{tabular}{lcc}
+\hline
+Variante de ablación & $\mathrm{MAE}_{\mathrm{CF}}$ & $\mathrm{MAE}_{\mathrm{kWh/d\acute{\imath}a}}$ \\
+\hline
+\texttt{SM-CFHR\_completo} & $0{,}03488$ & $60\,631{,}2$ \\
+\texttt{sin\_l2\_estructurada} & $0{,}03487$ & $60\,606{,}3$ \\
+\texttt{sin\_monotonia} & $0{,}03488$ & $60\,631{,}2$ \\
+\texttt{escala\_std\_vs\_mad} & $0{,}03488$ & $60\,631{,}2$ \\
+\texttt{sin\_huber\_L2} & $0{,}03496$ & $60\,784{,}0$ \\
+\texttt{energia\_bruta\_vs\_cf} & $0{,}23065$ & $270\,035{,}5$ \\
+\hline
+\end{tabular}
 \end{table}

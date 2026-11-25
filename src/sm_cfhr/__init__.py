@@ -45,7 +45,7 @@ from .validation import (
     verify_benchmark_inventory,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 
 __all__ = [
     "AdaptiveStructuredHuberRegressor",

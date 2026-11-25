@@ -158,7 +158,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "report":
         oof_dir = args.oof_dir or (root / "resultados" / "evaluacion_ashr_oof")
-        res = run_post_oof_stages(oof_dir=oof_dir, root=root, allow_synthetic_test=False, mode="CONFIRMATORY")
+        panel_df = None
+        base_path = root / "base_generacion_clima" / "base_planta_dia.csv"
+        forecast_path = root / "datos_pronostico" / "pronostico_diario.csv"
+        if base_path.exists() and forecast_path.exists():
+            from scripts.evaluacion.produccion_intraplanta import build_panel
+
+            panel_df = build_panel(base_path, forecast_path, weather_on=True)
+        res = run_post_oof_stages(oof_dir=oof_dir, root=root, allow_synthetic_test=False, panel_df=panel_df, mode="CONFIRMATORY")
         print(json.dumps(res, indent=2, ensure_ascii=False))
         return 0
     if args.command == "repro-bundle":

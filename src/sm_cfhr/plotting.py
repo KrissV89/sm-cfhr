@@ -53,16 +53,43 @@ def plot_nested_cv_scheme(audit_df: pd.DataFrame, out_dir: Path) -> tuple[Path, 
 
 
 def plot_optuna_convergence(trials_df: pd.DataFrame, out_dir: Path) -> tuple[Path, Path]:
-    """Plot Optuna TPE best-so-far inner MAE_macro_kWh trajectory across trials."""
-    fig, ax = plt.subplots(figsize=(9.0, 4.5))
-    for fold_id, g in trials_df.groupby("outer_fold", sort=False):
-        gs = g.sort_values("trial_number")
-        ax.plot(gs["trial_number"], gs["best_so_far_kwh"] / 1000.0, marker="o", markersize=3, label=f"Fold {fold_id}")
-    ax.set_xlabel("Número de trial Optuna TPE")
-    ax.set_ylabel("Mejor MAE interno acumulado (MWh/día)")
-    ax.set_title("Convergencia de la optimización bayesiana TPE")
+    """Plot Optuna TPE best-so-far trajectory across trials per study (or median/IQR if >12 studies)."""
+    df = trials_df[trials_df["trial_valid"]].copy() if "trial_valid" in trials_df.columns else trials_df.copy()
+    group_cols = ["scenario_id", "outer_fold"] if "scenario_id" in df.columns else ["outer_fold"]
+    n_studies = int(df.groupby(group_cols, sort=False).ngroups)
+    fig, ax = plt.subplots(figsize=(9.5, 4.6))
+    if n_studies <= 12:
+        for key, g in df.groupby(group_cols, sort=False):
+            gs = g.sort_values("trial_number").reset_index(drop=True)
+            lbl = f"{key[0][:14]} | {key[1]}" if isinstance(key, tuple) else f"Fold {key}"
+            ax.plot(np.arange(1, len(gs) + 1), gs["best_so_far_kwh"] / 1000.0, marker="o", markersize=3, label=lbl)
+        ax.set_xlabel("Trial válido Optuna TPE")
+        ax.set_ylabel("Mejor MAE interno acumulado (MWh/día)")
+        ax.set_title(f"Convergencia Optuna TPE (N={n_studies} estudios)")
+        ax.legend(fontsize=7.5)
+    else:
+        rel_rows = []
+        for _, g in df.groupby(group_cols, sort=False):
+            gs = g.sort_values("trial_number").reset_index(drop=True)
+            init = float(gs["best_so_far_kwh"].iloc[0])
+            if init > 0:
+                rel = 100.0 * (gs["best_so_far_kwh"].to_numpy(dtype=float) / init - 1.0)
+                for idx, val in enumerate(rel, start=1):
+                    rel_rows.append((idx, float(val)))
+        rel_df = pd.DataFrame(rel_rows, columns=["trial_idx", "rel_pct"])
+        agg = rel_df.groupby("trial_idx")["rel_pct"].agg(
+            med="median",
+            p25=lambda s: float(np.quantile(s, 0.25)),
+            p75=lambda s: float(np.quantile(s, 0.75)),
+        ).reset_index()
+        ax.plot(agg["trial_idx"], agg["med"], marker="o", markersize=3.5, color="#2166ac", label="Mediana (N=" + f"{n_studies:,} estudios)")
+        ax.fill_between(agg["trial_idx"], agg["p25"], agg["p75"], color="#2166ac", alpha=0.22, label="Rango intercuartílico (p25–p75)")
+        ax.axhline(0.0, color="#666666", linestyle="--", linewidth=0.9)
+        ax.set_xlabel("Número de trial válido Optuna TPE (presupuesto oficial = 25)")
+        ax.set_ylabel("Mejora relativa acumulada vs. trial 1 (%)")
+        ax.set_title(f"Convergencia Optuna TPE en {n_studies:,} estudios (mediana e IQR)")
+        ax.legend(fontsize=8.5)
     ax.grid(True, linestyle=":", alpha=0.5)
-    ax.legend(fontsize=7.5)
     fig.tight_layout()
     return _save_fig(fig, out_dir, "fig07_optuna_convergencia")
 

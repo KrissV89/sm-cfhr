@@ -106,6 +106,7 @@ Ubicado en `dashboard/` (`app.py`, `pages/`, `render.yaml`). Carga artefactos pr
 - **Versión del paquete y licencia:** `sm-cfhr 1.0.3` (`pyproject.toml`, tag `v1.0.3-polyform`, licencia PolyForm Noncommercial 1.0.0).
 - **Configuración congelada del modelo:** `version_codigo: 1.1.0-oof-definitivo` (`experiments/config_ashr_congelada.json`), semilla `2026`.
 - **Protocolo interno de Optuna/CV:** `HPO_PROTOCOL_VERSION = "v1.0.3-exact-recursive-state"`, semilla `2026`, Optuna SQLite `RDBStorage`, escritura atómica (`fsync` + `os.replace`) y verificación SHA-256 en cada checkpoint. Nota: `SM-CFHR-HPO` en `v1.0.3` utiliza el mismo motor causal `PlantRecursiveState`/`PlantRecursiveWeatherState` en la validación interna de Optuna que en la evaluación externa y rechaza estudios SQLite de `v1.0.2`.
+- **Registro de condiciones reales de ejecución OOF:** hardware, versiones exactas del entorno `solarpv-eda`, hashes de trazabilidad, benchmark preliminar SMT (`8`/`10`/`12` workers) y telemetría real de `oof_v1_0_3_fixed` y `oof_v1_0_3_hpo` documentados en [docs/reproducibilidad/CONDICIONES_COMPUTACIONALES_OOF.md](docs/reproducibilidad/CONDICIONES_COMPUTACIONALES_OOF.md).
 
 Para generar la evidencia obligatoria de reproducibilidad (`results/runs/<run_id>/reproducibilidad/`) y comparar dos corridas independientes:
 ```bash

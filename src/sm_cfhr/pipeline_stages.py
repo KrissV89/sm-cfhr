@@ -143,13 +143,26 @@ def run_post_oof_stages(
         d_tr, d_va = denom_s[:110], denom_s[110:]
         feat_names = [f"f_{i}" for i in range(17)]
     else:
-        X_all, _, denom_all = extract_cf_features(panel_df, weather_on=True, lead=1)
-        y_all = np.clip(panel_df["y"].to_numpy(float) / denom_all, 0.0, 1.0)
+        p_sorted = panel_df.sort_values(["date", "code"]).reset_index(drop=True)
+        X_all, _, denom_all = extract_cf_features(p_sorted, weather_on=True, lead=1)
+        y_all = np.clip(p_sorted["y"].to_numpy(dtype=float) / denom_all, 0.0, 1.0)
+        dates_all = pd.to_datetime(p_sorted["date"]).to_numpy()
+        codes_all = p_sorted["code"].astype(str).to_numpy()
         valid = np.all(np.isfinite(X_all), axis=1) & np.isfinite(y_all) & np.isfinite(denom_all)
         X_all, y_all, denom_all = X_all[valid], y_all[valid], denom_all[valid]
-        cut = int(0.75 * len(X_all))
-        X_tr, y_tr, X_va, y_va = X_all[:cut], y_all[:cut], X_all[cut:], y_all[cut:]
-        d_tr, d_va = denom_all[:cut], denom_all[cut:]
+        dates_all, codes_all = dates_all[valid], codes_all[valid]
+        p_valid = p_sorted.loc[valid].reset_index(drop=True)
+
+        unique_dates = np.sort(np.unique(dates_all))
+        date_cut = unique_dates[int(0.75 * len(unique_dates))]
+        tr_mask = dates_all < date_cut
+        va_mask = dates_all >= date_cut
+        if dates_all[tr_mask].max() >= dates_all[va_mask].min():
+            raise RuntimeError("Temporal leakage detected in post-OOF date split.")
+
+        X_tr, y_tr, d_tr = X_all[tr_mask], y_all[tr_mask], denom_all[tr_mask]
+        X_va, y_va, d_va = X_all[va_mask], y_all[va_mask], denom_all[va_mask]
+        dates_va, codes_va = dates_all[va_mask], codes_all[va_mask]
         meta_s = {"cf30_idx": 4, "monotone_pos_idx": (4, 7), "meteo_idx": tuple(range(7, 17))}
         feat_names = [
             "month_sin", "month_cos", "doy_sin", "doy_cos", "cf30", "diff_7_30", "diff_1_7",
@@ -167,18 +180,48 @@ def run_post_oof_stages(
     atomic_write_csv(stress_df, oof_dir / "robustez" / "tabla_estres_atipicos.csv")
     atomic_write_csv(lc_df, oof_dir / "robustez" / "tabla_aprendizaje_escalabilidad.csv")
 
+    if panel_df is not None:
+        from .robustness import run_seed_stability_hpo
+
+        tr_dates = np.sort(np.unique(dates_all[tr_mask]))
+        va_dates = np.sort(np.unique(dates_va))
+        tr_sub = p_valid[p_valid["date"].isin(tr_dates[-240:])].copy()
+        va_sub = p_valid[p_valid["date"].isin(va_dates[:60])].copy()
+        seed_df = run_seed_stability_hpo(
+            tr_sub,
+            va_sub,
+            task="espaciotemporal",
+            horizon_days=1,
+            weather_on=True,
+            mode_eval="d1",
+            seeds=tuple(range(2026, 2036)),
+            n_trials=12,
+        )
+        atomic_write_csv(seed_df, oof_dir / "sensibilidad" / "tabla_estabilidad_semillas.csv")
+
     try:
         from ashr_oof_pipeline.config import build_frozen_ashr
     except ImportError:
         from src.ashr_oof_pipeline.config import build_frozen_ashr
     est = build_frozen_ashr(mode="espaciotemporal", horizon=1, weather_mode="forecast", root=root)
     est.fit(X_tr, y_tr, metadata=meta_s)
-    mid = len(X_va) // 2
     p_va = est.predict(X_va)
-    conf_res = compute_temporal_conformal_intervals(y_va[:mid], p_va[:mid], p_va[mid:], y_va[mid:])
+    if panel_df is not None:
+        va_unique = np.sort(np.unique(dates_va))
+        val_mid_date = va_unique[len(va_unique) // 2]
+        cal_m = dates_va < val_mid_date
+        te_m = dates_va >= val_mid_date
+        conf_res = compute_temporal_conformal_intervals(
+            y_va[cal_m], p_va[cal_m], p_va[te_m], y_va[te_m], plants_test=codes_va[te_m]
+        )
+        atomic_write_csv(conf_res["by_plant"], oof_dir / "incertidumbre" / "tabla_conformal_por_planta.csv")
+    else:
+        mid = len(X_va) // 2
+        conf_res = compute_temporal_conformal_intervals(y_va[:mid], p_va[:mid], p_va[mid:], y_va[mid:])
     atomic_write_csv(conf_res["summary"], oof_dir / "incertidumbre" / "tabla_conformal_resumen.csv")
     interp_res = compute_interpretability_summary(est, X_tr, X_va, feat_names, n_local=3)
     atomic_write_csv(interp_res["global_importance"], oof_dir / "interpretabilidad" / "tabla_importancia_global.csv")
+    atomic_write_text(oof_dir / "interpretabilidad" / "ejemplos_locales.json", json.dumps(interp_res["local_explanations"], indent=2))
 
     # Stage 7-8: Tables, Figures, and full manifest
     fig_dir = oof_dir / "figuras"

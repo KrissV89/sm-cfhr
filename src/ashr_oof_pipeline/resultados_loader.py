@@ -126,6 +126,8 @@ def load_oof_bundle(
         validate_predictions_df(ashr_df, sp.join_keys, sp.pred_col, sp.target_col)
 
         bench_raw = load_official_benchmarks(sp, root=r, exclude_cf_brh=True)
+        bench_keys = bench_raw[list(sp.join_keys)].drop_duplicates()
+        ashr_df = ashr_df.merge(bench_keys, on=list(sp.join_keys), how="inner")
         bench_al = align_predictions(ashr_df, bench_raw, sp.join_keys)
         if bench_al.empty:
             raise ValueError(f"Alineación vacía en escenario {sp.scenario_id}.")
