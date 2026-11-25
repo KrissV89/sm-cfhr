@@ -97,6 +97,9 @@ def run_post_oof_stages(
 
     # Stage 2-3: Load and validate persisted OOF bundle
     bundle = load_oof_bundle(oof_dir, root=root, allow_synthetic_test=(mode == "TEST_SYNTHETIC"))
+    spa_p = oof_dir / "inferencia" / "tabla_spa.csv"
+    if spa_p.exists():
+        bundle["tabla_spa"] = pd.read_csv(spa_p)
 
     # Stage 4: Family-wise multiplicity + effective design + R3 evaluation
     t_inf_fam = apply_family_multiplicity(bundle["tabla_inferencia"])

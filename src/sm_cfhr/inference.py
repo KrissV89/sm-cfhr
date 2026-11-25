@@ -169,12 +169,17 @@ def evaluate_r3_superiority(
         c2_state = "EVIDENCIA_INSUFICIENTE"
         c2_evid = "T_eff insuficiente en los escenarios evaluados."
     else:
-        n_spa = int((t_spa["p_spa"] < alpha).sum())
+        spa_col = "p_spa" if "p_spa" in t_spa.columns else "p_spa_H0_MM30"
+        n_spa = int((t_spa[spa_col] < alpha).sum())
         c2_state = "CUMPLE" if (n_holm >= max(1, len(inf_bib) // 2) and n_mcs_only >= 1 and n_spa >= 1) else "NO_CUMPLE"
         c2_evid = f"DM-HLN Holm={n_holm}/{len(inf_bib)}, MCS_excl={n_mcs_only}/{len(t_mcs)}, SPA_sig={n_spa}/{len(t_spa)}"
 
-    # Condicion 3: Tamano del efecto no despreciable (|d| >= 0.2 o |delta| >= 0.147)
-    n_eff = int((inf_bib["cohen_d"].abs() >= 0.2).sum()) if ("cohen_d" in inf_bib.columns and not inf_bib.empty) else 0
+    # Condicion 3: Tamano del efecto no despreciable a favor de SM-CFHR (dz <= -0.20)
+    eff_col = "cohen_dz_pareado" if "cohen_dz_pareado" in inf_bib.columns else "cohen_d"
+    if eff_col in inf_bib.columns and not inf_bib.empty:
+        n_eff = int((inf_bib[eff_col] <= -0.20).sum())
+    else:
+        n_eff = 0
     c3_state = "CUMPLE" if (not inf_bib.empty and n_eff >= max(1, len(inf_bib) // 2)) else ("EVIDENCIA_INSUFICIENTE" if inf_bib.empty else "NO_CUMPLE")
 
     # Condicion 4: Consistencia en conjuntos adicionales o alcance solar autorizado

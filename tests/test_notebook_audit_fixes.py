@@ -7,7 +7,22 @@ import pandas as pd
 
 import sm_cfhr
 from ashr_oof_pipeline.evaluacion_estadistica import compute_scenario_metrics
+from sm_cfhr.inference import evaluate_r3_superiority
 from sm_cfhr.optimization import summarize_hpo_trials
+
+
+def test_evaluate_r3_uses_cohen_dz_pareado_with_sign() -> None:
+    t28 = pd.DataFrame([{"pct_vs_MejorLib": -10.0}, {"pct_vs_MejorLib": 2.0}])
+    t_inf = pd.DataFrame(
+        [
+            {"referencia": "Mejor_Bib", "t_eff_insufficient": False, "p_holm": 1e-5, "cohen_dz_pareado": -0.89},
+            {"referencia": "Mejor_Bib", "t_eff_insufficient": False, "p_holm": 0.5, "cohen_dz_pareado": 0.30},
+        ]
+    )
+    t_mcs = pd.DataFrame([{"ashr_in_mcs_90": True, "n_survivors": 1}, {"ashr_in_mcs_90": True, "n_survivors": 5}])
+    r3 = evaluate_r3_superiority({"tabla_28_escenarios": t28, "tabla_inferencia": t_inf, "tabla_mcs": t_mcs})
+    c3 = r3.loc[r3["condicion"] == "Condicion_3_Tamano_Efecto"].iloc[0]
+    assert c3["resultado"] == "1/2"
 
 
 def test_package_version_matches_pyproject() -> None:
