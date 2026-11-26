@@ -1,0 +1,143 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{hyperref}
+
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\providecommand{\botrule}{\bottomrule}
+\newtheorem{theorem}{Teorema}
+\newtheorem{proposition}{Proposición}
+\DeclareMathOperator{\clip}{clip}
+\DeclareMathOperator{\diag}{diag}
+
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\theequation}{S\arabic{equation}}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Material Suplementario: Normalización Causal en Factor de Capacidad y Regresor Huber Estructurado (SM-CFHR)}\\[0.6em]
+{\normalsize Jesús David Arévalo Montilla y Enmanuel David Diaz Molinares}\\
+{\small Departamento de Matemáticas y Ciencia de Datos, Universidad del Norte, Barranquilla, Colombia}
+\end{center}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+\section{Demostraciones matemáticas completas}\label{sup:demos}
+
+Esta sección reúne las demostraciones completas de los resultados analíticos resumidos en el manuscrito principal, distinguiendo expresamente las aplicaciones directas de la teoría convexa y robusta clásica \cite{boyd2004convex,huber1964,hampel1986robust,huber2009robust} de las verificaciones específicas para SM-CFHR.
+
+Considérese el programa convexo en espacio estandarizado ($\tilde{y}_k = (y_k - m_y)/\sigma_y$ con $\sigma_y > 0$, $\mathbf{z}_k \in \mathbb{R}^p$, $D_\alpha = \diag(d_1,\dots,d_p)$ con $d_j \in \{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}$):
+\begin{equation}
+\min_{b \in \mathbb{R},\; \mathbf{w} \in \mathcal{C}} \; J(b, \mathbf{w}) := \frac{1}{n}\sum_{k=1}^{n} \rho_\delta\!\left(\tilde{y}_k - b - \mathbf{z}_k^\top \mathbf{w}\right) + \frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w},
+\label{eq:sup_obj}
+\end{equation}
+donde $\mathcal{C} = \{\mathbf{w} \in \mathbb{R}^p : w_j \ge 0 \;\forall j \in \mathcal{M}_+\}$, $\Omega = \mathbb{R} \times \mathcal{C}$, y la derivada de Huber es $\psi_\delta(r) = \clip(r, -\delta, \delta)$.
+
+\begin{theorem}[Convexidad, regularidad $C^1$, coercividad y existencia]\label{sup:thm_conv}
+Si $n \ge 1$, $\delta > 0$ y $\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}} > 0$, entonces: (1) $\Omega$ es cerrado y convexo; (2) $J \in C^1(\mathbb{R}^{p+1})$ es convexa y $\nabla J$ es globalmente Lipschitz con constante $L_J \le \frac{1}{n}\left\|\begin{bmatrix}\mathbf{1}_n & Z\end{bmatrix}\right\|_2^2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}$; y (3) $J$ es coerciva sobre $\Omega$ y admite al menos un minimizador global $(b^*, \mathbf{w}^*) \in \Omega$.
+\end{theorem}
+
+\begin{proof}
+\textbf{(1)} $\Omega = \mathbb{R} \times \mathcal{C}$ es producto cartesiano de $\mathbb{R}$ y el poliedro $\mathcal{C} = \bigcap_{j \in \mathcal{M}_+} \{\mathbf{w} \in \mathbb{R}^p : w_j \ge 0\}$, intersección de semiespacios cerrados y convexos en $\mathbb{R}^p$ \cite{boyd2004convex}.
+
+\textbf{(2)} La función de Huber $\rho_\delta$ es de clase $C^1(\mathbb{R})$ con derivada $1$-Lipschitz $\psi_\delta$ \cite{huber1964}. Sea $A := \begin{bmatrix} \mathbf{1}_n & Z \end{bmatrix} \in \mathbb{R}^{n \times (p+1)}$ y $\boldsymbol{\theta} := (b, \mathbf{w}) \in \mathbb{R}^{p+1}$. Por composición afín y suma con $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w}$ ($D_\alpha \succ 0$), $J \in C^1(\mathbb{R}^{p+1})$ es convexa. Para $\boldsymbol{\theta}_1, \boldsymbol{\theta}_2 \in \mathbb{R}^{p+1}$ con $\mathbf{r}_1 = \tilde{\mathbf{y}} - A\boldsymbol{\theta}_1$ y $\mathbf{r}_2 = \tilde{\mathbf{y}} - A\boldsymbol{\theta}_2$:
+\begin{align*}
+\|\nabla J(\boldsymbol{\theta}_1) - \nabla J(\boldsymbol{\theta}_2)\|_2
+&\le \frac{1}{n}\|A^\top (\psi_\delta(\mathbf{r}_2) - \psi_\delta(\mathbf{r}_1))\|_2 + \|D_\alpha(\mathbf{w}_1 - \mathbf{w}_2)\|_2 \\
+&\le \left(\frac{1}{n}\|A\|_2^2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}\right)\|\boldsymbol{\theta}_1 - \boldsymbol{\theta}_2\|_2.
+\end{align*}
+
+\textbf{(3)} Como $J(b,\mathbf{w}) \ge 0$, fijado $C \in \mathbb{R}$ arbitrario defínanse $C_+ := \max\{C, 0\} + 1$, $\alpha_{\min} := \min\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\} > 0$,
+\[
+R_w := \sqrt{\frac{2 C_+}{\alpha_{\min}}} + 1, \qquad
+R_b := \|\tilde{\mathbf{y}}\|_\infty + \|Z\|_{\infty,2}\,R_w + n\left(\frac{C_+}{\delta} + \frac{\delta}{2}\right) + 1,
+\]
+y $R := \max\{R_w, R_b\}$. Para todo $(b, \mathbf{w}) \in \Omega$ con $\|(b, \mathbf{w})\|_2 > \sqrt{2}\,R$: si $\|\mathbf{w}\|_2 > R_w$, entonces $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w} > C_+ > C$; si $\|\mathbf{w}\|_2 \le R_w$, entonces $|b| > R_b$, de modo que para cualquier índice $k \in \{1,\dots,n\}$ se cumple $|r_k| \ge |b| - \|\tilde{\mathbf{y}}\|_\infty - \|Z\|_{\infty,2} R_w > n(C_+/\delta + \delta/2)$ y, usando $\rho_\delta(r) \ge \delta(|r| - \delta/2)$, resulta $J(b, \mathbf{w}) \ge \frac{\delta}{n}(|r_k| - \delta/2) > C_+ > C$. Al ser $J$ continua, acotada inferiormente y coerciva sobre el cerrado $\Omega$, el teorema de Weierstrass garantiza la existencia de un minimizador global.
+\end{proof}
+
+\begin{theorem}[Unicidad de pesos y unicidad condicional del intercepto]\label{sup:thm_unic}
+Bajo las hipótesis del Teorema~\ref{sup:thm_conv}: (1) el vector $\mathbf{w}^*$ es único; (2) si existe $(b^*, \mathbf{w}^*)$ y algún $k$ con $|\tilde{y}_k - b^* - \mathbf{z}_k^\top \mathbf{w}^*| < \delta$, entonces $b^*$ es único; y (3) si todos los residuos óptimos satisfacen $|r_k^*| \ge \delta$, el intercepto puede no ser único.
+\end{theorem}
+
+\begin{proof}
+\textbf{(1)} Si $(b_1, \mathbf{w}_1), (b_2, \mathbf{w}_2) \in \Omega$ fuesen óptimos con $\mathbf{w}_1 \ne \mathbf{w}_2$, el punto medio $\bar{\boldsymbol{\theta}} \in \Omega$ tendría menor valor objetivo por estricta convexidad de $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w}$ ($D_\alpha \succ 0$), contradicción.
+
+\textbf{(2)} Fijado $\mathbf{w}^*$, $g(b) := J(b, \mathbf{w}^*)$ es convexa, continua y coerciva, luego su conjunto de mínimos es un intervalo compacto $[b_{\min}, b_{\max}]$. Si $b_{\min} < b_{\max}$ y existiese $k$ con $|r_k(b^*)| < \delta$, por continuidad existiría un subintervalo abierto $(u,v) \subset [b_{\min}, b_{\max}]$ donde $|r_k(b)| < \delta$ y el término cuadrático $\frac{1}{2n}(c_k - b)^2$ haría a $g$ estrictamente convexa en $(u,v)$, contradiciendo que $g$ sea constante en $[b_{\min}, b_{\max}]$.
+
+\textbf{(3)} Con $n=2$, $Z = \mathbf{0}$ y $\tilde{\mathbf{y}} = (-2\delta, +2\delta)^\top$, $\mathbf{w}^* = \mathbf{0}$ y para todo $b \in [-\delta, \delta]$ ambos residuos cumplen $|\pm 2\delta - b| \ge \delta$, resultando $g(b) = \frac{3}{2}\delta^2$ constante.
+\end{proof}
+
+\begin{proposition}[Condiciones KKT, influencia y monotonía]\label{sup:prop_kkt}
+Un punto $(b^*, \mathbf{w}^*) \in \Omega$ es óptimo global de \eqref{eq:sup_obj} si y solo si existen $\lambda_j^* \ge 0$ ($j \in \mathcal{M}_+$) tales que:
+\[
+-\frac{1}{n}\sum_{k=1}^n \psi_\delta(r_k^*) = 0, \quad
+-\frac{1}{n}(Z^\top \psi_\delta(\mathbf{r}^*))_j + d_j w_j^* = \begin{cases} \lambda_j^* \text{ con } \lambda_j^* w_j^* = 0 & j \in \mathcal{M}_+, \\ 0 & j \notin \mathcal{M}_+. \end{cases}
+\]
+Además, cada observación satisface $\left|\frac{1}{n}\psi_\delta(r_k^*)\right| \le \frac{\delta}{n}$ y $\left\|\frac{1}{n}\mathbf{z}_k \psi_\delta(r_k^*)\right\|_\infty \le \frac{\delta}{n}\|\mathbf{z}_k\|_\infty$ (acotada en respuesta, lineal en apalancamiento $\mathbf{z}_k$), y la predicción truncada $\hat{y}_q = \clip(m_y + \sigma_y(\hat{b} + \mathbf{z}_q^\top \hat{\mathbf{w}}), 0, 1)\cdot 24\,000\,C_{i,t} H_{\mathrm{dir}}$ es no decreciente en cada coordenada $j \in \mathcal{M}_+$ con $\tilde{s}_j > 0$.
+\end{proposition}
+
+\begin{proof}
+Las restricciones $-w_j \le 0$ ($j \in \mathcal{M}_+$) son afines y cumplen Slater ($w_j > 0$), por lo que las condiciones KKT del Lagrangiano $\mathcal{L}(b,\mathbf{w},\boldsymbol{\lambda}) = J(b,\mathbf{w}) - \sum_{j \in \mathcal{M}_+} \lambda_j w_j$ son necesarias y suficientes \cite{boyd2004convex}. La cota en el gradiente se sigue directamente de $|\psi_\delta(r)| \le \delta$, y la monotonía parcial se sigue de $z_{q,j}' - z_{q,j} = \Delta/\tilde{s}_j > 0$, $w_j^* \ge 0$, $\sigma_y > 0$ y la monotonía de $\clip(\cdot, 0, 1)$.
+\end{proof}
+
+\section{Verificación formal en Lean~4}\label{sup:lean4}
+
+La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre \textbf{Mathlib} (commit \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, etiqueta \texttt{v1.0.3-polyform}, compilando $26$ declaraciones sin axiomas personalizados (únicamente \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}), resumidas en la Tabla~\ref{tab:sup_lean4}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Correspondencia entre enunciados matemáticos y declaraciones compiladas en Lean~4 (\texttt{v4.36.0}).}
+\label{tab:sup_lean4}
+\scriptsize
+\begin{tabularx}{\textwidth}{@{}p{3.0cm}p{3.2cm}L@{}}
+\toprule
+Resultado & Módulo Lean~4 & Declaraciones compiladas (26 en total) \\
+\midrule
+Proyección física $[0,1]$ & \texttt{Clipping.lean}, \texttt{Monotonicity.lean} & \texttt{clip01\_nonneg}, \texttt{clip01\_le\_one}, \texttt{clip01\_mono}, \texttt{predictCF\_bounds}, \texttt{predictEnergy\_bounds} \\
+Pérdida de Huber & \texttt{Huber.lean} & \texttt{huber\_nonneg}, \texttt{psi\_abs\_le}, \texttt{psi\_lipschitz}, \texttt{hasDerivAt\_huber}, \texttt{convexOn\_huber}, \texttt{strictConvexOn\_huber\_band} \\
+Teorema~\ref{sup:thm_conv}(1)--(2) & \texttt{Model.lean}, \texttt{Gradient.lean} & \texttt{convex\_feasibleSet}, \texttt{isClosed\_feasibleSet}, \texttt{convexOn\_objective}, \texttt{hasDerivAt\_objective\_line}, \texttt{objective\_subgradient}, \texttt{gradB\_lipschitz} ($\partial J/\partial b$; la cota espectral completa $L_J$ de $\nabla J$ figura en la Sección~\ref{sup:demos}) \\
+Teorema~\ref{sup:thm_conv}(3) & \texttt{Optimality.lean} & \texttt{objective\_coercive}, \texttt{exists\_global\_minimizer} \\
+Teorema~\ref{sup:thm_unic}(1)--(3) & \texttt{Optimality.lean} & \texttt{unique\_weights}, \texttt{unique\_intercept\_of\_interior\_residual}, \texttt{intercept\_nonunique\_counterexample} \\
+Proposición~\ref{sup:prop_kkt} & \texttt{Optimality.lean}, \texttt{Gradient.lean}, \texttt{Monotonicity.lean} & \texttt{kkt\_iff\_isMinOn}, \texttt{gradB\_term\_bound}, \texttt{gradW\_term\_bound}, \texttt{predictEnergy\_monotone\_in\_restricted} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Inventarios completos de flota, escenarios, referencias y tablas extendidas \texttt{v3.0.0}}\label{sup:tablas}
+
+\input{appendices/B_escenarios_benchmarks}
+
+\begin{table}[!htbp]
+\centering
+\caption{Efecto promedio de normalizar por factor de capacidad (\texttt{kWh\_bruto} $\to$ \texttt{CF}) en los $10$ escenarios de la Condición~A (\texttt{v3.0.0}).}\label{tab:sup_cf_shift}
+\scriptsize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Familia de modelo & $\mathrm{MAE}_{\mathrm{CF}}$ medio (\texttt{kWh\_bruto}) & $\mathrm{MAE}_{\mathrm{CF}}$ medio (\texttt{CF}) & Cambio medio (\%) & Mediana cambio (\%) \\
+\midrule
+\texttt{BayesianRidge} & $0{,}04843$ & $0{,}03993$ & $-14{,}59\%$ & $-5{,}83\%$ \\
+\texttt{ElasticNet} & $0{,}04839$ & $0{,}03937$ & $-17{,}66\%$ & $-17{,}27\%$ \\
+\texttt{HuberRegressor} & $0{,}04847$ & $0{,}04332$ & $-10{,}13\%$ & $-4{,}49\%$ \\
+\texttt{RandomForest} & $0{,}05187$ & $0{,}04053$ & $-19{,}06\%$ & $-23{,}32\%$ \\
+\texttt{Ridge} & $0{,}04974$ & $0{,}04153$ & $-13{,}96\%$ & $-5{,}48\%$ \\
+\texttt{SM-CFHR} & $0{,}04829$ & $0{,}04045$ & $-14{,}91\%$ & $-8{,}16\%$ \\
+\texttt{XGBoost} & $0{,}05574$ & $0{,}04052$ & $-23{,}24\%$ & $-29{,}85\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\bibliographystyle{plain}
+\bibliography{bibliography/bibliography}
+
+\end{document}
