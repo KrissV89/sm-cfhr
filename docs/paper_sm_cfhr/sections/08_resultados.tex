@@ -1,21 +1,21 @@
 \section{Resultados}\label{sec:resultados}
 
-Los resultados se presentan siguiendo estrictamente las tres capas trazables del estudio: el protocolo OOF congelado (\texttt{v1.0.3}), la reconciliación inferencial y métrica (\texttt{v2.0.0}), y los experimentos controlados de equivalencia de representación, ablación factorial y sesgo de selección (\texttt{v3.0.0}).
+Los resultados se presentan siguiendo las tres etapas del estudio: la evaluación OOF primaria frente a referencias en energía bruta, su reconciliación inferencial y en factor de capacidad, y los experimentos controlados post-hoc de equivalencia de representación, ablación factorial y sesgo de selección.
 
-\subsection{Evaluación OOF congelada (\texttt{v1.0.3}) y reconciliación inferencial (\texttt{v2.0.0})}
+\subsection{Evaluación OOF primaria y reconciliación inferencial}
 
-Sobre el soporte común alineado de las $28$ configuraciones congeladas ($14\,625$ unidades por variante, cero errores) frente a $22$ referencias entrenadas en energía bruta ($\text{kWh}$), \texttt{SM-CFHR-Fixed} ($B=0$) alcanza un rango ordinal medio de $\mathbf{2{,}93/23}$ en $\mathrm{MAE}_{\mathrm{macro}}$ ($\text{kWh}$), con $18/28$ victorias descriptivas frente al mejor competidor de biblioteca (\texttt{Mejor\_Bib}) y $15/28$ frente a \texttt{MM30} (Figura~\ref{fig:res_rankings}). Al reconciliar las métricas en factor de capacidad adimensional ($\mathrm{MAE}_{\mathrm{CF,macro}}$, revisión \texttt{v2.0.0}), el rango medio pasa de $2{,}93/23$ a $\mathbf{4{,}00/23}$ ($16/28$ victorias frente a \texttt{Mejor\_Bib}), confirmando que las métricas en $\text{kWh}$ amplifican el peso de las centrales de mayor escala como \texttt{GYPO} ($370$--$388$~MW).
+Sobre el soporte común alineado de las $28$ configuraciones primarias ($14\,625$ unidades por variante, cero errores) frente a $22$ referencias entrenadas en energía bruta ($\text{kWh}$), \texttt{SM-CFHR-Fixed} ($B=0$) alcanza un rango ordinal medio de $\mathbf{2{,}93/23}$ en $\mathrm{MAE}_{\mathrm{macro}}$ ($\text{kWh}$), con $18/28$ victorias descriptivas frente al mejor competidor de biblioteca (\texttt{Mejor\_Bib}) y $15/28$ frente a \texttt{MM30} (Figura~\ref{fig:res_rankings}). Al evaluar en factor de capacidad adimensional ($\mathrm{MAE}_{\mathrm{CF,macro}}$), el rango medio pasa de $2{,}93/23$ a $\mathbf{4{,}00/23}$ ($16/28$ victorias frente a \texttt{Mejor\_Bib}), confirmando que las métricas en $\text{kWh}$ amplifican el peso de las centrales de mayor escala como \texttt{GYPO} ($370$--$388$~MW).
 
-Al comparar \texttt{SM-CFHR-Fixed} ($B=0$) frente a \texttt{SM-CFHR-HPO} ($B=25$), la configuración fija supera a \texttt{HPO} en $\mathbf{19/28}$ escenarios ($14/14$ en ET y $5/14$ en IP; $4$ victorias Holm frente a $1$ derrota sobre $\mathrm{MAE}_{\mathrm{macro}}$) con un coste de pared $59\times$ menor ($499{,}75$~s frente a $29\,550{,}3$~s). Bajo el estimando macro-alineado $z_t^{\mathrm{macro}}$ con bloques disjuntos ($h_{\mathrm{serie}}=1$), se resuelven $4/28$ inversiones de signo frente a promedios simples por origen y \texttt{SM-CFHR-Fixed} logra $\mathbf{5/5}$ victorias significativas tras Holm en \texttt{ET + Clima} frente a \texttt{Mejor\_Bib} ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$, $T_{\mathrm{eff,macro}} \ge 30{,}82$), manteniendo $0$ victorias significativas en régimen intraplanta o sin clima y sobreviviendo en el MCS ($\alpha=0{,}10$, $B=5\,000$) en $27/28$ escenarios. Sin embargo, dado que estas referencias competían en $\text{kWh}$ brutos, el experimento \texttt{v3.0.0} somete a prueba si dicha ventaja proviene del algoritmo SM-CFHR o de la representación causal en factor de capacidad.
+Al comparar \texttt{SM-CFHR-Fixed} ($B=0$) frente a \texttt{SM-CFHR-HPO} ($B=25$), la configuración fija supera a \texttt{HPO} en $\mathbf{19/28}$ escenarios ($14/14$ en ET y $5/14$ en IP; $4$ victorias Holm frente a $1$ derrota sobre $\mathrm{MAE}_{\mathrm{macro}}$) con un coste de pared $59\times$ menor ($499{,}75$~s frente a $29\,550{,}3$~s). Bajo el estimando macro-alineado $z_t^{\mathrm{macro}}$ con bloques disjuntos ($h_{\mathrm{serie}}=1$), se resuelven $4/28$ inversiones de signo frente a promedios simples por origen y \texttt{SM-CFHR-Fixed} logra $\mathbf{5/5}$ victorias significativas tras Holm en \texttt{ET + Clima} frente a \texttt{Mejor\_Bib} ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$, $T_{\mathrm{eff,macro}} \ge 30{,}82$), manteniendo $0$ victorias significativas en régimen intraplanta o sin clima y sobreviviendo en el MCS ($\alpha=0{,}10$, $B=5\,000$) en $27/28$ escenarios. Sin embargo, dado que estas referencias competían en $\text{kWh}$ brutos, el experimento post-hoc de equivalencia somete a prueba si dicha ventaja proviene del algoritmo SM-CFHR o de la representación causal en factor de capacidad.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth]{figures/fig_res_05_rankings_y_regimenes.pdf}
-\caption{Evaluación congelada (\texttt{v1.0.3} / \texttt{v2.0.0}): sensibilidad del rango medio entre $\text{kWh}$ ($2{,}93/23$) y factor de capacidad ($4{,}00/23$), y comparación pareada entre \texttt{SM-CFHR-Fixed} ($B=0$) y \texttt{SM-CFHR-HPO} ($B=25$).}
+\caption{Evaluación OOF primaria y métricas adimensionales: sensibilidad del rango medio entre $\text{kWh}$ ($2{,}93/23$) y factor de capacidad ($4{,}00/23$), y comparación pareada entre \texttt{SM-CFHR-Fixed} ($B=0$) y \texttt{SM-CFHR-HPO} ($B=25$).}
 \label{fig:res_rankings}
 \end{figure}
 
-\subsection{Equivalencia de representación: factor de capacidad vs.\ energía bruta (\texttt{v3.0.0})}
+\subsection{Equivalencia de representación: factor de capacidad vs.\ energía bruta}
 
 La Figura~\ref{fig:res_equiv} y la Tabla~\ref{tab:res_equiv_resumen} responden directamente a la pregunta central del estudio. Al pasar las entradas y objetivos de \texttt{kWh\_bruto} a exactamente la misma representación causal en factor de capacidad (\texttt{CF}) en los $10$ escenarios de la Condición~A, \textbf{las siete familias experimentan reducciones sustanciales del error $\mathrm{MAE}_{\mathrm{CF,macro}}$ medio}: \texttt{XGBoost} ($-23{,}24\%$), \texttt{RandomForest} ($-19{,}06\%$), \texttt{ElasticNet} ($-17{,}66\%$), \texttt{SM-CFHR} ($-14{,}91\%$), \texttt{BayesianRidge} ($-14{,}59\%$), \texttt{Ridge} ($-13{,}96\%$) y \texttt{HuberRegressor} ($-10{,}13\%$).
 
@@ -29,12 +29,12 @@ Una vez equiparada la representación en factor de capacidad, la ventaja atribui
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth]{figures/fig_res_04_equivalencia_representacion.pdf}
-\caption{Experimento controlado de equivalencia de representación (\texttt{v3.0.0}): reducción universal de $\mathrm{MAE}_{\mathrm{CF,macro}}$ al normalizar por FC en la Condición~A (izquierda) y diferencia porcentual de \texttt{SM-CFHR} frente al mejor par en FC bajo validación causal de $3$ pliegues en la Condición~B (derecha).}
+\caption{Experimento controlado de equivalencia de representación: reducción universal de $\mathrm{MAE}_{\mathrm{CF,macro}}$ al normalizar por FC en la Condición~A (izquierda) y diferencia porcentual de \texttt{SM-CFHR} frente al mejor par en FC bajo validación causal de $3$ pliegues en la Condición~B (derecha).}
 \label{fig:res_equiv}
 \end{figure}
 
 \begin{table}[!htbp]
-\caption{Equivalencia de representación (\texttt{v3.0.0}): desempeño de \texttt{SM-CFHR\_\_CF} frente al mejor competidor en FC (Condiciones~A y~B).}\label{tab:res_equiv_resumen}
+\caption{Equivalencia de representación: desempeño de \texttt{SM-CFHR\_\_CF} frente al mejor competidor en FC (Condiciones~A y~B).}\label{tab:res_equiv_resumen}
 \scriptsize
 \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}lcccccc@{}}
@@ -97,7 +97,7 @@ Los resultados de la ablación factorial controlada en $6$ escenarios (Figura~\r
 \end{figure}
 
 \begin{table}[!htbp]
-\caption{Resumen de ablaciones factoriales (\texttt{v3.0.0}) y veredicto empírico por componente.}\label{tab:res_ablaciones_v3}
+\caption{Resumen de ablaciones factoriales post-hoc y veredicto empírico por componente.}\label{tab:res_ablaciones_v3}
 \scriptsize
 \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}lcccc@{}}
@@ -132,10 +132,10 @@ Escalado MAD vs.\ STD en objetivo & $6$ & $+0{,}19\%$ & $[-0{,}02\%,\; +1{,}02\%
 
 \subsection{Veredicto final sobre las hipótesis científicas H1--H4}
 
-La Tabla~\ref{tab:res_hipotesis} consolida el estado actualizado de las cuatro hipótesis preespecificadas integrando las capas \texttt{v1.0.3}, \texttt{v2.0.0} y \texttt{v3.0.0}.
+La Tabla~\ref{tab:res_hipotesis} consolida el estado actualizado de las cuatro hipótesis preespecificadas integrando la evaluación OOF primaria, la reconciliación macro-alineada y los experimentos controlados post-hoc.
 
 \begin{table}[!htbp]
-\caption{Estado verificado de las hipótesis H1--H4 tras la reconciliación \texttt{v2.0.0} y los experimentos controlados \texttt{v3.0.0}.}\label{tab:res_hipotesis}
+\caption{Estado verificado de las hipótesis H1--H4 tras la reconciliación inferencial y los experimentos controlados.}\label{tab:res_hipotesis}
 \scriptsize
 \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}p{2.3cm}p{2.7cm}p{6.5cm}@{}}
@@ -143,7 +143,7 @@ La Tabla~\ref{tab:res_hipotesis} consolida el estado actualizado de las cuatro h
 Hipótesis & Estado verificado & Evidencia cuantitativa exacta \\
 \midrule
 \textbf{H1} (Normalización FC en ET) & \textbf{Confirmada} (atribuible a la representación FC) & Normalizar a FC reduce $\mathrm{MAE}_{\mathrm{CF}}$ en las $7$ familias ($-10{,}13\%$ a $-23{,}24\%$); retirar FC degrada hasta $+62{,}65\%$ en \texttt{D1\_ET\_5var}. \\
-\textbf{H2} (Superioridad de SM-CFHR) & \textbf{Solo frente a bases en $\text{kWh}$}; empate o desventaja bajo FC equiparado & $5/5$ Holm en \texttt{ET+Clima} (\texttt{v2.0.0}) frente a bases en $\text{kWh}$, pero bajo FC equiparado SM-CFHR empata en ET ($+0{,}13\%$ a $+1{,}58\%$) y pierde en IP ($+3{,}23\%$ a $+16{,}24\%$). \\
+\textbf{H2} (Superioridad de SM-CFHR) & \textbf{Solo frente a bases en $\text{kWh}$}; empate o desventaja bajo FC equiparado & $5/5$ Holm en \texttt{ET+Clima} frente a bases en $\text{kWh}$, pero bajo FC equiparado SM-CFHR empata en ET ($+0{,}13\%$ a $+1{,}58\%$) y pierde en IP ($+3{,}23\%$ a $+16{,}24\%$). \\
 \textbf{H3} (Contribución de componentes) & \textbf{Parcial / dependiente del escenario} & Mejora clara de FC ($+25{,}86\%$), clima ($+18{,}52\%$) y anomalías ($+5{,}61\%$); efectos pequeños o mixtos de Huber ($+0{,}31\%$), MAD ($+0{,}19\%$) y monotonía ($0\%$ activa en \texttt{D1\_ET}, $26{,}5\%$--$56\%$ en IP). \\
 \textbf{H4} (Fixed vs.\ HPO) & \textbf{Refutada para HPO}; \texttt{Fixed} domina en precisión y coste & \texttt{Fixed} ($B=0$) supera a \texttt{HPO} ($B=25$) en $19/28$ escenarios ($14/14$ ET; $4$ Holm wins vs.\ $1$ derrota) con coste $59\times$ menor. \\
 \bottomrule

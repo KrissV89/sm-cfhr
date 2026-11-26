@@ -8,6 +8,7 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{graphicx}
 \usepackage{hyperref}
 
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
@@ -93,7 +94,7 @@ Las restricciones $-w_j \le 0$ ($j \in \mathcal{M}_+$) son afines y cumplen Slat
 
 \section{Verificación formal en Lean~4}\label{sup:lean4}
 
-La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre \textbf{Mathlib} (commit \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, etiqueta \texttt{v1.0.3-polyform}, compilando $26$ declaraciones sin axiomas personalizados (únicamente \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}), resumidas en la Tabla~\ref{tab:sup_lean4}.
+La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre \textbf{Mathlib} (commit \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, etiqueta \texttt{v3.0.0}, compilando $26$ declaraciones sin axiomas personalizados (únicamente \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}), resumidas en la Tabla~\ref{tab:sup_lean4}.
 
 \begin{table}[!htbp]
 \centering
@@ -114,13 +115,13 @@ Proposición~\ref{sup:prop_kkt} & \texttt{Optimality.lean}, \texttt{Gradient.lea
 \end{tabularx}
 \end{table}
 
-\section{Inventarios completos de flota, escenarios, referencias y tablas extendidas \texttt{v3.0.0}}\label{sup:tablas}
+\section{Inventarios completos de flota, escenarios, referencias y tablas extendidas}\label{sup:tablas}
 
 \input{appendices/B_escenarios_benchmarks}
 
 \begin{table}[!htbp]
 \centering
-\caption{Efecto promedio de normalizar por factor de capacidad (\texttt{kWh\_bruto} $\to$ \texttt{CF}) en los $10$ escenarios de la Condición~A (\texttt{v3.0.0}).}\label{tab:sup_cf_shift}
+\caption{Efecto promedio de normalizar por factor de capacidad (\texttt{kWh\_bruto} $\to$ \texttt{CF}) en los $10$ escenarios de la Condición~A.}\label{tab:sup_cf_shift}
 \scriptsize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
@@ -136,6 +137,19 @@ Familia de modelo & $\mathrm{MAE}_{\mathrm{CF}}$ medio (\texttt{kWh\_bruto}) & $
 \bottomrule
 \end{tabular}
 \end{table}
+
+\section{Entorno computacional, reproducibilidad y notas técnicas de inferencia}\label{sup:repro}
+
+La evaluación OOF primaria se ejecutó sobre un procesador \texttt{AMD Ryzen 7 8845HS} ($8$ núcleos físicos, $16$ hilos lógicos, $16$~GB RAM, Windows~11 con procesos \texttt{spawn}), utilizando Python~$3{,}11{,}15$, NumPy~$2{,}3{,}5$, SciPy~$1{,}16{,}3$, pandas~$2{,}3{,}3$, scikit-learn~$1{,}9{,}0$, statsmodels~$0{,}14{,}6$ y Optuna~$5{,}0{,}0$, con semilla global~$2026$, protocolo causal \texttt{v1.0.3-exact-recursive-state}, bases SQLite aisladas por unidad experimental, escritura atómica (\texttt{fsync} + reemplazo atómico) y restricción a un hilo BLAS/OpenMP por trabajador.
+
+En un benchmark preliminar sobre $48$ unidades con $25$ ensayos Optuna, $12$ trabajadores incrementaron el rendimiento en $+10{,}58\%$ frente a $8$ trabajadores ($45{,}46$ frente a $41{,}11$ unidades/min; RSS pico $3\,465{,}1$~MB) manteniendo equivalencia bit a bit por SHA-256. En la ejecución completa de los $28$ escenarios ($14\,625$ unidades por variante, $206\,073$ filas), \texttt{SM-CFHR-Fixed} concluyó en $499{,}75$~s ($8$ trabajadores, RSS pico $2\,067{,}6$~MB) y \texttt{SM-CFHR-HPO} en $29\,550{,}3$~s ($12$ trabajadores, $228$ reciclajes de proceso, RSS pico $4\,201{,}1$~MB, cero errores). Los datos externos ($603{,}70$~MB sin comprimir) se importan localmente con verificación SHA-256 (Figura~\ref{fig:sup_pipeline}). En la verificación de la prueba SPA con $B=5\,000$ réplicas frente a \texttt{arch 8.0.0}, se comprobó que \texttt{arch.SPA} almacena \texttt{studentize=True} sin aplicarlo en \texttt{compute()}; al alinear dicha opción o pre-studentizar con el estimador núcleo de Politis--Romano, la diferencia máxima cae a $\le 0{,}0183$ en los $28$ escenarios y el MCS unilateral coincide con índice Jaccard $1{,}0000$.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_pipeline_reproduccion.pdf}
+\caption{Arquitectura de ejecución resumible, verificación de integridad mediante SHA-256 y comparación numérica entre máquinas independientes.}
+\label{fig:sup_pipeline}
+\end{figure}
 
 \bibliographystyle{plain}
 \bibliography{bibliography/bibliography}
