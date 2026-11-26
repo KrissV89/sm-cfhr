@@ -22,6 +22,8 @@ FORBIDDEN_EDITORIAL_PATTERNS = [
     "qué significa:",
     "¡perfecto",
     "vamos a descubrir",
+    "cf-brh",
+    "v1.0.3-polyform",
 ]
 
 EMOJI_RE = re.compile("[\U0001F300-\U0001FAFF\u2600-\u27BF]")
@@ -68,7 +70,7 @@ def test_main_notebook_editorial_and_scientific_integrity() -> None:
     assert not TOKEN_RE.search(full_text), "Potential credential/token pattern found"
 
     # Negative results & scientific limitations must remain intact
-    for required in ("DirectoSinClima", "NO_CUMPLE", "autorizacion_alcance_solar_docente"):
+    for required in ("DirectoSinClima", "NO_CUMPLE", "sin datasets externos"):
         assert required in full_text, f"Required scientific limitation/result missing: {required}"
 
 

@@ -52,9 +52,9 @@ Este cuaderno consolida los resultados definitivos fuera de muestra (*out-of-fol
 ## 1.1 Alcance e identificadores de versión
 La evaluación cubre `17` plantas fotovoltaicas en Colombia (`9.8` a `388.0 MW`, distribuidas en `7` grupos geográficos) bajo `28` escenarios experimentales (`4` escenarios `D+1`, `8` recursivos sin clima, `8` directos sin clima y `8` recursivos con pronóstico `NOAA GEFSv12`). Los `28` escenarios comparten plantas y ventanas temporales, por lo que no deben interpretarse como `28` conjuntos de datos independientes.
 
-- **Paquete y licencia:** `sm-cfhr 1.0.3`, `PolyForm-Noncommercial-1.0.0` (etiqueta `v1.0.3-polyform`).
-- **Protocolo y semilla:** `v1.0.3-exact-recursive-state`, commit base OOF `3256994`, semilla `2026`.
-- **Autorización de alcance solar exclusivo:** `autorizacion_alcance_solar_docente: false` (sin datasets externos no solares).""")
+- **Paquete y licencia:** `sm-cfhr`, `PolyForm-Noncommercial-1.0.0` (etiqueta `v3.0.0`).
+- **Protocolo y semilla:** `v1.0.3-exact-recursive-state`, semilla `2026`.
+- **Alcance del dominio:** evaluación circunscrita al dominio solar colombiano sin datasets externos no solares.""")
 
     code("""import sys
 from pathlib import Path
@@ -138,7 +138,7 @@ if val_status["state"] == "VALID":
     ]
     display(ex_df)
     display(Markdown(
-        f"El manifiesto OOF registra estado `{val_status['state']}` y el inventario cubre `{len(inv_df)}/28` escenarios con `CF-BRH` excluido. "
+        f"El manifiesto OOF registra estado `{val_status['state']}` y el inventario cubre `{len(inv_df)}/28` escenarios. "
         f"Las claves de `SM-CFHR-Fixed` y `SM-CFHR-HPO` coinciden en `{int(align_df['fixed_hpo_keys_identical'].sum())}/28` escenarios. "
         f"En `{len(ex_df)}/28` escenarios (todos de la suite `DirectoSinClima`) se excluyeron entre `2` y `63` orígenes tempranos al intersectar con las claves oficiales del benchmark, mientras `D+1` y los escenarios recursivos mantuvieron alineación completa (`0` exclusiones). "
         f"Todas las comparaciones siguientes operan sobre ese soporte común pareado."
@@ -182,7 +182,7 @@ if nested_audit_path.exists():
     md("""# Capítulo 3. Comparación frente a modelos de biblioteca
 
 ## 3.1 Definiciones operativas de evaluación
-- **`MAE_macro`:** promedio del error absoluto por planta (`code`) y posterior promedio equiponderado entre las `17` centrales, evitando que las plantas de mayor potencia oculten errores en las más pequeñas.
+- **`MAE_macro` (`kWh/día`):** promedio del error absoluto por planta (`code`) y posterior promedio equiponderado entre las `17` centrales; iguala el peso respecto a la duración de las series, aunque en unidades de energía conserva la escala de potencia instalada (`9.8` a `388.0 MW`), la cual se normaliza explícitamente mediante `MAE_CF_macro`.
 - **`p-valor bruto` frente a `p-valor ajustado` (Holm–Bonferroni):** el ajuste secuencial controla la tasa de error familiar (FWER $\\le 0{,}05$) dentro de la familia de contrastes.
 - **`MCS` (*Model Confidence Set*, $\\alpha=0{,}10$):** conjunto de modelos no descartables como inferiores mediante *bootstrap* estacionario; permanecer en el MCS indica compatibilidad con el mejor grupo, no superioridad demostrada salvo cuando sobrevive un único modelo.
 - **`SPA` (*Superior Predictive Ability*):** contrasta bajo $H_0$ si ningún competidor supera al modelo tomado como referencia.
@@ -317,7 +317,7 @@ Se contrasta el rendimiento y coste de `SM-CFHR-Fixed` ($B=0$) frente a `SM-CFHR
 1. **Desempeño frente a bibliotecas:** `SM-CFHR-Fixed` ocupa el rango medio `1.64 / 10` entre las nueve bibliotecas, supera a cada biblioteca individual en `23`–`28/28` escenarios, vence en `18/28` escenarios al mejor competidor *ex post* y permanece en el MCS exclusivo de bibliotecas en `28/28` casos.
 2. **Alcance de la superioridad estadística:** Bajo el protocolo congelado (`v1.0.3`, estimando `MAE_promedio_por_origen` con filtro $T_{\mathrm{eff}} \ge 2H$, `Mejor_Bib` retrospectivo, Holm por familia), la superioridad tras ajuste Holm-Bonferroni y con tamaño del efecto grande queda acreditada en `2/15` escenarios (`D1_ET_5var` con `-22.2%`, $d_z=-0.898$; `RecGEFSv12_ET_7d` con `-13.4%`, $d_z=-0.653$). En la revisión independiente `v2.0.0` (`auditoria_inferencia_estadistica.ipynb` y `resultados/inferencia_revision_independiente_v2/`), al alinear DM-HLN-HAC y MCS/SPA con el estimando `MAE_macro` y usar `h_overlap=1` real, la superioridad significativa tras Holm se extiende a los `5` escenarios `ET + Clima` (`D1`, `7d`–`28d`), pero **no** al régimen intraplanta ni al conjunto completo de `28` escenarios.
 3. **Comportamiento por planta, régimen y presupuesto:** La normalización por capacidad estabiliza el error relativo entre centrales de `9.8` y `388 MW` y a través de `7` grupos geográficos. Las principales derrotas se concentran en `DirectoSinClima_IP` (`+13.3%` medio frente a `k-NN`). Por último, `SM-CFHR-Fixed` ($B=0$) supera a `SM-CFHR-HPO` ($B=25$) en `19/28` escenarios (`14/14` en `ET`) con un coste computacional `~59×` menor.
-4. **Limitaciones abiertas:** Persisten la subcobertura conformal en `D+1`, la dependencia entre los `28` escenarios del mismo panel solar y la ausencia de validación en conjuntos externos (`autorizacion_alcance_solar_docente: false`).""")
+4. **Limitaciones abiertas y desacoplamiento representación–algoritmo:** Persisten la subcobertura conformal en `D+1` (`83.2%` para `90%`), la dependencia entre los `28` escenarios del mismo panel solar y la ausencia de validación en conjuntos externos (sin datasets externos). Asimismo, el estudio controlado de equivalencia de representación (`experimento_equivalencia_v3` y `ablaciones_controladas_v3`) muestra que normalizar a factor de capacidad mejora entre `-10.13%` y `-23.24%` a las siete familias evaluadas, situando a `SM-CFHR` en paridad con `BayesianRidge-CF` y `ElasticNet-CF` en transferencia espaciotemporal y por detrás en régimen intraplanta.""")
 
     code("""if bundle is not None:
     resumen_desc = build_descriptive_summary(bundle)
