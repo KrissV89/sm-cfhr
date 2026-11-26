@@ -56,9 +56,19 @@ Se inspeccionaron los `8` archivos `.ipynb` presentes en el repositorio local (e
 ## E. Verificación automatizada
 - `notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb` regenerado con `generar_notebook_ashr.py` y ejecutado completo con `jupyter nbconvert --execute` (`solarpv-eda`): `0` errores, `14/14` celdas de código con salidas válidas.
 - `notebooks/actuales/auditoria_inferencia_estadistica.ipynb` regenerado y ejecutado completo en el workspace principal: `0` errores, `5/5` celdas de código con salidas válidas.
-- Suite `pytest` ejecutada en el worktree (`tests/test_notebook_editorial_integrity.py`, `tests/test_notebook_audit_fixes.py`, `tests/test_adaptive_structured_huber.py`, `tests/test_selector_ashr_v2.py`): 100% PASS (ver registro exacto tras ejecución).
+- Suite `pytest` ejecutada en el worktree (`tests/test_notebook_editorial_integrity.py`, `tests/test_notebook_audit_fixes.py`, `tests/test_adaptive_structured_huber.py`, `tests/test_selector_ashr_v2.py`): **`21 passed in 19.77s`** (`0` fallos tras ajustar `_collect_notebook_text` para inspeccionar salidas `text/plain` de DataFrames además de `text/markdown`).
+- **Limitaciones de verificación:** Los `6` cuadernos históricos (`37`–`42`) no fueron re-ejecutados por pertenecer a una fase previa archivada y estar excluidos del control de versiones; se verificó su validez estructural con `nbformat` v4.
 
 ---
 
 ## F. GitHub
-*(Pendiente de completar inmediatamente tras el `git push` y creación del Pull Request en el Paso 6).*
+- **Repositorio remoto:** `https://github.com/KrissV89/sm-cfhr.git` (`origin`)
+- **Rama publicada:** `docs/notebook-editorial-cleanup` (creada desde `800f14d`)
+- **Commits:**
+  - `47da72d` — `refactor(notebooks): align notebook generator, figures, and reproduction guide`
+  - `14aa6b1` — `docs(notebooks): revise scientific writing and outputs in evaluation notebook`
+  - `da4001b` — `test(notebooks): add editorial and structural integrity checks`
+  - `50f014d` — `docs(audit): add notebook editorial audit report`
+- **Archivos modificados/añadidos en la rama:** `scripts/evaluacion/generar_notebook_ashr.py`, `src/sm_cfhr/visualizacion_pedagogica.py`, `notebooks/actuales/README_REPRODUCCION_ASHR.md`, `notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb`, `tests/test_notebook_editorial_integrity.py`, `docs/revisiones/AUDITORIA_EDITORIAL_NOTEBOOKS.md`.
+- **Estado del push:** Publicado y verificado en `origin/docs/notebook-editorial-cleanup`.
+- **Pull Request:** [https://github.com/KrissV89/sm-cfhr/pull/1](https://github.com/KrissV89/sm-cfhr/pull/1) (`base: main` ← `head: docs/notebook-editorial-cleanup`).
