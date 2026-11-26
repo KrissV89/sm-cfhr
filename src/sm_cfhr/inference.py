@@ -109,19 +109,27 @@ def spa_test(
     if T < 10 or K == 0:
         return {"spa_stat": float("nan"), "p_spa": float("nan"), "T_spa": float(T)}
 
-    d_bar = np.mean(d, axis=0)
-    rng = np.random.default_rng(seed)
-    boot_idx = np.array([_stationary_bootstrap_indices(T, mean_block, rng) for _ in range(B)])
-    boot_means = d[boot_idx].mean(axis=1)  # (B, K)
-    centered = boot_means - d_bar[None, :]
-    se = np.maximum(np.std(centered, axis=0, ddof=1) * np.sqrt(T), 1e-12) / np.sqrt(T)
-    t_obs = float(np.max(np.sqrt(T) * np.maximum(0.0, d_bar) / np.maximum(np.std(d, axis=0, ddof=1), 1e-12)))
-    # Hansen consistent recentering
-    thresh = -np.sqrt(2.0 * np.log(max(np.log(T), 2.0))) * np.std(centered, axis=0, ddof=1)
-    mu_c = np.where(d_bar > thresh, d_bar, 0.0)
-    t_boot = np.max(np.sqrt(T) * np.maximum(0.0, boot_means - mu_c[None, :]) / np.maximum(np.std(d, axis=0, ddof=1)[None, :], 1e-12), axis=1)
-    p_spa = float(np.mean(t_boot >= t_obs))
-    return {"spa_stat": t_obs, "p_spa": p_spa, "T_spa": float(T)}
+    from src.sm_cfhr.inference_v2 import spa_test_v2
+
+    res = spa_test_v2(
+        loss_benchmark=lb,
+        loss_models=lm,
+        B=B,
+        mean_block=mean_block,
+        seed=seed,
+        studentize=True,
+        variance_estimator="pr_kernel",
+        clip_zero=True,
+        finite_sample_floor=True,
+    )
+    return {
+        "spa_stat": float(res["spa_stat"]),
+        "p_spa": float(res["p_spa_consistent"]),
+        "p_spa_lower": float(res["p_spa_lower"]),
+        "p_spa_consistent": float(res["p_spa_consistent"]),
+        "p_spa_upper": float(res["p_spa_upper"]),
+        "T_spa": float(res["T_spa"]),
+    }
 
 
 def evaluate_r3_superiority(
