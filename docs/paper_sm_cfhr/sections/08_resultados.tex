@@ -1,151 +1,134 @@
 \section{Resultados}\label{sec:resultados}
 
-Los resultados se presentan siguiendo las tres etapas del estudio: la evaluación OOF primaria frente a referencias en energía bruta, su reconciliación inferencial y en factor de capacidad, y los experimentos controlados post-hoc de equivalencia de representación, ablación factorial y sesgo de selección.
+Los resultados se presentan siguiendo las dos etapas del estudio sobre las predicciones OOF primarias ($28$ configuraciones, $14\,625$ unidades por variante, cero errores): el desempeño frente a las $22$ referencias oficiales en energía bruta, y su reconciliación inferencial y en factor de capacidad adimensional, junto con los estudios diagnósticos en $D+1$.
 
-\subsection{Evaluación OOF primaria y reconciliación inferencial}
+\subsection{Desempeño global en las 28 configuraciones y comparación Fixed vs.\ HPO}
 
-Sobre el soporte común alineado de las $28$ configuraciones primarias ($14\,625$ unidades por variante, cero errores) frente a $22$ referencias entrenadas en energía bruta ($\text{kWh}$), \texttt{SM-CFHR-Fixed} ($B=0$) alcanza un rango ordinal medio de $\mathbf{2{,}93/23}$ en $\mathrm{MAE}_{\mathrm{macro}}$ ($\text{kWh}$), con $18/28$ victorias descriptivas frente al mejor competidor de biblioteca (\texttt{Mejor\_Bib}) y $15/28$ frente a \texttt{MM30} (Figura~\ref{fig:res_rankings}). Al evaluar en factor de capacidad adimensional ($\mathrm{MAE}_{\mathrm{CF,macro}}$), el rango medio pasa de $2{,}93/23$ a $\mathbf{4{,}00/23}$ ($16/28$ victorias frente a \texttt{Mejor\_Bib}), confirmando que las métricas en $\text{kWh}$ amplifican el peso de las centrales de mayor escala como \texttt{GYPO} ($370$--$388$~MW).
-
-Al comparar \texttt{SM-CFHR-Fixed} ($B=0$) frente a \texttt{SM-CFHR-HPO} ($B=25$), la configuración fija supera a \texttt{HPO} en $\mathbf{19/28}$ escenarios ($14/14$ en ET y $5/14$ en IP; $4$ victorias Holm frente a $1$ derrota sobre $\mathrm{MAE}_{\mathrm{macro}}$) con un coste de pared $59\times$ menor ($499{,}75$~s frente a $29\,550{,}3$~s). Bajo el estimando macro-alineado $z_t^{\mathrm{macro}}$ con bloques disjuntos ($h_{\mathrm{serie}}=1$), se resuelven $4/28$ inversiones de signo frente a promedios simples por origen y \texttt{SM-CFHR-Fixed} logra $\mathbf{5/5}$ victorias significativas tras Holm en \texttt{ET + Clima} frente a \texttt{Mejor\_Bib} ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$, $T_{\mathrm{eff,macro}} \ge 30{,}82$), manteniendo $0$ victorias significativas en régimen intraplanta o sin clima y sobreviviendo en el MCS ($\alpha=0{,}10$, $B=5\,000$) en $27/28$ escenarios. Sin embargo, dado que estas referencias competían en $\text{kWh}$ brutos, el experimento post-hoc de equivalencia somete a prueba si dicha ventaja proviene del algoritmo SM-CFHR o de la representación causal en factor de capacidad.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.98\textwidth]{figures/fig_res_05_rankings_y_regimenes.pdf}
-\caption{Evaluación OOF primaria y métricas adimensionales: sensibilidad del rango medio entre $\text{kWh}$ ($2{,}93/23$) y factor de capacidad ($4{,}00/23$), y comparación pareada entre \texttt{SM-CFHR-Fixed} ($B=0$) y \texttt{SM-CFHR-HPO} ($B=25$).}
-\label{fig:res_rankings}
-\end{figure}
-
-\subsection{Equivalencia de representación: factor de capacidad vs.\ energía bruta}
-
-La Figura~\ref{fig:res_equiv} y la Tabla~\ref{tab:res_equiv_resumen} responden directamente a la pregunta central del estudio. Al pasar las entradas y objetivos de \texttt{kWh\_bruto} a exactamente la misma representación causal en factor de capacidad (\texttt{CF}) en los $10$ escenarios de la Condición~A, \textbf{las siete familias experimentan reducciones sustanciales del error $\mathrm{MAE}_{\mathrm{CF,macro}}$ medio}: \texttt{XGBoost} ($-23{,}24\%$), \texttt{RandomForest} ($-19{,}06\%$), \texttt{ElasticNet} ($-17{,}66\%$), \texttt{SM-CFHR} ($-14{,}91\%$), \texttt{BayesianRidge} ($-14{,}59\%$), \texttt{Ridge} ($-13{,}96\%$) y \texttt{HuberRegressor} ($-10{,}13\%$).
-
-Una vez equiparada la representación en factor de capacidad, la ventaja atribuida originalmente a SM-CFHR desaparece casi por completo:
+Sobre el soporte común alineado con los $22$ modelos de referencia en energía bruta ($\text{kWh}$), \texttt{SM-CFHR-Fixed} ($B=0$) alcanza un rango ordinal medio de $\mathbf{2{,}93/23}$ en $\mathrm{MAE}_{\mathrm{macro}}$ ($\text{kWh}$), obtiene $\mathbf{18/28}$ victorias descriptivas frente al mejor competidor de biblioteca (\texttt{Mejor\_Bib}, $10/28$ derrotas), $\mathbf{22/28}$ frente al mejor modelo residual (\textit{custom}) y $\mathbf{15/28}$ frente a \texttt{MM30} (Tabla~\ref{tab:res_familias}). Por régimen y familia, el desempeño es marcadamente asimétrico:
 \begin{itemize}
-    \item \textbf{Transferencia espaciotemporal (ET):} en Condición~A, \texttt{SM-CFHR\_\_CF} queda prácticamente empatado o entre $+0{,}13\%$ y $+1{,}58\%$ por detrás del mejor competidor en FC (\texttt{D1\_ET\_5var}: $+0{,}13\%$ frente a \texttt{BayesianRidge\_\_CF}; \texttt{D1\_ET\_sin\_clima}: $+0{,}23\%$ frente a \texttt{HuberRegressor\_\_CF}; \texttt{RecGEFSv12\_ET\_28d}: $+1{,}58\%$ frente a \texttt{ElasticNet\_\_CF}), alcanzando el rango $1$ únicamente en \texttt{RecGEFSv12\_ET\_7d} ($-0{,}56\%$ frente a \texttt{BayesianRidge\_\_CF}). En Condición~B (CV causal de $3$ pliegues), obtiene rango $1$ en \texttt{D1\_ET\_5var} ($-0{,}09\%$ frente a \texttt{BayesianRidge\_\_CF}) y cede $+0{,}29\%$ en \texttt{D1\_ET\_sin\_clima} y $+1{,}13\%$ en \texttt{RecGEFSv12\_ET\_28d}.
-    \item \textbf{Régimen intraplanta (IP):} bajo representación equiparada, \texttt{SM-CFHR\_\_CF} pierde sistemáticamente frente a alternativas en FC, situándose entre $+3{,}25\%$ (\texttt{RecGEFSv12\_IP\_28d}) y $+16{,}24\%$ (\texttt{DirectoSinClima\_IP\_28d}) en Condición~A, y entre $+3{,}23\%$ y $+10{,}71\%$ en Condición~B.
-    \item \textbf{Contrastes pareados Holm en FC (Condición~A, $10$ escenarios):} \texttt{SM-CFHR\_\_CF} supera significativamente a \texttt{HuberRegressor\_\_CF} ($4$ victorias Holm, $0$ derrotas) y \texttt{Ridge\_\_CF} ($4$ victorias, $0$ derrotas), pero empata estadísticamente frente a \texttt{BayesianRidge\_\_CF} ($2$ victorias frente a $3$ derrotas Holm) y \texttt{ElasticNet\_\_CF} ($3$ victorias frente a $3$ derrotas Holm).
+    \item \textbf{Horizonte $D+1$ y generalización espaciotemporal (ET):} en $D+1$ ET con cinco variables logra rango $1/23$ con reducción de $-22{,}16\%$ frente a \texttt{Mejor\_Bib} ($59\,803{,}6$ frente a $76\,831{,}1$~kWh/día, $\mathrm{Skill}=28{,}80\%$ sobre \texttt{MM30}). En $D+1$ intraplanta con clima obtiene $61\,297{,}1$~kWh/día (rango $12/23$, $-0{,}22\%$ frente a biblioteca).
+    \item \textbf{Esquema recursivo sin clima ($7$--$28$~días):} mantiene rango medio $2{,}00/23$ en ET ($4/4$ victorias sobre biblioteca, $-1{,}70\%$ medio) y $1{,}50/23$ en intraplanta ($3/4$ victorias sobre biblioteca, $-0{,}27\%$ medio), aunque por debajo de \texttt{MM30} en ET.
+    \item \textbf{Esquema directo acumulado sin clima ($7$--$28$~días):} es competitivo en ET ($3/4$ victorias frente a biblioteca, rango medio $3{,}25/23$, $-1{,}63\%$ medio), pero se degrada sistemáticamente en intraplanta ($1/4$ victorias, $+13{,}27\%$ medio, alcanzando $+24{,}24\%$ en $H=28$~días frente a \texttt{k-NN}).
+    \item \textbf{Acoplamiento con NOAA GEFSv12 ($7$--$28$~días):} en ET alcanza rango $\mathbf{1{,}00/23}$ en los cuatro horizontes ($4/4$ victorias frente a biblioteca y \texttt{MM30}, $-11{,}84\%$ medio frente a biblioteca); en intraplanta obtiene rango medio $2{,}00/23$ ($0/4$ frente a biblioteca, $+1{,}04\%$, pero $4/4$ sobre \texttt{MM30}).
 \end{itemize}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.98\textwidth]{figures/fig_res_04_equivalencia_representacion.pdf}
-\caption{Experimento controlado de equivalencia de representación: reducción universal de $\mathrm{MAE}_{\mathrm{CF,macro}}$ al normalizar por FC en la Condición~A (izquierda) y diferencia porcentual de \texttt{SM-CFHR} frente al mejor par en FC bajo validación causal de $3$ pliegues en la Condición~B (derecha).}
-\label{fig:res_equiv}
-\end{figure}
-
 \begin{table}[!htbp]
-\caption{Equivalencia de representación: desempeño de \texttt{SM-CFHR\_\_CF} frente al mejor competidor en FC (Condiciones~A y~B).}\label{tab:res_equiv_resumen}
+\caption{Resumen comparativo por familia de escenarios de \texttt{SM-CFHR-Fixed} ($B=0$) sobre el soporte común alineado ($28$ escenarios, $23$ modelos en $\text{kWh}$).}\label{tab:res_familias}
+\centering
 \scriptsize
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{@{}lcccccc@{}}
+\begin{tabular}{llccccc}
 \toprule
-Escenario & $\mathrm{MAE}_{\mathrm{CF}}$ (Cond.~A) & Rango FC (A) & Mejor par en FC (A) & $\Delta\%$ vs.\ par FC (A) & Rango FC (B) & $\Delta\%$ vs.\ par FC (B) \\
+Familia & Tarea & Esc. & Rango medio & Vic.\ vs.\ Bib. & Vic.\ vs.\ MM30 & $\Delta$ medio vs.\ Bib. (\%) \\
 \midrule
-\texttt{D1\_ET\_5var} & $0{,}03535$ & $3/14$ & \texttt{BayesianRidge} & $+0{,}13\%$ & $1/14$ & $-0{,}09\%$ \\
-\texttt{D1\_IP\_5var} & $0{,}03892$ & $8/14$ & \texttt{ElasticNet} & $+9{,}30\%$ & $9/14$ & $+3{,}23\%$ \\
-\texttt{D1\_ET\_sin\_clima} & $0{,}04508$ & $2/14$ & \texttt{HuberRegressor} & $+0{,}23\%$ & $2/14$ & $+0{,}29\%$ \\
-\texttt{D1\_IP\_sin\_clima} & $0{,}05202$ & $9/14$ & \texttt{RandomForest} & $+10{,}26\%$ & $11/14$ & $+7{,}89\%$ \\
-\texttt{RecGEFSv12\_ET\_7d} & $0{,}04355$ & $1/14$ & \texttt{BayesianRidge} & $-0{,}56\%$ & --- & --- \\
-\texttt{RecGEFSv12\_ET\_28d} & $0{,}04922$ & $3/14$ & \texttt{ElasticNet} & $+1{,}58\%$ & $3/14$ & $+1{,}13\%$ \\
-\texttt{RecGEFSv12\_IP\_28d} & $0{,}04751$ & $9/14$ & \texttt{ElasticNet} & $+3{,}25\%$ & --- & --- \\
-\texttt{RecSinClima\_ET\_28d} & $0{,}05017$ & $3/14$ & \texttt{ElasticNet} & $+0{,}87\%$ & --- & --- \\
-\texttt{DirectoSinClima\_ET\_28d} & $0{,}02150$ & $3/14$ & \texttt{ElasticNet} & $+1{,}38\%$ & --- & --- \\
-\texttt{DirectoSinClima\_IP\_28d} & $0{,}02123$ & $7/14$ & \texttt{ElasticNet} & $+16{,}24\%$ & $5/14$ & $+10{,}71\%$ \\
+$D+1$ & Espaciotemporal & $2$ & $1{,}00$ & $2/2$ & $2/2$ & $-11{,}30\%$ \\
+$D+1$ & Intraplanta & $2$ & $7{,}50$ & $1/2$ & $2/2$ & $+0{,}07\%$ \\
+Directo sin clima & Espaciotemporal & $4$ & $3{,}25$ & $3/4$ & $0/4$ & $-1{,}63\%$ \\
+Directo sin clima & Intraplanta & $4$ & $6{,}50$ & $1/4$ & $0/4$ & $+13{,}27\%$ \\
+Rec.\ sin clima & Espaciotemporal & $4$ & $2{,}00$ & $4/4$ & $0/4$ & $-1{,}70\%$ \\
+Rec.\ sin clima & Intraplanta & $4$ & $1{,}50$ & $3/4$ & $3/4$ & $-0{,}27\%$ \\
+Rec.\ + GEFSv12 & Espaciotemporal & $4$ & $1{,}00$ & $4/4$ & $4/4$ & $-11{,}84\%$ \\
+Rec.\ + GEFSv12 & Intraplanta & $4$ & $2{,}00$ & $0/4$ & $4/4$ & $+1{,}04\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Las Figuras~\ref{fig:res_d1}, \ref{fig:res_rec} y \ref{fig:res_dir} ilustran el comportamiento físico de las predicciones reales frente a observadas en $D+1$ (entre escalas de $17{,}9$ a $388{,}0$~MW), trayectorias recursivas de $28$ días con degradación por horizonte $h$, y ventanas acumuladas directas de $28$ días.
+Al comparar directamente ambas variantes mediante $\mathrm{MAE}_{\mathrm{macro}}$, \texttt{SM-CFHR-HPO} ($B=25$, $14\,552$ estudios Optuna con $25$ ensayos válidos y $73$ unidades sin historial suficiente) solo mejora a \texttt{SM-CFHR-Fixed} ($B=0$) en $\mathbf{9/28}$ escenarios ---todos intraplanta---, mientras \texttt{Fixed} vence en $14/14$ escenarios espaciotemporales y $5/14$ intraplanta ($19/28$ en total; rango medio $2{,}93$ frente a $3{,}86/23$), con un coste de pared $59\times$ menor (Figura~\ref{fig:res_oof_rankings}).
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.96\textwidth]{figures/fig_res_01_real_vs_pred_d1.pdf}
-\caption{Pronóstico diario $D+1$ en transferencia espaciotemporal con meteorología para tres centrales representativas (\texttt{GYPO}, \texttt{3IRX} y \texttt{3EDL}): convergencia entre \texttt{SM-CFHR (FC)} y \texttt{BayesianRidge (FC)} frente a la distorsión por escala de \texttt{HuberRegressor (kWh bruto)}.}
-\label{fig:res_d1}
+\includegraphics[width=0.98\textwidth]{figures/fig_res_oof_rankings_y_fixed_hpo.pdf}
+\caption{Evaluación OOF primaria y métricas adimensionales: sensibilidad del rango medio entre $\text{kWh}$ ($2{,}93/23$) y factor de capacidad ($4{,}00/23$), y comparación pareada entre \texttt{SM-CFHR-Fixed} ($B=0$) y \texttt{SM-CFHR-HPO} ($B=25$).}
+\label{fig:res_oof_rankings}
 \end{figure}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.98\textwidth]{figures/fig_res_02_real_vs_pred_recursivo.pdf}
-\caption{Despliegue recursivo multihorizonte con NOAA GEFSv12 en ET: trayectoria ejemplar a $28$ días en \texttt{3IRX} (izquierda) y degradación de $\mathrm{MAE}_{\mathrm{CF}}$ por paso $h$ (derecha).}
-\label{fig:res_rec}
-\end{figure}
+\subsection{Reconciliación inferencial y métricas en factor de capacidad}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.96\textwidth]{figures/fig_res_03_real_vs_pred_directo.pdf}
-\caption{Pronóstico directo acumulado a $28$ días sin meteorología: dispersión observada frente a predicha en GWh totales por ventana de $28$ días en ET (izquierda) e IP (derecha).}
-\label{fig:res_dir}
-\end{figure}
-
-\subsection{Ablaciones factoriales, monotonía, auditoría de Huber y sesgo de selección}
-
-Los resultados de la ablación factorial controlada en $6$ escenarios (Figura~\ref{fig:res_ablaciones} y Tabla~\ref{tab:res_ablaciones_v3}) establecen una jerarquía nítida de contribuciones:
+Bajo el protocolo inicial ($T_{\mathrm{eff}} \ge 2H$, promedio simple por origen), únicamente $2/15$ contrastes DM--HLN--HAC frente a \texttt{Mejor\_Bib} alcanzaban significancia tras Holm ($D+1$ ET con clima y \texttt{RecGEFSv12} ET $7$d), excluyendo $13$ escenarios de horizontes largos. Al reconciliar los estimandos sobre las mismas predicciones OOF guardadas sin reentrenar:
 \begin{enumerate}
-    \item \textbf{Componentes con mejora observada consistente:} retirar la normalización causal por factor de capacidad (\texttt{sin\_CF\_energia\_bruta}) degrada $\mathrm{MAE}_{\mathrm{CF,macro}}$ en $+25{,}86\%$ de media ($+1{,}25\%$ a $+62{,}65\%$); retirar las variables NWP (\texttt{sin\_meteorologia}) degrada $+18{,}52\%$ ($+2{,}05\%$ a $+33{,}64\%$); y retirar las anomalías causales (\texttt{sin\_anomalias\_meteo}) degrada $+5{,}61\%$ ($+1{,}66\%$ a $+10{,}63\%$).
-    \item \textbf{Componentes con resultado dependiente del escenario:} la pérdida de Huber ($\delta=1{,}35$) frente a $L_2$ produce $+0{,}31\%$ de cambio medio al retirarla ($+0{,}05\%$ a $+0{,}68\%$); la regularización anisotrópica mejora en unos regímenes frente a $\alpha=0{,}01$ ($+3{,}79\%$ medio al igualar a $0{,}01$, pero $-0{,}99\%$ medio al igualar a $0{,}10$, donde $\alpha_{\mathrm{iso}}=0{,}10$ supera al modelo completo en \texttt{D1\_IP\_5var} por $-5{,}52\%$); y el escalado MAD frente a desviación estándar cambia $+0{,}19\%$ de media ($-0{,}02\%$ a $+1{,}02\%$).
-    \item \textbf{Activación real de restricciones de monotonía:} en \texttt{D1\_ET\_5var} y \texttt{D1\_ET\_sin\_clima} ($20$ pliegues cada uno), las cotas $w_{\mathrm{cf30}} \ge 0$ y $w_{\mathrm{rad}} \ge 0$ se activan el $\mathbf{0{,}00\%}$ de las veces porque los coeficientes no restringidos ya son positivos ($w_{\mathrm{cf30}} \ge 0{,}381$, $w_{\mathrm{rad}} \ge 0{,}071$). En \texttt{RecGEFSv12\_ET} se activan en $2{,}41\%$ ($7$d) y $1{,}67\%$ ($28$d) para $\mathrm{cf}_{30}$, con efecto mínimo ($+0{,}13\%$ y $+0{,}06\%$). En cambio, en intraplanta se activan frecuentemente: $26{,}53\%$ ($\mathrm{cf}_{30}$) y $2{,}04\%$ ($\mathrm{rad}$) en \texttt{D1\_IP\_5var} (donde evitar pesos negativos reduce el error en $7{,}77\%$), y $56{,}00\%$ ($\mathrm{cf}_{30}$) en \texttt{DirectoSinClima\_IP\_28d} ($+5{,}58\%$ al retirarlas).
-    \item \textbf{Huber operacional vs.\ estrés sintético y apalancamiento:} en operación real (\texttt{D1\_ET\_5var}, $4\,312$ observaciones), Huber y $L_2$ son casi indistinguibles ($0{,}03477$ vs.\ $0{,}03481$ CF), y en episodios $\mathrm{sy} < 0{,}3$ ($11$ obs.) o cola superior del $5\%$ ($216$ obs.) $L_2$ resulta ligeramente menor ($0{,}17477$ vs.\ $0{,}17517$). Bajo contaminación sintética del objetivo al $10\%$, Huber preserva su precisión ($0{,}03432$ vs.\ $0{,}03760$ CF para $L_2$), pero bajo apalancamiento del $5\%$ en covariables (\texttt{rad\_pron}), \textbf{ambos estimadores se degradan por igual} ($0{,}03664$ y $0{,}03671$ frente a $0{,}03430$ limpio), confirmando que Huber no protege frente a puntos de apalancamiento en $X$.
-    \item \textbf{Sesgo de selección ($\mathrm{horas\_xm} \le 6$) e incertidumbre conforme:} al reincorporar las jornadas incompletas ($\mathrm{horas\_xm} \le 6$) en evaluación sin imputación, $\mathrm{MAE}_{\mathrm{CF,macro}}$ aumenta ligeramente de $0{,}03535$ a $0{,}03564$ ($+0{,}83\%$) en \texttt{D1\_ET\_5var} y de $0{,}03892$ a $0{,}03903$ ($+0{,}28\%$) en \texttt{D1\_IP\_5var} (Figura~\ref{fig:res_escala_sesgo}). Por su parte, los intervalos conformes temporales ($n_{\mathrm{cal}}=1\,720$, Figura~\ref{fig:res_conformal}) alcanzan coberturas empíricas de $83{,}24\%$ (nominal $90\%$, semiancho $0{,}0662$ CF) y $69{,}25\%$ (nominal $80\%$, semiancho $0{,}0480$ CF), evidenciando subcobertura bajo deriva temporal.
+    \item \textbf{Inversiones de signo entre $\mathrm{MAE}_{\mathrm{macro}}$ y promedio por origen:} el desbalance de disponibilidad entre plantas ($1$ a $17$ centrales por origen) invierte el signo de $\Delta\mathrm{MAE}$ en $4/28$ escenarios (\texttt{D1\_IP\_sin\_clima}, \texttt{RecSinClima\_IP\_14d}, \texttt{RecSinClima\_IP\_28d} y \texttt{DirectoSinClima\_IP\_7d}), ninguno significativo ($p \ge 0{,}28$).
+    \item \textbf{DM--HLN--HAC y bootstrap sincronizado sobre $\mathrm{MAE}_{\mathrm{macro}}$:} con $h_{\mathrm{serie}}=1$ en bloques disjuntos y serie macro-alineada $z_t^{\mathrm{macro}}$, todos los $\mathbf{5/5}$ escenarios \texttt{ET + Clima} ($D+1$ y $7$, $14$, $21$, $28$~días) alcanzan significancia tras Holm frente a \texttt{Mejor\_Bib} ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$, $T_{\mathrm{eff,macro}} \ge 30{,}82$), manteniendo $0$ victorias significativas en régimen intraplanta o sin clima. Este resultado es invariante bajo $T_{\mathrm{eff}} \in \{2h_{\mathrm{serie}}, 15, 20, 25, 30\}$. Frente a referencias preespecificadas, \texttt{SM-CFHR-Fixed} obtiene $7/28$ victorias Holm ($0$ derrotas) frente a \texttt{MM30} y $4/28$ victorias Holm ($1/28$ derrota) frente a \texttt{SM-CFHR-HPO}.
+    \item \textbf{SPA y MCS ($B=5\,000$):} en \texttt{MCS} ($T_{\max}$ unilateral) sobre $\mathrm{MAE}_{\mathrm{macro}}$, \texttt{SM-CFHR-Fixed} sobrevive en $27/28$ escenarios del universo completo y como único superviviente ($1/10$) en $7/28$ entre bibliotecas (Material Suplementario, Sección~S4).
+    \item \textbf{Métricas reales en factor de capacidad ($\mathrm{MAE}_{\mathrm{CF,macro}}$):} al normalizar cada observación por $24\,000\,C_{i,t}$ vigente (incluidas las $6$ centrales con ampliaciones escalonadas), el peso de las plantas mayores (como \texttt{GYPO}, $370$--$388$~MW) deja de dominar la media. El rango medio de \texttt{SM-CFHR-Fixed} pasa de $2{,}93/23$ ($\text{kWh}$) a $\mathbf{4{,}00/23}$ (CF), y las victorias frente a \texttt{Mejor\_Bib} de $18/28$ a $16/28$.
 \end{enumerate}
 
+Las Figuras~\ref{fig:res_oof_planta}, \ref{fig:res_oof_d1}, \ref{fig:res_oof_rec} y \ref{fig:res_oof_dir} ilustran el desempeño por planta y grupo espacial junto con las predicciones reales frente a observadas en $D+1$, recursivo multihorizonte y directo acumulado.
+
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.99\textwidth]{figures/fig_res_06_ablaciones_y_monotonia.pdf}
-\caption{Ablación factorial en $6$ escenarios (izquierda), tasa de activación real de cotas de monotonía (centro) y auditoría de Huber frente a $L_2$ en operación real, contaminación en objetivo y apalancamiento en covariables (derecha).}
-\label{fig:res_ablaciones}
+\includegraphics[width=0.98\textwidth]{figures/fig_res_oof_planta_y_grupos.pdf}
+\caption{Error adimensional $\mathrm{MAE}_{\mathrm{CF}}$ por planta frente a capacidad instalada media en \texttt{D1\_ET\_5var} (izquierda) y comparación ET frente a IP en los $7$ grupos espaciales (derecha).}
+\label{fig:res_oof_planta}
 \end{figure}
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_res_oof_real_vs_pred_d1.pdf}
+\caption{Generación diaria real frente a predicha en $D+1$ para centrales representativas de la cohorte en predicciones OOF congeladas.}
+\label{fig:res_oof_d1}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_res_oof_real_vs_pred_rec.pdf}
+\caption{Trayectorias multihorizonte reales frente a predichas en el esquema recursivo con meteorología GEFSv12.}
+\label{fig:res_oof_rec}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_res_oof_real_vs_pred_dir.pdf}
+\caption{Energía acumulada observada frente a predicha en el esquema directo sin meteorología.}
+\label{fig:res_oof_dir}
+\end{figure}
+
+\subsection{Estudios diagnósticos en $D+1$: ablación, estrés, incertidumbre e interpretabilidad}
+
+Sobre el panel real $D+1$ con corte cronológico estricto ($\max t_{\mathrm{train}} < \min t_{\mathrm{val}}$) se observan los siguientes resultados (Tabla~\ref{tab:res_ablaciones} y Figura~\ref{fig:res_oof_ablaciones}):
+\begin{enumerate}
+    \item \textbf{Ablación controlada en $D+1$:} suprimir la normalización por factor de capacidad (\texttt{energia\_bruta\_vs\_cf}) multiplica el error por $4{,}45\times$ ($270\,035{,}5$ frente a $60\,631{,}2$~kWh/día; $0{,}23065$ frente a $0{,}03488$ CF). La pérdida de Huber mejora marginalmente sobre $L_2$ en datos limpios ($60\,631{,}2$ frente a $60\,784{,}0$~kWh/día), mientras \texttt{sin\_monotonia} y \texttt{escala\_std\_vs\_mad} coinciden con el modelo completo en este corte porque los pesos naturales de \texttt{cf30} ($+0{,}4591$) y \texttt{rad\_pron} ($+0{,}0863$) ya resultaron positivos.
+    \item \textbf{Semillas y estrés sintético en $D+1$:} \texttt{SM-CFHR-Fixed} es determinista en las $10$ semillas ($56\,437{,}8$~kWh/día constantes), frente a la variabilidad de \texttt{HPO} ($55\,660{,}9$--$59\,124{,}8$~kWh/día). Bajo contaminación del $5\%$ y $10\%$ de atípicos en entrenamiento, Huber mantiene estable el error en validación limpia ($0{,}03488 \to 0{,}03491$ CF) mientras $L_2$ se degrada ($0{,}03496 \to 0{,}03749$ CF).
+    \item \textbf{Incertidumbre conforme temporal e interpretabilidad:} sobre $n_{\mathrm{cal}}=1\,720$ residuos pasados, los intervalos conformes alcanzan coberturas empíricas de $83{,}24\%$ (para $90\%$ nominal, semiancho $0{,}0662$ CF) y $69{,}25\%$ (para $80\%$ nominal, semiancho $0{,}0480$ CF), reflejando deriva temporal entre bloques. En interpretabilidad aditiva exacta, los predictores dominantes son \texttt{cf30} ($0{,}0255$ CF), \texttt{anom\_rad} ($0{,}0107$) y \texttt{anom\_nube} ($0{,}0107$).
+\end{enumerate}
+
 \begin{table}[!htbp]
-\caption{Resumen de ablaciones factoriales post-hoc y veredicto empírico por componente.}\label{tab:res_ablaciones_v3}
+\caption{Estudio diagnóstico de ablación controlada sobre el panel real $D+1$ con corte cronológico estricto.}\label{tab:res_ablaciones}
+\centering
 \scriptsize
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{lcc}
 \toprule
-Componente retirado & $N_{\text{esc}}$ & $\Delta\%\;\mathrm{MAE}_{\mathrm{CF}}$ medio & Rango [mín, máx] & Veredicto empírico \\
+Variante de ablación & $\mathrm{MAE}_{\mathrm{CF}}$ & $\mathrm{MAE}_{\mathrm{kWh/d\acute{\imath}a}}$ \\
 \midrule
-Normalización causal en FC & $6$ & $+25{,}86\%$ & $[+1{,}25\%,\; +62{,}65\%]$ & Mejora observada \\
-Variables meteorológicas NWP & $4$ & $+18{,}52\%$ & $[+2{,}05\%,\; +33{,}64\%]$ & Mejora observada \\
-Anomalías meteorológicas causales & $4$ & $+5{,}61\%$ & $[+1{,}66\%,\; +10{,}63\%]$ & Mejora observada \\
-Restricciones de monotonía & $6$ & $+2{,}26\%$ & $[0{,}00\%,\; +7{,}77\%]$ & Dependiente del escenario \\
-Regularización anisotrópica ($\to 0{,}01$) & $4$ & $+3{,}79\%$ & $[-0{,}20\%,\; +13{,}42\%]$ & Dependiente del escenario \\
-Regularización anisotrópica ($\to 0{,}10$) & $4$ & $-0{,}99\%$ & $[-5{,}52\%,\; +0{,}99\%]$ & Dependiente del escenario \\
-Pérdida de Huber ($\delta=1{,}35 \to L_2$) & $6$ & $+0{,}31\%$ & $[+0{,}05\%,\; +0{,}68\%]$ & Dependiente del escenario \\
-Escalado MAD vs.\ STD en objetivo & $6$ & $+0{,}19\%$ & $[-0{,}02\%,\; +1{,}02\%]$ & Dependiente del escenario \\
+\texttt{SM-CFHR\_completo} & $0{,}03488$ & $60\,631{,}2$ \\
+\texttt{sin\_l2\_estructurada} & $0{,}03487$ & $60\,606{,}3$ \\
+\texttt{sin\_monotonia} & $0{,}03488$ & $60\,631{,}2$ \\
+\texttt{escala\_std\_vs\_mad} & $0{,}03488$ & $60\,631{,}2$ \\
+\texttt{sin\_huber\_L2} & $0{,}03496$ & $60\,784{,}0$ \\
+\texttt{energia\_bruta\_vs\_cf} & $0{,}23065$ & $270\,035{,}5$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.96\textwidth]{figures/fig_res_07_error_por_planta_y_escala.pdf}
-\caption{Error adimensional $\mathrm{MAE}_{\mathrm{CF}}$ por central frente a capacidad instalada en \texttt{D1\_ET\_5var} (izquierda) y sensibilidad de las métricas al filtro de jornadas incompletas $\mathrm{horas\_xm} \le 6$ (derecha).}
-\label{fig:res_escala_sesgo}
+\includegraphics[width=0.98\textwidth]{figures/fig_res_oof_ablaciones_y_conformal.pdf}
+\caption{Ablación diagnóstica en $D+1$ (izquierda) y cobertura empírica por central de los intervalos conformes temporales al $90\%$ nominal (derecha).}
+\label{fig:res_oof_ablaciones}
 \end{figure}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.96\textwidth]{figures/fig_res_08_incertidumbre_conformal.pdf}
-\caption{Incertidumbre conforme temporal: cobertura empírica por central al $90\%$ nominal (izquierda) y comparación global de cobertura nominal frente a empírica ($83{,}24\%$ y $69{,}25\%$) con semiancho en factor de capacidad (derecha).}
-\label{fig:res_conformal}
-\end{figure}
-
-\subsection{Veredicto final sobre las hipótesis científicas H1--H4}
-
-La Tabla~\ref{tab:res_hipotesis} consolida el estado actualizado de las cuatro hipótesis preespecificadas integrando la evaluación OOF primaria, la reconciliación macro-alineada y los experimentos controlados post-hoc.
+\subsection{Síntesis de hipótesis científicas H1--H4}
 
 \begin{table}[!htbp]
-\caption{Estado verificado de las hipótesis H1--H4 tras la reconciliación inferencial y los experimentos controlados.}\label{tab:res_hipotesis}
+\caption{Estado verificado de las hipótesis H1--H4 sobre las predicciones OOF congeladas y su reconciliación inferencial.}\label{tab:res_hipotesis}
 \scriptsize
 \setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}p{2.3cm}p{2.7cm}p{6.5cm}@{}}
 \toprule
 Hipótesis & Estado verificado & Evidencia cuantitativa exacta \\
 \midrule
-\textbf{H1} (Normalización FC en ET) & \textbf{Confirmada} (atribuible a la representación FC) & Normalizar a FC reduce $\mathrm{MAE}_{\mathrm{CF}}$ en las $7$ familias ($-10{,}13\%$ a $-23{,}24\%$); retirar FC degrada hasta $+62{,}65\%$ en \texttt{D1\_ET\_5var}. \\
-\textbf{H2} (Superioridad de SM-CFHR) & \textbf{Solo frente a bases en $\text{kWh}$}; empate o desventaja bajo FC equiparado & $5/5$ Holm en \texttt{ET+Clima} frente a bases en $\text{kWh}$, pero bajo FC equiparado SM-CFHR empata en ET ($+0{,}13\%$ a $+1{,}58\%$) y pierde en IP ($+3{,}23\%$ a $+16{,}24\%$). \\
-\textbf{H3} (Contribución de componentes) & \textbf{Parcial / dependiente del escenario} & Mejora clara de FC ($+25{,}86\%$), clima ($+18{,}52\%$) y anomalías ($+5{,}61\%$); efectos pequeños o mixtos de Huber ($+0{,}31\%$), MAD ($+0{,}19\%$) y monotonía ($0\%$ activa en \texttt{D1\_ET}, $26{,}5\%$--$56\%$ en IP). \\
-\textbf{H4} (Fixed vs.\ HPO) & \textbf{Refutada para HPO}; \texttt{Fixed} domina en precisión y coste & \texttt{Fixed} ($B=0$) supera a \texttt{HPO} ($B=25$) en $19/28$ escenarios ($14/14$ ET; $4$ Holm wins vs.\ $1$ derrota) con coste $59\times$ menor. \\
+\textbf{H1} (Normalización FC en ET) & \textbf{Confirmada frente a referencias en $\text{kWh}$} & En $D+1$ ET con clima logra rango $1/23$ ($-22{,}16\%$ frente a \texttt{Mejor\_Bib}); en ablación $D+1$, retirar FC multiplica el error por $4{,}45\times$. \\
+\textbf{H2} (Superioridad estadística pareada) & \textbf{Acotada a ET + Clima}; rechazada como superioridad universal & $5/5$ victorias Holm en \texttt{ET + Clima} bajo $\mathrm{MAE}_{\mathrm{macro}}$ ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$), $0$ victorias en intraplanta o sin clima, y derrotas hasta $+24{,}24\%$ en \texttt{DirectoSinClima\_IP}. \\
+\textbf{H3} (Componentes estructurales en $D+1$) & \textbf{Parcial / dependiente del corte} & La normalización FC explica la mayor caída ($4{,}45\times$); Huber aporta estabilidad bajo contaminación sintética ($10\%$); monotonía y MAD coinciden con el corte limpio sin restricción. \\
+\textbf{H4} (Fixed vs.\ HPO) & \textbf{Refutada para HPO}; \texttt{Fixed} domina en precisión y coste & \texttt{Fixed} ($B=0$) supera a \texttt{HPO} ($B=25$) en $19/28$ escenarios ($14/14$ ET; $4$ victorias Holm frente a $1$ derrota) con coste $59\times$ menor. \\
 \bottomrule
 \end{tabular}
 \end{table}

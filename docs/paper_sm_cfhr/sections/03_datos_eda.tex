@@ -14,7 +14,7 @@ El protocolo de depuración física \cite{nist2003eda,pipino2002quality,jensen20
 \label{fig:cohorte_mapa}
 \end{figure}
 
-Es indispensable explicitar los posibles sesgos de selección derivados de estos filtros: al excluir días con generación nula o $\le 6$ horas reportadas, las métricas reflejan operación activa o parcialmente activa y omiten paradas totales prolongadas; asimismo, el requisito de $\ge 100$ días útiles y $\ge 60$ días post-arranque excluye plantas recién conectadas en fase temprana de pruebas. La Tabla~S1 del Material Suplementario detalla el inventario completo de las $17$ centrales estabilizadas, cuyas coberturas útiles con $\mathrm{horas\_xm} > 6$ oscilan entre $251$ y $1\,032$ días válidos ($12\,725$ registros en total, frente a $12\,756$ antes del filtro horario). En la Sección~\ref{sec:resultados} se cuantifica directamente la sensibilidad de las métricas al reincorporar los registros incompletos con $\mathrm{horas\_xm} \le 6$.
+Es indispensable explicitar los posibles sesgos de selección derivados de estos filtros: al excluir días con generación nula o $\le 6$ horas reportadas, las métricas reflejan operación activa o parcialmente activa y omiten paradas totales prolongadas; asimismo, el requisito de $\ge 100$ días útiles y $\ge 60$ días post-arranque excluye plantas recién conectadas en fase temprana de pruebas. La Tabla~S1 del Material Suplementario detalla el inventario completo de las $17$ centrales estabilizadas, cuyas coberturas útiles con $\mathrm{horas\_xm} > 6$ oscilan entre $251$ y $1\,032$ días válidos ($12\,725$ registros en total, frente a $12\,756$ antes del filtro horario).
 
 \subsection{Hallazgos exploratorios y motivación del modelado}
 

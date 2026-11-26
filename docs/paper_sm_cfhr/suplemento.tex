@@ -115,28 +115,9 @@ Proposición~\ref{sup:prop_kkt} & \texttt{Optimality.lean}, \texttt{Gradient.lea
 \end{tabularx}
 \end{table}
 
-\section{Inventarios completos de flota, escenarios, referencias y tablas extendidas}\label{sup:tablas}
+\section{Inventarios completos de flota, escenarios y modelos de referencia}\label{sup:tablas}
 
 \input{appendices/B_escenarios_benchmarks}
-
-\begin{table}[!htbp]
-\centering
-\caption{Efecto promedio de normalizar por factor de capacidad (\texttt{kWh\_bruto} $\to$ \texttt{CF}) en los $10$ escenarios de la Condición~A.}\label{tab:sup_cf_shift}
-\scriptsize
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Familia de modelo & $\mathrm{MAE}_{\mathrm{CF}}$ medio (\texttt{kWh\_bruto}) & $\mathrm{MAE}_{\mathrm{CF}}$ medio (\texttt{CF}) & Cambio medio (\%) & Mediana cambio (\%) \\
-\midrule
-\texttt{BayesianRidge} & $0{,}04843$ & $0{,}03993$ & $-14{,}59\%$ & $-5{,}83\%$ \\
-\texttt{ElasticNet} & $0{,}04839$ & $0{,}03937$ & $-17{,}66\%$ & $-17{,}27\%$ \\
-\texttt{HuberRegressor} & $0{,}04847$ & $0{,}04332$ & $-10{,}13\%$ & $-4{,}49\%$ \\
-\texttt{RandomForest} & $0{,}05187$ & $0{,}04053$ & $-19{,}06\%$ & $-23{,}32\%$ \\
-\texttt{Ridge} & $0{,}04974$ & $0{,}04153$ & $-13{,}96\%$ & $-5{,}48\%$ \\
-\texttt{SM-CFHR} & $0{,}04829$ & $0{,}04045$ & $-14{,}91\%$ & $-8{,}16\%$ \\
-\texttt{XGBoost} & $0{,}05574$ & $0{,}04052$ & $-23{,}24\%$ & $-29{,}85\%$ \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \section{Entorno computacional, reproducibilidad y notas técnicas de inferencia}\label{sup:repro}
 
