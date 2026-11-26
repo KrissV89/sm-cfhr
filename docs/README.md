@@ -24,3 +24,4 @@ Registros históricos, auditorías estadísticas intermedias, trazabilidad de re
 - [`docs/auditoria_entregable3/`](auditoria_entregable3/), [`docs/auditoria_preflight_final/`](auditoria_preflight_final/), [`docs/investigacion/`](investigacion/).
 - [`docs/paper_sm_cfhr/`](paper_sm_cfhr/) (`AUDITORIA_*`, `INFORME_*`, `MATRIZ_*`, `PROPUESTA_*`).
 - [`experiments/protocolo.md`](../experiments/protocolo.md), [`notebooks/actuales/auditoria_inferencia_estadistica.ipynb`](../notebooks/actuales/auditoria_inferencia_estadistica.ipynb), [`book/`](../book/), [`dashboard/`](../dashboard/).
+- [`archive/experimentos_no_autorizados_cf_benchmarks/`](../archive/experimentos_no_autorizados_cf_benchmarks/): archivos de una campaña experimental post-hoc no autorizada, aislados y excluidos del estudio oficial.

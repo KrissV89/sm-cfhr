@@ -43,10 +43,10 @@
 
 ## 3. Informe de Coherencia Integral
 
-1. **Artículo vs. Notebooks:** Ambos coinciden exactamente en la cohorte (`17` plantas, `12.725` días útiles `horas_xm > 6`), los resultados OOF primarios (`SM-CFHR-Fixed` rango `2,93/23` en `kWh`, `4,00/23` en `MAE_CF_macro`, `19/28` victorias sobre `HPO`, `5/5` Holm en `ET + Clima` bajo `MAE_macro`), las limitaciones (subcobertura conformal `83,24%`/`69,25%`, no independencia de escenarios, ausencia de datasets externos) y las conclusiones `v3.0.0` (equivalencia `CF` y ablaciones).
+1. **Artículo vs. Notebooks:** Ambos coinciden exactamente en la cohorte (`17` plantas, `12.725` días útiles `horas_xm > 6`), los resultados OOF primarios (`SM-CFHR-Fixed` rango `2,93/23` en `kWh`, `4,00/23` en `MAE_CF_macro`, `19/28` victorias sobre `HPO`, `5/5` Holm en `ET + Clima` bajo `MAE_macro`, derrotas hasta `+24,24%` en `DirectoSinClima_IP`) y las limitaciones (subcobertura conformal `83,24%`/`69,25%`, no independencia de escenarios, benchmarks comparados en `kWh` bruto y ausencia de datasets externos).
 2. **Notebooks vs. Resultados:** `evaluacion_cientifica_ashr_oof.ipynb` se regeneró desde `generar_notebook_ashr.py` y se ejecutó íntegramente sin errores leyendo `resultados/evaluacion_ashr_oof/`.
-3. **README vs. Evidencia:** `README.md` expone honestamente el hallazgo de equivalencia (`-10,13%` a `-23,24%` al normalizar a `CF`; paridad con `BayesianRidge-CF` y `ElasticNet-CF` en ET; pérdida en IP) sin exagerar superioridad algorítmica.
-4. **Generadores sin regresión:** `generar_notebook_ashr.py` quedó sincronizado y validado por `tests/test_notebook_editorial_integrity.py` (incluyendo prohibición explícita de `cf-brh` y `v1.0.3-polyform`).
+3. **README vs. Evidencia:** `README.md` expone estrictamente los hallazgos congelados y la reconciliación estadística verificada sin atribuir superioridad algorítmica universal ni incluir experimentos no autorizados.
+4. **Generadores sin regresión:** `generar_notebook_ashr.py` y `generate_oof_figures.py` quedaron sincronizados con el alcance oficial y validados por `tests/test_notebook_editorial_integrity.py`.
 5. **Bibliografía:** `main.bbl` y `suplemento.bbl` compilan con `0` entradas `???` y `0` citas indefinidas.
-6. **Documentos históricos diferenciados:** El inventario en `docs/README.md` separa explícitamente Nivel A, Nivel B y Nivel C sin eliminar registros históricos.
+6. **Documentos históricos y aislamiento:** El inventario en `docs/README.md` separa explícitamente Nivel A, Nivel B y Nivel C, e incorpora el aislamiento de la campaña no autorizada en `archive/experimentos_no_autorizados_cf_benchmarks/` (`INFORME_AISLAMIENTO_CAMPANA_CF_NO_AUTORIZADA.md`).
 7. **Integridad OOF congelada:** Los `57` hashes SHA-256 de `resultados/evaluacion_ashr_oof/` permanecen intactos (`57/57`, `0` discrepancias).

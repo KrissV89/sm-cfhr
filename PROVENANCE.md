@@ -13,7 +13,7 @@
   `27a9fda4fa8b7ef0d95faf9e925e47ade9ed8f25e9ea5d97d6d7cf1c00ddde83`
 - **Frozen OOF protocol configuration (`experiments/config_ashr_congelada.json`):**
   `version_codigo = "1.0.3-oof-definitivo"`, `HPO_PROTOCOL_VERSION = "v1.0.3-exact-recursive-state"`, `HPO_PROTOCOL_HASH = "e2a1d2b68fb9fbf90f49ab4caf5c33ae011bc03d63b2486f7ab1cf593b604d5d"`.
-- **Frozen OOF integrity:** All `57` artifact hashes under `resultados/evaluacion_ashr_oof/` are preserved unmodified across the `v2.0.0` inference reconciliation and `v3.0.0` representation-equivalence / ablation experiments.
+- **Frozen OOF integrity:** All `57` artifact hashes under `resultados/evaluacion_ashr_oof/` are preserved unmodified across the `v2.0.0` inference reconciliation and editorial reconstruction.
 
 ## 3. Licensing and Rights Separation
 - **Original software code** in `KrissV89/sm-cfhr` (estimator, OOF pipeline, CLI, scripts, tests, dashboard, notebook Python code, scientific utilities, and Lean 4 formalization in `formal/sm_cfhr_lean/`) is licensed under **PolyForm Noncommercial License 1.0.0**.
