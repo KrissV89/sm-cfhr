@@ -1,35 +1,50 @@
-# Structured Monotone Capacity-Factor Huber Regressor (SM-CFHR)
+# SM-CFHR — Normalización Causal en Factor de Capacidad y Regresor Huber Estructurado
 
-> **A robust, physically constrained regression framework for multi-plant and multi-horizon photovoltaic energy forecasting, with reproducible nested cross-validation and statistical evaluation.**
+> **Marco reproducible para pronóstico fotovoltaico diario ($D+1$) y subestacional ($7$--$28$ días) multi-planta y multi-horizonte, con validación cruzada causal anidada, formalización en Lean~4 y experimentos controlados de equivalencia de representación.**
 
 ---
 
-## 1. Nombre completo
-**SM-CFHR** (*Structured Monotone Capacity-Factor Huber Regressor*, implementado en `AdaptiveStructuredHuberRegressor` y expuesto mediante la API `scikit-learn` `SMCFHRRegressor`).
+## 1. Descripción científica
 
-## 2. Problema abordado
-Pronóstico diario (`D+1`) y multihorizonte (`7, 14, 21, 28` días) del factor de capacidad y la generación eléctrica fotovoltaica en flotas reales heterogéneas (17 plantas solares en Colombia), con dos regímenes de generalización: **espaciotemporal (ET)** e **intraplanta (IP)**, con y sin meteorología numérica (`Open-Meteo` / `GEFSv12`).
+**SM-CFHR** (*Structured Monotone Capacity-Factor Huber Regressor*, implementado en `AdaptiveStructuredHuberRegressor` y expuesto mediante `SMCFHRRegressor` compatible con `scikit-learn`) aborda el pronóstico determinístico sobre una cohorte real de **17 centrales solares en Colombia** ($G = 7$ zonas espaciales, enero de 2024 – octubre de 2026; capacidades netas entre $9{,}8$ y $388{,}0\text{ MW}$, cociente de escala $39{,}6\times$).
 
-## 3. Contribución metodológica
-Formulación paramétrica convexa acotada al dominio fotovoltaico multi-planta que unifica:
-1. Transformación física al **factor de capacidad adimensional** $c_i \in [0, 1]$ (`B_i = cap_MW_D * 24,000`).
-2. **Pérdida simétrica de Huber** sobre escala robusta MAD residual, resistente a desconexiones y anomalías operativas.
-3. **Regularización $L_2$ diferenciada** por familia de predictores ($\alpha_{\text{lin}}$ vs. $\alpha_{\text{meteo}}$).
-4. **Restricciones físicas monótonas** ($\theta_j \ge 0$ sobre `cf30` y `rad_pron`) resueltas mediante **L-BFGS-B con gradiente analítico** en NumPy/SciPy puro.
+El estudio evalúa dos regímenes —**transferencia espaciotemporal (`ET`)** mediante *leave-one-group-out* y **pronóstico intraplanta (`IP`)**— con y sin variables meteorológicas (`Open-Meteo` / `NOAA GEFSv12`) bajo estrategias $D+1$, recursiva y directa acumulada ($28$ configuraciones en total).
 
-## 4. Formulación resumida
-$$\min_{\theta_0 \in \mathbb{R},\; \theta \in \mathcal{C}} \; \frac{1}{n}\sum_{i=1}^n \rho_\delta\!\left(\tilde{c}_i - \theta_0 - z_i^\top \theta\right) + \frac{1}{2}\sum_{j \in \mathcal{G}_{\mathrm{lin}}} \alpha_{\mathrm{lin}}\,\theta_j^2 + \frac{1}{2}\sum_{j \in \mathcal{G}_{\mathrm{meteo}}} \alpha_{\mathrm{meteo}}\,\theta_j^2$$
+### Hallazgo empírico central
+- **Normalización causal por capacidad (`24.000 * C_{i,t}`):** al equiparar la representación de entrada y objetivo a factor de capacidad causal (`CF`) en lugar de energía bruta (`kWh`), las siete familias evaluadas (`BayesianRidge`, `ElasticNet`, `HuberRegressor`, `Ridge`, `RandomForest`, `XGBoost` y `SM-CFHR`) reducen su $\mathrm{MAE}_{\mathrm{CF,macro}}$ medio entre **$-10{,}13\%$ y $-23{,}24\%$**.
+- **Algoritmo frente a representación:** bajo representación `CF` equiparada, `SM-CFHR` empata o queda a $+0{,}13\%$--$+1{,}58\%$ de `BayesianRidge-CF` y `ElasticNet-CF` en transferencia espaciotemporal (rango $1$ únicamente en `RecGEFSv12_ET_7d`, $-0{,}56\%$, en condición fija, y en `D1_ET_5var`, $-0{,}09\%$, en validación interna de $3$ pliegues) y pierde en régimen intraplanta ($+3{,}23\%$ a $+16{,}24\%$).
+- **Configuración fija frente a HPO:** `SM-CFHR-Fixed` ($B=0$) supera a `SM-CFHR-HPO` ($B=25$ ensayos Optuna TPE) en **$19/28$ escenarios** ($14/14$ en `ET`) con un coste computacional **$59\times$ menor** ($499{,}75\text{ s}$ frente a $29\,550{,}3\text{ s}$).
 
-## 5. Arquitectura del repositorio
-- `src/sm_cfhr/`: paquete Python instalable (`estimator.py`, `cli.py`, `persistence.py`, `pipeline_stages.py`, `inference.py`, `validation.py`, `optimization.py`, `robustness.py`, `plotting.py`, `io.py`) y subpaquete `parallel/` (`work_units.py`, `storage.py`, `worker.py`, `coordinator.py`, `consolidation.py`) para ejecución multiproceso por horizontes.
-- `src/ashr_oof_pipeline/`: núcleo OOF de 28 escenarios, validación cruzada causal anidada y cargador de resultados.
-- `scripts/` y `scripts/evaluacion/`, `scripts/setup/`: runner secuencial (`ejecutar_oof_definitivo_ashr.py`), coordinador paralelo (`ejecutar_oof_paralelo.py`), benchmarks y validación (`benchmark_parallel_workers.py`, `validar_infraestructura_paralela.py`), postprocesamiento en 8 etapas e importador de datos locales.
-- `experiments/`: configuración congelada (`config_ashr_congelada.json`) y protocolo pre-registrado (`protocolo.md`).
-- `notebooks/actuales/`: notebook científico definitivo en 3 estados (A/B/C).
-- `book/` y `dashboard/`: informe Jupyter Book y aplicación Dash multipágina.
-- `tests/`: 8 suites automatizadas (pruebas matemáticas, anti-fuga, bloqueadores v1.1, recuperación A–L y equivalencia/reanudación multiproceso en `test_parallel_oof.py`).
+En consecuencia, la contribución principal verificada es el **marco de normalización causal por capacidad vigente al origen, despliegue multihorizonte sin fuga e inferencia macro-alineada**, no una superioridad algorítmica universal de SM-CFHR frente a lineales regularizados en factor de capacidad.
 
-## 6. Instalación (Clonado Independiente)
+---
+
+## 2. Formulación resumida
+
+$$\min_{b \in \mathbb{R},\; \mathbf{w} \in \mathcal{C}} \; \frac{1}{n}\sum_{k=1}^{n} \rho_\delta\!\left(\tilde{y}_k - b - \mathbf{z}_k^\top \mathbf{w}\right) + \frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w}, \qquad \mathcal{C} = \{\mathbf{w} \in \mathbb{R}^p : w_j \ge 0 \;\forall j \in \mathcal{M}_+\}$$
+
+donde $\tilde{y}_k = (y_k - m_y)/\sigma_y$ emplea mediana y MAD en entrenamiento, $D_\alpha = \diag(d_1,\dots,d_p)$ separa penalizaciones $\alpha_{\mathrm{lin}} = 0{,}01$ y $\alpha_{\mathrm{meteo}} = 0{,}10$, y $\mathcal{M}_+$ restringe la persistencia reciente (`cf30`) y la irradiación pronosticada (`rad_pron`), resuelto mediante L-BFGS-B con gradiente analítico exacto.
+
+---
+
+## 3. Organización del repositorio
+
+La documentación se clasifica en tres niveles explícitos (véase [`docs/README.md`](docs/README.md)):
+- **Nivel A (Publicación científica):** [`docs/paper_sm_cfhr/`](docs/paper_sm_cfhr/) (`main.pdf`, `suplemento.pdf`, fuentes LaTeX y figuras vectoriales) y [`notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb`](notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb).
+- **Nivel B (Documentación técnica y reproducibilidad):** `README.md`, [`PROVENANCE.md`](PROVENANCE.md), [`src/sm_cfhr/README.md`](src/sm_cfhr/README.md), [`notebooks/actuales/README_REPRODUCCION_ASHR.md`](notebooks/actuales/README_REPRODUCCION_ASHR.md), [`data/README.md`](data/README.md) y [`docs/reproducibilidad/`](docs/reproducibilidad/).
+- **Nivel C (Historial interno y auditorías):** [`docs/revisiones/`](docs/revisiones/), [`docs/auditoria_entregable3/`](docs/auditoria_entregable3/), [`docs/auditoria_preflight_final/`](docs/auditoria_preflight_final/), [`docs/investigacion/`](docs/investigacion/), [`book/`](book/) y [`dashboard/`](dashboard/).
+
+Componentes de código y verificación:
+- `src/adaptive_structured_huber.py` y `src/sm_cfhr/`: estimador `SMCFHRRegressor`, inferencia (`inference.py`, `inference_v2.py`), métricas auditadas (`metrics_audit.py`), equivalencia de representación (`representation_benchmark.py`) y coordinador paralelo (`parallel/`).
+- `src/ashr_oof_pipeline/`: particiones causales anidadas, despliegue recursivo sin fuga y evaluación OOF de $28$ escenarios.
+- `scripts/evaluacion/`: reproducción de OOF, inferencia `v2`, experimento de equivalencia `v3` (`ejecutar_equivalencia_representacion_v3.py`) y ablaciones/sesgo `v3` (`ejecutar_ablaciones_y_sesgo_v3.py`).
+- `formal/sm_cfhr_lean/`: formalización en Lean~4 (`v4.36.0` / Mathlib) de $26$ declaraciones sobre $\mathbb{R}$.
+- `tests/`: pruebas unitarias, anti-fuga, inferencia estadística, integridad de cuadernos y esquemas `v3`.
+
+---
+
+## 4. Instalación y obtención de datos
+
 ```bash
 git clone https://github.com/KrissV89/sm-cfhr.git
 cd sm-cfhr
@@ -41,88 +56,51 @@ python -m pip install -r requirements-lock.txt
 python -m pip install -e . --no-build-isolation --no-deps
 ```
 
-## 7. Obtención de datos
-Los datasets solares reales y los 28 CSVs oficiales de benchmarks (`654.35 MB`) **no se alojan en GitHub** por términos de redistribución XM y tamaño. Consulte [data/README.md](data/README.md) y [data/manifests/data_manifest.json](data/manifests/data_manifest.json). Una vez recibida la carpeta autorizada de datos locales:
+Los datasets solares reales y los $28$ CSVs de referencia (`654.35 MB`) no se alojan en GitHub por términos de redistribución de XM y tamaño (véanse [`data/README.md`](data/README.md) y [`data/manifests/data_manifest.json`](data/manifests/data_manifest.json)). Tras obtener los archivos locales autorizados:
+
 ```bash
 python scripts/setup/import_local_data.py --source-root /ruta/a/datos_autorizados
-```
-
-## 8. Preparación de entorno y verificación previa (`doctor`)
-```bash
 python -m sm_cfhr.cli doctor
-python -m sm_cfhr.cli evaluate --variante ambos --n-trials 25
 ```
 
-## 9. Verificación de pruebas unitarias
+---
+
+## 5. Reproducción de experimentos y pruebas
+
+### Pruebas automatizadas
 ```bash
-python -m pytest tests/test_adaptive_structured_huber.py tests/test_selector_ashr_v2.py tests/test_bloqueadores_v1_1.py -v
+python -m pytest tests/test_adaptive_structured_huber.py tests/test_auditoria_inferencia_v2.py tests/test_equivalencia_y_ablaciones_v3.py tests/test_notebook_editorial_integrity.py -v
 ```
 
-## 10. Ejecución completa del OOF definitivo
-
-### Ejecución paralela local recomendada (Windows `spawn` / multi-núcleo)
-El coordinador paralelo (`scripts/ejecutar_oof_paralelo.py`) distribuye unidades independientes entre workers reciclables fijando `OMP_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1` y `MKL_NUM_THREADS=1` para evitar sobresuscripción, persiste cada unidad atómicamente por horizonte (`D1/`, `7d/`, `14d/`, `21d/`, `28d/`) y aísla cada estudio Optuna en su propio archivo SQLite:
+### Equivalencia de representación y ablaciones controladas (`v3.0.0`)
 ```bash
-# 1. Dry-run previo (no entrena):
-python scripts/ejecutar_oof_paralelo.py --workers 8 --variante ambos --data-root /ruta/a/datos_autorizados
+python scripts/evaluacion/ejecutar_equivalencia_representacion_v3.py
+python scripts/evaluacion/ejecutar_ablaciones_y_sesgo_v3.py
+```
 
-# 2. Ejecución definitiva (Fixed y HPO con 25 trials, reciclaje cada 60 unidades o 1536 MB RSS):
+### Reproducción OOF completa y reportes (opcional, requiere datos importados)
+```bash
 python scripts/ejecutar_oof_paralelo.py --workers 8 --variante fixed --run-id oof_v1_0_3_fixed --data-root /ruta/a/datos_autorizados --confirm-oof
 python scripts/ejecutar_oof_paralelo.py --workers 8 --variante hpo --n-trials 25 --max-tasks-per-worker 60 --worker-max-rss-mb 1536 --run-id oof_v1_0_3_hpo --data-root /ruta/a/datos_autorizados --confirm-oof
-```
-*(Alternativa secuencial original vía CLI: `python -m sm_cfhr.cli evaluate --confirm-oof --variante ambos --n-trials 25 --run-id oof_definitivo_v1_1`.)*
-
-## 11. Seguimiento, recuperación y consolidación tras interrupción
-```bash
-# Consultar progreso en vivo desde otra terminal sin detener la corrida:
-python scripts/ejecutar_oof_paralelo.py --status --run-id oof_v1_0_3_hpo
-
-# Reanudar tras Ctrl+C (recupera locks huérfanos y continúa estudios Optuna sin trials extra):
-python scripts/ejecutar_oof_paralelo.py --workers 8 --variante hpo --n-trials 25 --max-tasks-per-worker 60 --worker-max-rss-mb 1536 --run-id oof_v1_0_3_hpo --data-root /ruta/a/datos_autorizados --confirm-oof
-
-# Consolidar fragmentos en predicciones/*.csv y manifest_ashr_oof.json para el notebook final:
-python scripts/ejecutar_oof_paralelo.py --consolidate --run-id oof_v1_0_3_fixed
-python scripts/ejecutar_oof_paralelo.py --consolidate --run-id oof_v1_0_3_hpo
-```
-
-## 12. Resultados producidos (Etapas 2–8 sin reentrenar)
-```bash
 python -m sm_cfhr.cli report
 ```
-Genera métricas, rankings, MCS, DM-HLN-HAC, SPA, multiplicidad Holm/BH por familias, veredicto R3, estudios de ablación/robustez/incertidumbre/interpretabilidad, tablas CSV/LaTeX y 13 figuras (`PNG` + `PDF`) en `resultados/evaluacion_ashr_oof/`.
 
-## 13. Notebook científico
+### Cuadernos y manuscrito LaTeX
 ```bash
 jupyter nbconvert --to notebook --execute --inplace notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb
+cd docs/paper_sm_cfhr && pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
 ```
 
-## 14. Jupyter Book
-Ubicado en `book/` (requiere `jupyter-book >= 2.0`). Sus capítulos de Entregable 2 documentan `K1/W1` y están preparados para consumir las tablas definitivas de `SM-CFHR` tras el OOF.
+---
 
-## 15. Dashboard
-Ubicado en `dashboard/` (`app.py`, `pages/`, `render.yaml`). Carga artefactos precalculados sin entrenar en solicitudes web; su despliegue requiere instalar las dependencias web de `dash` (`render.yaml`).
+## 6. Limitaciones conocidas
+- Cohorte única de $17$ centrales fotovoltaicas colombianas ($G = 7$ conglomerados espaciales), sin conjuntos de datos externos no solares.
+- Reutilización adaptativa del panel histórico enero 2024 – octubre 2026 (requiere validación prospectiva congelada independiente).
+- En transferencia espaciotemporal (`ET`), la central evaluada aporta su historial causal previo al origen (`cf30`, `cf7`, `cf1`), por lo que no equivale a predicción *zero-shot*.
+- La pérdida de Huber acota la influencia de anomalías en el objetivo, pero no protege frente a puntos de apalancamiento en covariables.
+- Los intervalos conformes temporales muestran subcobertura bajo deriva entre bloques ($83{,}24\%$ para $90\%$ nominal; $69{,}25\%$ para $80\%$).
 
-## 16. Reproducibilidad, Versiones y Validación Independiente
-- **Versión del paquete y licencia:** `sm-cfhr 1.0.3` (`pyproject.toml`, tag `v1.0.3-polyform`, licencia PolyForm Noncommercial 1.0.0).
-- **Configuración congelada del modelo:** `version_codigo: 1.1.0-oof-definitivo` (`experiments/config_ashr_congelada.json`), semilla `2026`.
-- **Protocolo interno de Optuna/CV:** `HPO_PROTOCOL_VERSION = "v1.0.3-exact-recursive-state"`, semilla `2026`, Optuna SQLite `RDBStorage`, escritura atómica (`fsync` + `os.replace`) y verificación SHA-256 en cada checkpoint. Nota: `SM-CFHR-HPO` en `v1.0.3` utiliza el mismo motor causal `PlantRecursiveState`/`PlantRecursiveWeatherState` en la validación interna de Optuna que en la evaluación externa y rechaza estudios SQLite de `v1.0.2`.
-- **Registro de condiciones reales de ejecución OOF:** hardware, versiones exactas del entorno `solarpv-eda`, hashes de trazabilidad, benchmark preliminar SMT (`8`/`10`/`12` workers) y telemetría real de `oof_v1_0_3_fixed` y `oof_v1_0_3_hpo` documentados en [docs/reproducibilidad/CONDICIONES_COMPUTACIONALES_OOF.md](docs/reproducibilidad/CONDICIONES_COMPUTACIONALES_OOF.md).
+---
 
-Para generar la evidencia obligatoria de reproducibilidad (`results/runs/<run_id>/reproducibilidad/`) y comparar dos corridas independientes:
-```bash
-python -m sm_cfhr.cli repro-bundle --run-id oof_definitivo_v1_1
-python -m sm_cfhr.cli compare-runs --dir-a /ruta/run_equipo_A --dir-b /ruta/run_equipo_B --out-md reproducibility_comparison.md
-```
-
-## 17. Referencias científicas
-Ver `book/references.bib` y `docs/auditoria_entregable3/AUDITORIA_R1_R2_R3.md`.
-
-## 18. Licencia y atribuciones
-Código bajo licencia **PolyForm Noncommercial 1.0.0** ([LICENSE](LICENSE)): uso gratuito permitido para investigación, academia y fines no comerciales. Para licenciamiento comercial escribir a **edmolinares@soulspacers.com**. Autor: **Enmanuel David Diaz Molinares** (Universidad del Norte, Barranquilla, Colombia).
-
-## 19. Limitaciones
-- La evaluación confirmatoria de los 28 escenarios solares requiere importar los datos privados XM/GEFSv12 y benchmarks (`654.35 MB`).
-- Sustitución de datasets externos por los 28 escenarios solares pendiente de validación externa independiente (dominio solar exclusivo).
-
-## 20. Responsable del repositorio
-Repositorio mantenido bajo propiedad exclusiva del autor en GitHub (`KrissV89`).
+## 7. Licencia y citación
+Software original distribuido bajo **PolyForm Noncommercial 1.0.0** ([LICENSE](LICENSE)); para uso comercial contactar a **edmolinares@soulspacers.com**. Los datos externos (XM, Open-Meteo, Global Energy Monitor) y dependencias de terceros conservan sus propias licencias. Ver [`CITATION.cff`](CITATION.cff) y [`PROVENANCE.md`](PROVENANCE.md).

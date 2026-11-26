@@ -1,6 +1,6 @@
 # Paquete `sm_cfhr` — Structured Monotone Capacity-Factor Huber Regressor
 
-Paquete Python reutilizable, compatible con `scikit-learn` (`BaseEstimator`, `RegressorMixin`, `clone`, `Pipeline`, `GridSearchCV`), cuyo núcleo matemático de aprendizaje está implementado en NumPy/SciPy puro sin delegar el estimador en bibliotecas externas.
+Paquete Python reutilizable, compatible con `scikit-learn` (`BaseEstimator`, `RegressorMixin`, `clone`, `Pipeline`, `GridSearchCV`), con núcleo de aprendizaje implementado en NumPy/SciPy.
 
 ## 1. Instalación editable
 
@@ -55,11 +55,5 @@ loaded_pipe = joblib.load("sm_cfhr_pipe.joblib")
 
 ## 4. Compatibilidad Retroactiva
 
-- `src/adaptive_structured_huber.py` conserva exactamente el mismo algoritmo y firma de `__init__`; todos los scripts en `scripts/evaluacion/` y `src/ashr_oof_pipeline/` siguen funcionando sin cambios.
-- `sm_cfhr` actúa como fachada modular limpia sobre `src/adaptive_structured_huber.py` y `src/ashr_oof_pipeline/`.
-
-## 5. Comprobaciones Pendientes para Fase de Ejecución
-
-- Ejecutar `pip install -e .` en el entorno `solarpv-eda` y verificar `from sm_cfhr import SMCFHRRegressor` sin `sys.path`.
-- Verificar `pytest` completo tras la incorporación de `n_features_in_`, `feature_names_in_` y `NotFittedError`.
-- Ejecutar `--ejecutar-oof-definitivo` y re-ejecutar el notebook científico en Estado B.
+- `src/adaptive_structured_huber.py` conserva el algoritmo y la firma de `__init__` utilizados por `scripts/evaluacion/` y `src/ashr_oof_pipeline/`.
+- `sm_cfhr` actúa como fachada modular sobre `src/adaptive_structured_huber.py` y `src/ashr_oof_pipeline/`.

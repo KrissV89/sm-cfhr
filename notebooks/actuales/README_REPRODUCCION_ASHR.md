@@ -1,34 +1,40 @@
-# Guía de Reproducción — `SM-CFHR` (`sm-cfhr 1.0.3`) y Análisis OOF Definitivo
+# Guía de Reproducción — `SM-CFHR` (`v3.0.0`)
 
 ## 1. Requisitos, versiones e identificadores
-- **Repositorio oficial:** `sm-cfhr` (`PolyForm-Noncommercial-1.0.0`, etiqueta `v1.0.3-polyform`)
-- **Versión del paquete:** `sm-cfhr 1.0.3` (`pyproject.toml` y `sm_cfhr.__version__`)
-- **Protocolo científico HPO:** `v1.0.3-exact-recursive-state`, semilla `2026`
-- **Entorno validado:** Python `3.11.15` (`conda` env `solarpv-eda`), Windows 11 (`spawn`)
+- **Repositorio:** `https://github.com/KrissV89/sm-cfhr` (`PolyForm-Noncommercial-1.0.0`, etiqueta `v3.0.0`)
+- **Versión del paquete:** `sm-cfhr` (`pyproject.toml` y `sm_cfhr.__version__`)
+- **Protocolo causal HPO:** `v1.0.3-exact-recursive-state`, semilla `2026`
+- **Entorno validado:** Python `3.11.15` (`conda` env `solarpv-eda`)
 
 ```powershell
-# Desde la raíz del repositorio sm-cfhr
 python -m pip install -r requirements-lock.txt
 python -m pip install -e . --no-build-isolation --no-deps
 python -m ipykernel install --user --name solarpv-eda --display-name "Python (solarpv-eda)"
 ```
 
-## 2. Reproducción del análisis desde los artefactos OOF cerrados (sin reentrenar)
-Los resultados OOF definitivos consolidados (`Fixed` + `HPO`, `14,625` unidades por variante, `28` escenarios) residen en `resultados/evaluacion_ashr_oof/`. Para regenerar todas las tablas, estudios diagnósticos (etapas 2–8), figuras y el notebook científico de **8 capítulos** sin repetir el entrenamiento OOF:
+## 2. Reproducción desde los artefactos OOF congelados (sin reentrenar)
+Las predicciones OOF congeladas (`Fixed` + `HPO`, `14,625` unidades por variante, `28` escenarios) residen en `resultados/evaluacion_ashr_oof/`. Para regenerar tablas, figuras y cuaderno principal sin repetir el entrenamiento OOF:
 
 ```powershell
-# 1. Regenerar tablas, inferencia, estudios diagnósticos y figuras (etapas 2-8)
 python -m sm_cfhr.cli report
-
-# 2. Regenerar el notebook desde su fuente y ejecutarlo desde kernel limpio
 python scripts/evaluacion/generar_notebook_ashr.py
 python -m jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel_name=solarpv-eda --ExecutePreprocessor.timeout=1800 --inplace notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb
 ```
 
-## 3. Verificación automatizada
+## 3. Experimentos de equivalencia de representación y ablaciones (`v3.0.0`)
 ```powershell
-python -m pytest tests/test_notebook_editorial_integrity.py tests/test_notebook_audit_fixes.py tests/test_parallel_oof.py tests/test_adaptive_structured_huber.py tests/test_selector_ashr_v2.py -v
+python scripts/evaluacion/ejecutar_equivalencia_representacion_v3.py
+python scripts/evaluacion/ejecutar_ablaciones_y_sesgo_v3.py
 ```
 
-## 4. Reejecución OOF paralela (solo referencia de auditoría)
-Ver los comandos exactos, hashes SHA-256, política de reciclaje y telemetría observada (`Fixed`: `499.748 s`, `8` workers; `HPO`: `29,550.293 s` en dos sesiones, `12` workers) en `docs/reproducibilidad/CONDICIONES_COMPUTACIONALES_OOF.md`.
+## 4. Manuscrito LaTeX y Material Suplementario
+```powershell
+cd docs/paper_sm_cfhr
+pdflatex main.tex; bibtex main; pdflatex main.tex; pdflatex main.tex
+pdflatex suplemento.tex; bibtex suplemento; pdflatex suplemento.tex; pdflatex suplemento.tex
+```
+
+## 5. Verificación automatizada
+```powershell
+python -m pytest tests/test_notebook_editorial_integrity.py tests/test_equivalencia_y_ablaciones_v3.py tests/test_auditoria_inferencia_v2.py tests/test_adaptive_structured_huber.py tests/test_notebook_audit_fixes.py -v
+```
