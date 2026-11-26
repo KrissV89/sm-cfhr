@@ -1,0 +1,278 @@
+{
+  "project": "sm_cfhr_lean",
+  "scientific_reference_tag": "v1.0.2",
+  "lean_version": "leanprover/lean4:v4.36.0",
+  "mathlib_commit": "fc4f59e577feb1a4956671bc04ac18aaaf8cd842",
+  "build_status": "passed",
+  "sorry_count": 0,
+  "admit_count": 0,
+  "custom_axioms_count": 0,
+  "allowed_standard_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "total_theorems": 26,
+  "theorems": [
+    {
+      "file": "SMCFHR/Clipping.lean",
+      "name": "SMCFHR.clip01_nonneg",
+      "formal_statement": "0 <= clip01 x",
+      "paper_mapping": "Def. 1 / Ec. (1)--(3)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["x : Real"],
+      "limitations": "Exact over R; Python execution uses IEEE-754 floating-point arithmetic."
+    },
+    {
+      "file": "SMCFHR/Clipping.lean",
+      "name": "SMCFHR.clip01_le_one",
+      "formal_statement": "clip01 x <= 1",
+      "paper_mapping": "Def. 1 / Ec. (1)--(3)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["x : Real"],
+      "limitations": "Exact over R; Python execution uses IEEE-754 floating-point arithmetic."
+    },
+    {
+      "file": "SMCFHR/Clipping.lean",
+      "name": "SMCFHR.clip01_mono",
+      "formal_statement": "x <= y -> clip01 x <= clip01 y",
+      "paper_mapping": "Def. 1 / Ec. (1)--(3) & Prop. 2 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["h : x <= y"],
+      "limitations": "Exact over R."
+    },
+    {
+      "file": "SMCFHR/Huber.lean",
+      "name": "SMCFHR.huber_nonneg",
+      "formal_statement": "0 <= huber delta r",
+      "paper_mapping": "Ec. (9)--(11)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Requires delta > 0."
+    },
+    {
+      "file": "SMCFHR/Huber.lean",
+      "name": "SMCFHR.psi_abs_le",
+      "formal_statement": "|psi delta r| <= delta",
+      "paper_mapping": "Ec. (9)--(11) & Prop. 2 (1)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Requires delta > 0."
+    },
+    {
+      "file": "SMCFHR/Huber.lean",
+      "name": "SMCFHR.psi_lipschitz",
+      "formal_statement": "|psi delta r1 - psi delta r2| <= |r1 - r2|",
+      "paper_mapping": "Ec. (9)--(11) & Teorema 1 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Requires delta > 0."
+    },
+    {
+      "file": "SMCFHR/Huber.lean",
+      "name": "SMCFHR.hasDerivAt_huber",
+      "formal_statement": "HasDerivAt (huber delta) (psi delta r) r",
+      "paper_mapping": "Ec. (9)--(11) & Teorema 1 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "First derivative is C^1; second derivative is not everywhere continuous at |r| = delta."
+    },
+    {
+      "file": "SMCFHR/Huber.lean",
+      "name": "SMCFHR.convexOn_huber",
+      "formal_statement": "ConvexOn Real Set.univ (huber delta)",
+      "paper_mapping": "Ec. (9)--(11) & Teorema 1 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Convexity is global; strict convexity holds only on [-delta, delta] (interior (-delta, delta))."
+    },
+    {
+      "file": "SMCFHR/Huber.lean",
+      "name": "SMCFHR.strictConvexOn_huber_band",
+      "formal_statement": "StrictConvexOn Real (Set.Ioo (-delta) delta) (huber delta)",
+      "paper_mapping": "Teorema 2 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Strict convexity is restricted to the open band (-delta, delta)."
+    },
+    {
+      "file": "SMCFHR/Model.lean",
+      "name": "SMCFHR.convex_feasibleSet",
+      "formal_statement": "Convex Real (FeasibleSet M)",
+      "paper_mapping": "Teorema 1 (1)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["M : Finset (Fin p)"],
+      "limitations": "Exact on Params p = R x (Fin p -> R)."
+    },
+    {
+      "file": "SMCFHR/Model.lean",
+      "name": "SMCFHR.isClosed_feasibleSet",
+      "formal_statement": "IsClosed (FeasibleSet M)",
+      "paper_mapping": "Teorema 1 (1)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["M : Finset (Fin p)"],
+      "limitations": "Exact on Params p."
+    },
+    {
+      "file": "SMCFHR/Model.lean",
+      "name": "SMCFHR.convexOn_objective",
+      "formal_statement": "ConvexOn Real Set.univ (objective delta Z y alpha)",
+      "paper_mapping": "Teorema 1 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta", "halpha : forall j, 0 <= alpha j"],
+      "limitations": "Requires alpha_j >= 0 for all j."
+    },
+    {
+      "file": "SMCFHR/Gradient.lean",
+      "name": "SMCFHR.hasDerivAt_objective_line",
+      "formal_statement": "HasDerivAt (fun t => objective delta Z y alpha (theta + t • d)) (gradB * d.1 + sum j, gradW j * d.2 j) 0",
+      "paper_mapping": "Teorema 1 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Formalizes exact analytical directional derivative; does not formalize L-BFGS-B numerical convergence."
+    },
+    {
+      "file": "SMCFHR/Gradient.lean",
+      "name": "SMCFHR.objective_subgradient",
+      "formal_statement": "objective theta + (gradB * (theta'.1 - theta.1) + sum j, gradW j * (theta'.2 j - theta.2 j)) <= objective theta'",
+      "paper_mapping": "Teorema 1 (2) & Prop. 1",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta", "halpha : forall j, 0 <= alpha j"],
+      "limitations": "Requires alpha_j >= 0."
+    },
+    {
+      "file": "SMCFHR/Gradient.lean",
+      "name": "SMCFHR.gradB_lipschitz",
+      "formal_statement": "|gradB theta1 - gradB theta2| <= (1/n) * sum k, |(theta1.1 + sum j, Z k j * theta1.2 j) - (theta2.1 + sum j, Z k j * theta2.2 j)|",
+      "paper_mapping": "Teorema 1 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Explicit Lipschitz bound for the intercept gradient component."
+    },
+    {
+      "file": "SMCFHR/Gradient.lean",
+      "name": "SMCFHR.gradB_term_bound",
+      "formal_statement": "|((1/n) * (-psi delta (resid Z y theta k)))| <= delta / n",
+      "paper_mapping": "Prop. 2 (1)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Bounds per-observation gradient contribution in response residuals; does not imply bounded influence under arbitrary leverage in Z."
+    },
+    {
+      "file": "SMCFHR/Gradient.lean",
+      "name": "SMCFHR.gradW_term_bound",
+      "formal_statement": "|((1/n) * (-Z k j * psi delta (resid Z y theta k)))| <= |Z k j| * delta / n",
+      "paper_mapping": "Prop. 2 (1)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Explicitly displays linear dependence on |Z k j| (no bounded influence for unbounded covariates Z)."
+    },
+    {
+      "file": "SMCFHR/Optimality.lean",
+      "name": "SMCFHR.objective_coercive",
+      "formal_statement": "exists R > 0, forall theta, (R < |theta.1| or exists j, R < |theta.2 j|) -> C < objective delta Z y alpha theta",
+      "paper_mapping": "Teorema 1 (3)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hn : 0 < n", "hdelta : 0 < delta", "halpha : forall j, 0 < alpha j"],
+      "limitations": "Requires n >= 1 and strictly positive alpha_j > 0 for all j."
+    },
+    {
+      "file": "SMCFHR/Optimality.lean",
+      "name": "SMCFHR.exists_global_minimizer",
+      "formal_statement": "exists theta_star in FeasibleSet M, IsMinOn (objective delta Z y alpha) (FeasibleSet M) theta_star",
+      "paper_mapping": "Teorema 1 (3)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hn : 0 < n", "hdelta : 0 < delta", "halpha : forall j, 0 < alpha j"],
+      "limitations": "Requires n >= 1 and strictly positive alpha_j > 0."
+    },
+    {
+      "file": "SMCFHR/Optimality.lean",
+      "name": "SMCFHR.unique_weights",
+      "formal_statement": "IsMinOn J (FeasibleSet M) theta1 -> IsMinOn J (FeasibleSet M) theta2 -> theta1.2 = theta2.2",
+      "paper_mapping": "Teorema 2 (1)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta", "halpha : forall j, 0 < alpha j"],
+      "limitations": "Proves uniqueness of weight vector w*, not of the intercept b*."
+    },
+    {
+      "file": "SMCFHR/Optimality.lean",
+      "name": "SMCFHR.unique_intercept_of_interior_residual",
+      "formal_statement": "IsMinOn J (FeasibleSet M) theta1 -> IsMinOn J (FeasibleSet M) theta2 -> (exists k0, |resid Z y theta1 k0| < delta) -> theta1.1 = theta2.1",
+      "paper_mapping": "Teorema 2 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta", "halpha : forall j, 0 < alpha j", "exists k0, |resid Z y theta1 k0| < delta"],
+      "limitations": "Sufficient condition; without an interior residual, b* need not be unique."
+    },
+    {
+      "file": "SMCFHR/Optimality.lean",
+      "name": "SMCFHR.intercept_nonunique_counterexample",
+      "formal_statement": "theta1 != theta2 and objective theta1 = (3/2)*delta^2 and objective theta2 = (3/2)*delta^2 and IsMinOn J (FeasibleSet empty) theta1 and IsMinOn J (FeasibleSet empty) theta2",
+      "paper_mapping": "Teorema 2 (3)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta"],
+      "limitations": "Explicit counterexample with n=2, p=1, Z=0, y=(-2*delta, 2*delta)."
+    },
+    {
+      "file": "SMCFHR/Optimality.lean",
+      "name": "SMCFHR.kkt_iff_isMinOn",
+      "formal_statement": "IsMinOn (objective delta Z y alpha) (FeasibleSet M) theta <-> (gradB = 0 and (forall j not in M, gradW j = 0) and (forall j in M, 0 <= gradW j and theta.2 j * gradW j = 0))",
+      "paper_mapping": "Proposición 1",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hdelta : 0 < delta", "halpha : forall j, 0 <= alpha j", "theta in FeasibleSet M"],
+      "limitations": "Exact necessity and sufficiency over FeasibleSet M."
+    },
+    {
+      "file": "SMCFHR/Monotonicity.lean",
+      "name": "SMCFHR.predictCF_bounds",
+      "formal_statement": "0 <= predictCF b w z_raw x_mean x_scale y_med y_scale and predictCF b w z_raw x_mean x_scale y_med y_scale <= 1",
+      "paper_mapping": "Def. 1 / Ec. (1)--(3)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": [],
+      "limitations": "Exact over R."
+    },
+    {
+      "file": "SMCFHR/Monotonicity.lean",
+      "name": "SMCFHR.predictEnergy_bounds",
+      "formal_statement": "0 <= predictEnergy ... and predictEnergy ... <= 24000 * cap_MW * H_dir",
+      "paper_mapping": "Def. 1 / Ec. (1)--(3)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hcap : 0 <= cap_MW", "hH : 0 <= H_dir"],
+      "limitations": "Exact over R."
+    },
+    {
+      "file": "SMCFHR/Monotonicity.lean",
+      "name": "SMCFHR.predictEnergy_monotone_in_restricted",
+      "formal_statement": "x_raw j0 <= x_raw' j0 -> (forall j != j0, x_raw j = x_raw' j) -> predictEnergy ... x_raw <= predictEnergy ... x_raw'",
+      "paper_mapping": "Proposición 2 (2)",
+      "status": "compiled",
+      "axioms": ["propext", "Classical.choice", "Quot.sound"],
+      "hypotheses": ["hj0 : j0 in M", "hw : w j0 >= 0", "hsy : 0 < y_scale", "hx : 0 < x_scale j0", "hcap : 0 <= cap_MW", "hH : 0 <= H_dir", "h_le : x_raw j0 <= x_raw' j0", "h_eq : forall j != j0, x_raw j = x_raw' j"],
+      "limitations": "Holds ceteris paribus; does not assert joint monotonicity across multiple simultaneous changes."
+    }
+  ]
+}

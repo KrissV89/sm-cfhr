@@ -1,0 +1,57 @@
+\section{Demostraciones matemáticas}\label{ap:demos}
+
+Este apéndice presenta las demostraciones completas de los resultados de la Sección~\ref{sec:propiedades}, distinguiendo expresamente las aplicaciones directas de la teoría convexa y robusta clásica \cite{boyd2004convex,huber1964,hampel1986robust,huber2009robust} de las verificaciones específicas para SM-CFHR.
+
+\begin{proof}[Demostración del Teorema~\ref{thm:convexidad_existencia}]
+\textbf{(1) (Aplicación directa de análisis convexo \cite{boyd2004convex}).} El conjunto $\Omega = \mathbb{R} \times \mathcal{C}$ es producto cartesiano de $\mathbb{R}$ y el poliedro $\mathcal{C} = \bigcap_{j \in \mathcal{M}_+} \{\mathbf{w} \in \mathbb{R}^p : w_j \ge 0\}$, intersección de semiespacios cerrados y convexos en $\mathbb{R}^p$.
+
+\textbf{(2) (Corolario de \cite{huber1964,boyd2004convex}).} La función de Huber $\rho_\delta$ es de clase $C^1(\mathbb{R})$ con derivada $\psi_\delta$ dada por \eqref{eq:psi_huber}, convexa por ser integral de la función no decreciente $\psi_\delta$ y con derivada $1$-Lipschitz ($|\psi_\delta(u) - \psi_\delta(v)| \le |u - v|$). Sea $A := \begin{bmatrix} \mathbf{1}_n & Z \end{bmatrix} \in \mathbb{R}^{n \times (p+1)}$ y $\boldsymbol{\theta} := (b, \mathbf{w}) \in \mathbb{R}^{p+1}$. Por composición afín y suma con la forma cuadrática $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w}$ ($D_\alpha \succ 0$ al ser $\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}} > 0$), $J \in C^1(\mathbb{R}^{p+1})$ es convexa. Para $\boldsymbol{\theta}_1, \boldsymbol{\theta}_2 \in \mathbb{R}^{p+1}$ con $\mathbf{r}_1 = \tilde{\mathbf{y}} - A\boldsymbol{\theta}_1$ y $\mathbf{r}_2 = \tilde{\mathbf{y}} - A\boldsymbol{\theta}_2$:
+\begin{align*}
+\|\nabla J(\boldsymbol{\theta}_1) - \nabla J(\boldsymbol{\theta}_2)\|_2
+&\le \frac{1}{n}\|A^\top (\psi_\delta(\mathbf{r}_2) - \psi_\delta(\mathbf{r}_1))\|_2 + \|D_\alpha(\mathbf{w}_1 - \mathbf{w}_2)\|_2 \\
+&\le \left(\frac{1}{n}\|A\|_2^2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}\right)\|\boldsymbol{\theta}_1 - \boldsymbol{\theta}_2\|_2,
+\end{align*}
+verificando la cota global de Lipschitz para $\nabla J$.
+
+\textbf{(3) (Especialización específica para intercepto no penalizado).} Como $\rho_\delta(r) \ge 0$ y $\mathbf{w}^\top D_\alpha \mathbf{w} \ge 0$, se cumple $J(b,\mathbf{w}) \ge 0$ en $\Omega$. Para demostrar coercividad sobre $\Omega$ sin restringir el comportamiento asintótico de $\mathbf{w}$, sea $C \in \mathbb{R}$ arbitrario y defínanse $C_+ := \max\{C, 0\} + 1 > 0$, $\alpha_{\min} := \min\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\} > 0$,
+\[
+R_w := \sqrt{\frac{2 C_+}{\alpha_{\min}}} + 1, \qquad
+R_b := \|\tilde{\mathbf{y}}\|_\infty + \|Z\|_{\infty,2}\,R_w + n\left(\frac{C_+}{\delta} + \frac{\delta}{2}\right) + 1,
+\]
+donde $\|Z\|_{\infty,2} := \max_{1 \le k \le n} \|\mathbf{z}_k\|_2$. Fijemos $R := \max\{R_w, R_b\}$ y consideremos cualquier punto $(b, \mathbf{w}) \in \Omega$ con $\|(b, \mathbf{w})\|_2 > \sqrt{2}\,R$. Necesariamente se cumple una de dos alternativas excluyentes:
+\begin{itemize}
+    \item Si $\|\mathbf{w}\|_2 > R_w$, entonces $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w} \ge \frac{\alpha_{\min}}{2}\|\mathbf{w}\|_2^2 > \frac{\alpha_{\min}}{2} R_w^2 > C_+ > C$, luego $J(b, \mathbf{w}) > C$.
+    \item Si $\|\mathbf{w}\|_2 \le R_w$, entonces $|b| > R \ge R_b$ (pues en caso contrario $\|(b,\mathbf{w})\|_2^2 = b^2 + \|\mathbf{w}\|_2^2 \le 2R^2$). Como $n \ge 1$, para cualquier índice fijo $k \in \{1,\dots,n\}$ la desigualdad triangular y Cauchy--Schwarz dan $|r_k| = |\tilde{y}_k - b - \mathbf{z}_k^\top \mathbf{w}| \ge |b| - \|\tilde{\mathbf{y}}\|_\infty - \|Z\|_{\infty,2} R_w > n(C_+/\delta + \delta/2) > \delta/2$. Usando $\rho_\delta(r) \ge \delta(|r| - \delta/2)$ para todo $r \in \mathbb{R}$ (inmediato tanto para $|r| > \delta$ por igualdad como para $|r| \le \delta$ porque $\frac{1}{2}(|r|-\delta)^2 \ge 0$), se obtiene
+    \[
+    J(b, \mathbf{w}) \ge \frac{1}{n}\rho_\delta(r_k) \ge \frac{\delta}{n}\left(|r_k| - \frac{\delta}{2}\right) > C_+ + \frac{n - 1}{n}\cdot\frac{\delta^2}{2} \ge C_+ > C.
+    \]
+\end{itemize}
+Por tanto, toda sucesión divergente $\{(b_m, \mathbf{w}_m)\}_{m \ge 1} \subset \Omega$ con $\|(b_m, \mathbf{w}_m)\|_2 \to \infty$ abandona eventualmente cualquier bola de radio $\sqrt{2}\,R$, satisfaciendo $J(b_m, \mathbf{w}_m) \to +\infty$. Al ser $J$ continua, acotada inferiormente y coerciva sobre el cerrado $\Omega$, el teorema de Weierstrass garantiza la existencia de al menos un minimizador global $(b^*, \mathbf{w}^*) \in \Omega$.
+\end{proof}
+
+\begin{proof}[Demostración del Teorema~\ref{thm:unicidad}]
+\textbf{(1)} Supóngase que $(b_1, \mathbf{w}_1), (b_2, \mathbf{w}_2) \in \Omega$ son dos minimizadores globales con $J(b_1,\mathbf{w}_1) = J(b_2,\mathbf{w}_2) = J^*$ y $\mathbf{w}_1 \ne \mathbf{w}_2$. Por convexidad de $\Omega$, el punto medio $\bar{\boldsymbol{\theta}} = \big(\frac{b_1+b_2}{2}, \frac{\mathbf{w}_1+\mathbf{w}_2}{2}\big)$ pertenece a $\Omega$. Como la pérdida de Huber promedio es convexa y $\frac{1}{2}\mathbf{w}^\top D_\alpha \mathbf{w}$ es estrictamente convexa en $\mathbf{w}$ ($D_\alpha \succ 0$), la desigualdad estricta en el término cuadrático produce $J(\bar{\boldsymbol{\theta}}) < \frac{1}{2}J(b_1,\mathbf{w}_1) + \frac{1}{2}J(b_2,\mathbf{w}_2) = J^*$, contradiciendo la optimalidad. Por tanto, $\mathbf{w}^*$ es único.
+
+\textbf{(2)} Fijado $\mathbf{w}^*$, la función $g(b) := J(b, \mathbf{w}^*)$ es convexa, continua y coerciva sobre $\mathbb{R}$; por tanto, su conjunto de minimizadores $\mathcal{B}^* = \{b \in \mathbb{R} : g(b) = J^*\}$ es cerrado, acotado y convexo, es decir, un intervalo compacto $[b_{\min}, b_{\max}]$. Supóngase que $b_{\min} < b_{\max}$ y que existe algún $k$ y $b^* \in [b_{\min}, b_{\max}]$ con $|r_k(b^*)| = |\tilde{y}_k - b^* - \mathbf{z}_k^\top \mathbf{w}^*| < \delta$. Por continuidad, existe un subintervalo abierto $(u, v) \subset [b_{\min}, b_{\max}]$ donde $|r_k(b)| < \delta$ para todo $b \in (u,v)$. En $(u,v)$, el término $\frac{1}{n}\rho_\delta(r_k(b)) = \frac{1}{2n}(c_k - b)^2$ es estrictamente convexo en $b$, lo que hace a $g(b)$ estrictamente convexa en $(u,v)$, contradiciendo que $g$ sea constante igual a $J^*$ en $[b_{\min}, b_{\max}]$. Luego $\mathcal{B}^*$ se reduce a un único punto $b^*$.
+
+\textbf{(3)} Considérese un ejemplo mínimo con $n=2$, $Z = \mathbf{0}$, $\tilde{\mathbf{y}} = (-2\delta, +2\delta)^\top$. Claramente $\mathbf{w}^* = \mathbf{0}$. Para todo $b \in [-\delta, \delta]$, ambos residuos cumplen $|\pm 2\delta - b| \ge \delta$, por lo que $g(b) = \frac{1}{2}[\delta(2\delta - b - \frac{\delta}{2}) + \delta(2\delta + b - \frac{\delta}{2})] = \frac{3}{2}\delta^2$ es constante en todo $[-\delta, \delta]$.
+\end{proof}
+
+\begin{proof}[Demostración de la Proposición~\ref{prop:kkt}]
+El problema \eqref{eq:objetivo_smcfhr} minimiza una función convexa diferenciable sobre el conjunto definido por las desigualdades afines $g_j(b, \mathbf{w}) = -w_j \le 0$ para $j \in \mathcal{M}_+$. Al ser todas las restricciones afines (y existir además puntos estrictamente interiores con $w_j > 0$), se cumple la condición de cualificación de Slater, de modo que las condiciones KKT son necesarias y suficientes para optimalidad global \cite{boyd2004convex}. El Lagrangiano es
+\[
+\mathcal{L}(b, \mathbf{w}, \boldsymbol{\lambda}) = J(b, \mathbf{w}) - \sum_{j \in \mathcal{M}_+} \lambda_j w_j, \qquad \lambda_j \ge 0.
+\]
+Igualando a cero el gradiente respecto a $b$ y a cada $w_j$ usando \eqref{eq:gradiente_smcfhr}, junto con la factibilidad primal $w_j^* \ge 0$, factibilidad dual $\lambda_j^* \ge 0$ y holgura complementaria $\lambda_j^* w_j^* = 0$, se obtienen exactamente \eqref{eq:kkt_b}--\eqref{eq:kkt_mono}. Si $w_j^* = 0$ para $j \in \mathcal{M}_+$, \eqref{eq:kkt_mono} da $-\frac{1}{n}(Z^\top \psi_\delta(\mathbf{r}^*))_j = \lambda_j^* \ge 0$.
+\end{proof}
+
+\begin{proposition}[Acotación de influencia y monotonía parcial física]\label{prop:influencia_mono}
+Sea $(b^*, \mathbf{w}^*)$ una solución óptima de \eqref{eq:objetivo_smcfhr}:
+\begin{enumerate}
+    \item \textbf{Influencia acotada en la respuesta:} la contribución al gradiente de cualquier observación $k$ satisface $\left|\frac{1}{n}\psi_\delta(r_k^*)\right| \le \frac{\delta}{n}$ y $\left\|\frac{1}{n}\mathbf{z}_k \psi_\delta(r_k^*)\right\|_\infty \le \frac{\delta}{n}\|\mathbf{z}_k\|_\infty$.
+    \item \textbf{Monotonía parcial y factibilidad física:} para todo $j \in \mathcal{M}_+$ con $\tilde{s}_j > 0$, si $\mathbf{x}_q' = \mathbf{x}_q + \Delta \mathbf{e}_j$ con $\Delta > 0$ (manteniendo constantes las demás coordenadas y $C_{i,t}$), entonces $\hat{y}(\mathbf{x}_q') \ge \hat{y}(\mathbf{x}_q)$ y $\hat{y}(\mathbf{x}_q) \in [0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}[Demostración de la Proposición~\ref{prop:influencia_mono}]
+(1) Se sigue directamente de la definición de $\psi_\delta$ en \eqref{eq:psi_huber} ($|\psi_\delta(r)| \le \delta$ para todo $r \in \mathbb{R}$), en coherencia con la cota en respuesta y la sensibilidad lineal en regresores descritas en \cite{huber1964,hampel1986robust,huber2009robust}. (2) Al variar solo la coordenada restringida $j \in \mathcal{M}_+$, $z_{q,j}' - z_{q,j} = \Delta / \tilde{s}_j > 0$. Como $w_j^* \ge 0$ y $\sigma_y > 0$, la predicción latente satisface $\hat{\eta}(\mathbf{x}_q') - \hat{\eta}(\mathbf{x}_q) = \sigma_y w_j^* \Delta / \tilde{s}_j \ge 0$. Dado que $\clip(\cdot, 0, 1)$ es no decreciente y $24\,000\,C_{i,t} H_{\mathrm{dir}} > 0$, se preserva la desigualdad y el rango físico $[0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$.
+\end{proof}

@@ -1,0 +1,16 @@
+ecuacion_o_afirmacion,archivo,funcion_o_clase,evidencia_o_test,estado_concordancia
+"E_max = 24000 * cap_MW_D (Ec. 1)",src/ashr_oof_pipeline/oof_runner.py,ENERGY_BOUND / extract_cf_features,test_ashr_oof_pipeline.py,CONCORDANCIA_EXACTA
+"cf30, cf7, cf1 con clip [0,1] y fallbacks 0.15/cf30/cf7",src/ashr_oof_pipeline/oof_runner.py,extract_cf_features,test_ashr_oof_pipeline.py,CONCORDANCIA_EXACTA
+"Amortiguamiento geometrico 0.85^(h-1) en diff_7_30 y diff_1_7",src/ashr_oof_pipeline/oof_runner.py,LEAD_DAMPING / extract_cf_features,test_ashr_oof_pipeline.py,CONCORDANCIA_EXACTA
+"Imputacion por mediana solo en entrenamiento",src/ashr_oof_pipeline/oof_runner.py,fit_ashr_on_train,test_bloqueadores_v1_1.py,CONCORDANCIA_EXACTA
+"Estandarizacion X con ddof=0 y umbral 1e-8",src/adaptive_structured_huber.py,AdaptiveStructuredHuberRegressor._fit_single,test_adaptive_structured_huber.py,CONCORDANCIA_EXACTA
+"Escalado MAD 1.4826*MAD y piso 1e-6",src/modelo_aditivo_huber.py,_robust_target_stats,test_adaptive_structured_huber.py,CONCORDANCIA_EXACTA
+"Objetivo Huber + L2 diagonal diferenciada + cotas w_j >= 0",src/adaptive_structured_huber.py,_objective_and_grad_debug / _fit_single,test_adaptive_structured_huber.py,CONCORDANCIA_EXACTA
+"Gradiente analitico exacto y L-BFGS-B",src/adaptive_structured_huber.py,_objective_and_grad_debug / scipy.optimize.minimize,test_adaptive_structured_huber.py,CONCORDANCIA_EXACTA
+"Unicidad global (docstring vs Teorema 2)",src/sm_cfhr/estimator.py,SMCFHRRegressor (docstring),Auditoria matematica,MATIZ_DOCUMENTADO_SIN_CAMBIO_CODIGO
+"Despliegue recursivo externo y rollout interno HPO",src/ashr_oof_pipeline/oof_runner.py y optimizacion_hiperparametros.py,rollout_recursive_from_origin / _rollout_recursive_val,test_hpo_recursive_v1_0_3.py,CONCORDANCIA_EXACTA_V1_0_3
+"Separacion espacial estricta en ET (inner CV)",src/ashr_oof_pipeline/optimizacion_hiperparametros.py,build_causal_inner_splits / audit_inner_splits,test_bloqueadores_v1_1.py,CONCORDANCIA_EXACTA
+"Regla R3 de 4 condiciones y exclusion GW si autocorr",src/sm_cfhr/inference.py,evaluate_r3_superiority / giacomini_white_audited,test_bloqueadores_v1_1.py,CONCORDANCIA_EXACTA
+"Prohibicion de datos sinteticos en CONFIRMATORY/DEVELOPMENT",src/sm_cfhr/pipeline_stages.py,run_post_oof_stages,test_bloqueadores_v1_1.py,CONCORDANCIA_EXACTA
+"Ablacion escala_std_vs_mad reescala X externamente",src/ashr_oof_pipeline/robustez_y_ablacion.py,run_ablation_suite,Auditoria codigo-manuscrito,MATIZ_DOCUMENTADO_SIN_CAMBIO_CODIGO
+"Alineacion estricta sin descartes silenciosos",src/ashr_oof_pipeline/oof_runner.py,align_predictions,test_bloqueadores_v1_1.py,CONCORDANCIA_EXACTA

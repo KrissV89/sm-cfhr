@@ -1,0 +1,4 @@
+workers,n_units,n_trials,wall_time_s,units_per_s,cpu_percent_sys,rss_coord_start_mb,rss_coord_end_mb,peak_coord_rss_mb,peak_worker_rss_mb,peak_aggregate_rss_mb,worker_recycles,load_time_sum_s,compute_time_sum_s,write_time_sum_s,spawn_overhead_s,errors
+4,16,25,45.894,0.3487,40.4,187.94,188.57,188.64,267.89,1247.64,8,14.531,124.134,0.797,0.067,0
+6,16,25,44.149,0.3625,54.2,188.54,188.67,188.79,273.89,1717.26,8,15.917,184.55,0.695,0.069,0
+8,16,25,36.067,0.4438,58.7,188.67,188.79,188.97,274.34,2166.35,8,23.3,180.481,0.744,0.058,0

@@ -1,0 +1,161 @@
+version: 1
+model: SM-CFHR
+code_tag: v1.0.3
+code_commit: d522cf3a288ca08f6080a17247794f706358c145
+src_sha256: 27a9fda4fa8b7ef0d95faf9e925e47ade9ed8f25e9ea5d97d6d7cf1c00ddde83
+status_global: INTEGRADO_OOF_Y_REVISION_V2
+
+placeholders:
+  - id: RES_28_ESCENARIOS_FIXED
+    escenario: TODOS_28_ESCENARIOS
+    variante: SM-CFHR-Fixed
+    metrica: MAE_macro, RMSE, MBE, MAE_top5, Skill_vs_MM30, rango_23_modelos
+    unidad: kWh/dia (o kWh_total en Directo)
+    fuente_esperada: OOF definitivo + benchmarks oficiales
+    ruta_csv_origen: tablas_paper/tabla_28_escenarios_fixed.csv
+    clave_union: scenario_id
+    tabla_o_figura_destino: tab:res_28_escenarios
+    estado: PENDIENTE
+
+  - id: RES_28_ESCENARIOS_HPO
+    escenario: TODOS_28_ESCENARIOS
+    variante: SM-CFHR-HPO
+    metrica: MAE_macro, RMSE, MBE, MAE_top5, Skill_vs_MM30, rango_23_modelos
+    unidad: kWh/dia (o kWh_total en Directo)
+    fuente_esperada: OOF definitivo HPO (25 trials TPE)
+    ruta_csv_origen: tablas_paper/tabla_28_escenarios_hpo.csv
+    clave_union: scenario_id
+    tabla_o_figura_destino: tab:res_hpo_comparacion
+    estado: PENDIENTE
+
+  - id: RES_RESUMEN_4_FAMILIAS
+    escenario: 4_FAMILIAS (D+1, RecSinClima, DirectoSinClima, RecGEFSv12)
+    variante: SM-CFHR-Fixed y SM-CFHR-HPO
+    metrica: Victorias_vs_MejorLib, Mediana_Skill, Rango_mediano
+    unidad: conteo / % / rango
+    fuente_esperada: Resumen descriptivo post-OOF
+    ruta_csv_origen: conclusiones/resumen_descriptivo.csv
+    clave_union: suite, task
+    tabla_o_figura_destino: tab:res_familias
+    estado: PENDIENTE
+
+  - id: RES_INFERENCIA_PRINCIPAL
+    escenario: TODOS_28_ESCENARIOS
+    variante: SM-CFHR-Fixed vs Mejor_Bib y MM30
+    metrica: DM_HLN_HAC, p_dm_hln, p_holm_familia, p_bh_familia, Cohen_d, IC95_boot, T_eff
+    unidad: adimensional / kWh
+    fuente_esperada: Etapa 4 inferencia estadística
+    ruta_csv_origen: multiplicidad/tabla_multiplicidad_familias.csv
+    clave_union: scenario_id, referencia
+    tabla_o_figura_destino: tab:res_inferencia
+    estado: PENDIENTE
+
+  - id: RES_MCS_SPA_GW
+    escenario: TODOS_28_ESCENARIOS
+    variante: Universo de 23 modelos
+    metrica: MCS_90_supervivientes, p_mcs, p_spa, GW_stat, p_gw, lag1_acf, estado_gw
+    unidad: p-valor / conteo
+    fuente_esperada: Etapa 4 MCS y SPA
+    ruta_csv_origen: inferencia/tabla_mcs_spa_gw.csv
+    clave_union: scenario_id
+    tabla_o_figura_destino: tab:res_mcs_spa
+    estado: PENDIENTE
+
+  - id: RES_VEREDICTO_R3
+    escenario: GLOBAL_28_ESCENARIOS
+    variante: SM-CFHR-Fixed
+    metrica: Condiciones_1_a_4_R3
+    unidad: CUMPLE / NO_CUMPLE / NO_VERIFICABLE
+    fuente_esperada: Evaluador estricto R3
+    ruta_csv_origen: conclusiones/veredicto_r3.csv
+    clave_union: condicion
+    tabla_o_figura_destino: tab:res_veredicto_r3
+    estado: PENDIENTE
+
+  - id: RES_ABLACIONES_6
+    escenario: ET_D1_con_clima (y panel representativo)
+    variante: 6 variantes controladas
+    metrica: MAE_CF, MAE_kWh, Delta_pct_vs_completo
+    unidad: CF / kWh/dia / %
+    fuente_esperada: Etapa 5 estudio de ablación
+    ruta_csv_origen: ablaciones/tabla_ablaciones.csv
+    clave_union: ablation_variant
+    tabla_o_figura_destino: tab:res_ablaciones
+    estado: PENDIENTE
+
+  - id: RES_SENSIBILIDAD_HP
+    escenario: ET_D1_con_clima
+    variante: Barridos 1D delta, alpha_lin, alpha_meteo
+    metrica: MAE_CF, RMSE_CF
+    unidad: CF
+    fuente_esperada: Etapa 5 sensibilidad 1D
+    ruta_csv_origen: sensibilidad/tabla_sensibilidad_hp.csv
+    clave_union: varied_param, param_value
+    tabla_o_figura_destino: fig:res_sensibilidad_hp
+    estado: PENDIENTE
+
+  - id: RES_ESTRES_ATIPICOS
+    escenario: ET_D1_con_clima
+    variante: SM-CFHR_Huber vs Referencia_L2 (0%, 5%, 10% outliers)
+    metrica: MAE_CF, RMSE_CF
+    unidad: CF
+    fuente_esperada: Etapa 5 estrés con ruido y atípicos
+    ruta_csv_origen: robustez/tabla_estres_atipicos.csv
+    clave_union: model, outlier_frac
+    tabla_o_figura_destino: tab:res_robustez_estres
+    estado: PENDIENTE
+
+  - id: RES_ESTABILIDAD_SEMILLAS
+    escenario: Muestra representativa (10 semillas 2026..2035)
+    variante: SM-CFHR-Fixed vs SM-CFHR-HPO
+    metrica: media_MAE, std_MAE, rango_HP
+    unidad: kWh/dia
+    fuente_esperada: Etapa 5 estabilidad por semillas
+    ruta_csv_origen: robustez/tabla_estabilidad_semillas.csv
+    clave_union: variant, seed
+    tabla_o_figura_destino: tab:res_semillas
+    estado: PENDIENTE
+
+  - id: RES_APRENDIZAJE_ESCALABILIDAD
+    escenario: Fracciones 10%, 25%, 50%, 100%
+    variante: SM-CFHR-Fixed
+    metrica: MAE_CF, fit_time_s, predict_time_s, peak_memory_kb
+    unidad: CF / s / KB
+    fuente_esperada: Etapa 5 curvas de aprendizaje y escalabilidad
+    ruta_csv_origen: robustez/tabla_aprendizaje_escalabilidad.csv
+    clave_union: fraction
+    tabla_o_figura_destino: tab:res_escalabilidad
+    estado: PENDIENTE
+
+  - id: RES_CONFORMAL_80_90
+    escenario: ET_D1_con_clima
+    variante: Intervalos conformes temporales (alpha=0.10, 0.20)
+    metrica: cobertura_empirica_global, cobertura_por_planta, ancho_medio
+    unidad: proporcion / CF o kWh
+    fuente_esperada: Etapa 5 predicción conforme temporal
+    ruta_csv_origen: incertidumbre/tabla_conformal_resumen.csv
+    clave_union: nominal_coverage
+    tabla_o_figura_destino: tab:res_conformal
+    estado: PENDIENTE
+
+  - id: RES_INTERPRETABILIDAD
+    escenario: ET_D1_con_clima
+    variante: SM-CFHR-Fixed
+    metrica: coef_estandarizado, contribucion_media_abs
+    unidad: CF estandarizado / CF
+    fuente_esperada: Etapa 5 interpretabilidad exacta
+    ruta_csv_origen: interpretabilidad/tabla_importancia_global.csv
+    clave_union: feature
+    tabla_o_figura_destino: tab:res_interpretabilidad
+    estado: PENDIENTE
+
+  - id: RES_COSTE_Y_REPRO_INDEPENDIENTE
+    escenario: EJECUCION_COMPLETA_28_ESCENARIOS
+    variante: Equipo A vs Equipo B (compare-runs)
+    metrica: tiempo_total_s, rss_max_mb, max_rel_diff_fixed, max_rel_diff_hpo
+    unidad: s / MB / adimensional
+    fuente_esperada: manifest_ashr_oof.json + compare_reproducibility_runs
+    ruta_csv_origen: manifest_ashr_oof.json
+    clave_union: run_id
+    tabla_o_figura_destino: tab:res_coste_repro
+    estado: PENDIENTE

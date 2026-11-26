@@ -1,0 +1,35 @@
+{
+  "version": "3.0.0-equivalencia-representacion",
+  "timestamp_utc": "2026-11-26T07:42:20.775987+00:00",
+  "seed": 2026,
+  "elapsed_s": 5319.64,
+  "scenarios_cond_A": [
+    "D1_espaciotemporal_cinco_variables",
+    "D1_intraplanta_cinco_variables",
+    "D1_espaciotemporal_sin_meteorologia",
+    "D1_intraplanta_sin_meteorologia",
+    "RecGEFSv12_espaciotemporal_7d",
+    "RecGEFSv12_espaciotemporal_28d",
+    "RecGEFSv12_intraplanta_28d",
+    "RecSinClima_espaciotemporal_28d",
+    "DirectoSinClima_espaciotemporal_28d",
+    "DirectoSinClima_intraplanta_28d"
+  ],
+  "scenarios_cond_B": [
+    "D1_espaciotemporal_cinco_variables",
+    "D1_intraplanta_cinco_variables",
+    "D1_espaciotemporal_sin_meteorologia",
+    "D1_intraplanta_sin_meteorologia",
+    "RecGEFSv12_espaciotemporal_28d",
+    "DirectoSinClima_intraplanta_28d"
+  ],
+  "models": [
+    "SM-CFHR",
+    "Ridge",
+    "BayesianRidge",
+    "HuberRegressor",
+    "ElasticNet",
+    "RandomForest",
+    "XGBoost"
+  ]
+}

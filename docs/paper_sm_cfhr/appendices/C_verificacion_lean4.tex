@@ -1,0 +1,37 @@
+\section{Verificación formal de propiedades matemáticas en Lean~4}\label{ap:lean4}
+
+La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre la biblioteca \textbf{Mathlib} (commit \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, alojada en el repositorio oficial \url{https://github.com/KrissV89/sm-cfhr} (etiqueta \texttt{v1.0.3-polyform}).
+
+\subsection{Trazabilidad entre resultados del artículo y declaraciones formales}
+
+El proyecto compila $26$ declaraciones verificadas sin marcadores incompletos ni axiomas propios; la auditoría automática mediante el núcleo de Lean confirma dependencia exclusiva respecto a los axiomas estándar \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}. La Tabla~\ref{tab:lean4-correspondencia} agrupa dichas declaraciones según los resultados científicos del manuscrito, distinguiendo claramente entre lemas modulares y teoremas principales.
+
+\begin{table}[!htbp]
+\centering
+\caption{Correspondencia entre enunciados del manuscrito y declaraciones verificadas en Lean~4 (\texttt{v4.36.0}).}
+\label{tab:lean4-correspondencia}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{2.7cm}L@{}}
+\toprule
+\textbf{Manuscrito} & \textbf{Módulo Lean~4} & \textbf{Declaraciones compiladas (26 en total)} \\
+\midrule
+Ecs.~\eqref{eq:cf_diario}, \eqref{eq:pred_fisica} & \texttt{Clipping.lean}, \texttt{Monotonicity.lean} & \texttt{clip01\_nonneg}, \texttt{clip01\_le\_one}, \texttt{clip01\_mono}, \texttt{predictCF\_bounds}, \texttt{predictEnergy\_bounds} \\
+Ecs.~\eqref{eq:huber}, \eqref{eq:psi_huber} & \texttt{Huber.lean} & \texttt{huber\_nonneg}, \texttt{psi\_abs\_le}, \texttt{psi\_lipschitz}, \texttt{hasDerivAt\_huber}, \texttt{convexOn\_huber}, \texttt{strictConvexOn\_huber\_band} \\
+Teorema~\ref{thm:convexidad_existencia} (1)--(2) & \texttt{Model.lean}, \texttt{Gradient.lean} & \texttt{convex\_feasibleSet}, \texttt{isClosed\_feasibleSet}, \texttt{convexOn\_objective}, \texttt{hasDerivAt\_objective\_line}, \texttt{objective\_subgradient}, \texttt{gradB\_lipschitz} (solo componente $\partial J/\partial b$; la cota espectral completa $L_J$ de $\nabla J$ figura en el Apéndice~\ref{ap:demos}) \\
+Teorema~\ref{thm:convexidad_existencia} (3) & \texttt{Optimality.lean} & \texttt{objective\_coercive}, \texttt{exists\_global\_minimizer} \\
+Teorema~\ref{thm:unicidad} (1)--(3) & \texttt{Optimality.lean} & \texttt{unique\_weights}, \texttt{unique\_intercept\_of\_interior\_residual}, \texttt{intercept\_nonunique\_counterexample} \\
+Proposición~\ref{prop:kkt} & \texttt{Optimality.lean} & \texttt{kkt\_iff\_isMinOn} \\
+Proposición~\ref{prop:influencia_mono} (1)--(2) & \texttt{Gradient.lean}, \texttt{Monotonicity.lean} & \texttt{gradB\_term\_bound}, \texttt{gradW\_term\_bound}, \texttt{predictEnergy\_monotone\_in\_restricted} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Hipótesis explicitadas y alcance exacto de la verificación}
+
+La comprobación mecánica en Lean~4 permitió fijar con exactitud las hipótesis mínimas de cada resultado:
+\begin{enumerate}
+    \item \textbf{Coercividad y existencia vs.\ convexidad y KKT:} \texttt{objective\_coercive} y \texttt{exists\_global\_minimizer} exigen explícitamente $n \ge 1$ y $\alpha_j > 0$ para todo $j$, mientras que la convexidad (\texttt{convexOn\_objective}) y la caracterización KKT (\texttt{kkt\_iff\_isMinOn}) son válidas bajo la hipótesis más débil $\alpha_j \ge 0$.
+    \item \textbf{Unicidad parcial y contraejemplo del intercepto:} \texttt{unique\_weights} demuestra la unicidad del vector de coeficientes $\mathbf{w}^*$ sobre $\Omega$, mientras que \texttt{intercept\_nonunique\_counterexample} construye explícitamente un caso $n=2$, $p=1$, $Z=\mathbf{0}$, $\tilde{\mathbf{y}}=(-2\delta, +2\delta)^\top$ donde todo $b \in [-\delta,\delta]$ alcanza el mínimo global, delimitando el alcance de \texttt{unique\_intercept\_of\_interior\_residual}.
+    \item \textbf{Regularidad Lipschitz de $\partial J/\partial b$ vs.\ cota espectral de $\nabla J$:} en \texttt{Gradient.lean}, \texttt{gradB\_lipschitz} formaliza explícitamente la continuidad Lipschitz de la derivada respecto al intercepto $\partial J/\partial b$; en cambio, la cota espectral completa $L_J$ sobre el gradiente vectorizado $\nabla J(b,\mathbf{w})$ del Teorema~\ref{thm:convexidad_existencia}(2) se demuestra analíticamente en el Apéndice~\ref{ap:demos} y no está formalizada en Lean~4.
+    \item \textbf{Alcance frente a ejecución numérica:} toda la formalización se desarrolla sobre los números reales $\mathbb{R}$. En consecuencia, no verifica aritmética de punto flotante IEEE-754, criterios numéricos de parada de L-BFGS-B ni propiedades estadísticas fuera de muestra.
+\end{enumerate}

@@ -1,0 +1,23 @@
+\section{Discusión}\label{sec:discusion}
+
+Los resultados definitivos fuera de muestra permiten contrastar las decisiones de diseño de SM-CFHR frente a la evidencia empírica y delimitar con precisión dónde aporta ventaja real y dónde falla frente a alternativas locales o no lineales.
+
+\subsection{Interpretación empírica: representación frente a algoritmo}
+
+Los resultados integrados de \texttt{v1.0.3}, \texttt{v2.0.0} y \texttt{v3.0.0} permiten responder con precisión la pregunta científica central del estudio: \emph{la mayor parte de la ganancia observada inicialmente en transferencia espaciotemporal proviene de la normalización causal por factor de capacidad ($24\,000\,C_{i,t}$), no de una superioridad algorítmica intrínseca de SM-CFHR frente a estimadores lineales regularizados convencionales}. Cuando \texttt{BayesianRidge}, \texttt{ElasticNet}, \texttt{HuberRegressor}, \texttt{Ridge}, \texttt{RandomForest} y \texttt{XGBoost} reciben exactamente la misma representación causal en factor de capacidad, todos mejoran entre $-10{,}13\%$ y $-23{,}24\%$, y \texttt{SM-CFHR} queda prácticamente empatado con \texttt{BayesianRidge-CF} y \texttt{ElasticNet-CF} en ET (diferencias entre $-0{,}56\%$ y $+1{,}58\%$) y por detrás en IP ($+3{,}23\%$ a $+16{,}24\%$).
+
+Asimismo, cuatro hallazgos matizan las decisiones de diseño: (1) la estabilidad de \texttt{SM-CFHR-Fixed} ($B=0$) frente a \texttt{HPO} ($B=25$, derrotado en $19/28$ escenarios y $59\times$ más lento) muestra que la búsqueda interna con $3$ pliegues introduce varianza de selección perjudicial; (2) la pérdida de Huber ($\delta=1{,}35$) protege frente a contaminación severa del objetivo ($10\%$), pero en operación limpia sus diferencias frente a $L_2$ son mínimas ($+0{,}31\%$ medio) y no protege frente a apalancamiento en covariables; (3) las cotas de monotonía actúan principalmente como salvaguarda en intraplanta ($26{,}53\%$--$56{,}00\%$ de activación), permaneciendo inactivas ($0\%$) en $D+1$ ET; y (4) las métricas en $\text{kWh}$ amplifican el peso de grandes centrales (\texttt{GYPO}), desplazando el rango medio de $2{,}93/23$ a $4{,}00/23$ en $\mathrm{MAE}_{\mathrm{CF,macro}}$.
+
+\subsection{Limitaciones y amenazas a la validez}\label{sec:limitaciones_gen}
+
+El estudio presenta ocho limitaciones y amenazas a la validez que acotan estrictamente el alcance de sus conclusiones:
+\begin{enumerate}
+    \item \textbf{Dominio geográfico único y pocos conglomerados ($G=7$):} la cohorte comprende exclusivamente $17$ centrales fotovoltaicas del Sistema Interconectado Nacional de Colombia ($G=7$ zonas espaciales) \cite{cameron2015cluster}, sin conjuntos de datos externos ni otros regímenes climáticos.
+    \item \textbf{Alcance exclusivo en datos solares:} las transformaciones por $24\,000\,C_{i,t}$, el acotamiento $[0,1]$ y las cotas de monotonía son específicas de física fotovoltaica, y la evaluación se circunscribe al dominio solar sin conjuntos de datos externos no solares.
+    \item \textbf{Reutilización adaptativa del panel histórico 2024--2026:} tanto el diseño de SM-CFHR como los experimentos \texttt{v3.0.0} reutilizan el mismo panel histórico \cite{cawley2010overfit}, por lo que la evidencia actual es retrospectiva y requiere un protocolo prospectivo congelado sobre datos futuros independientes.
+    \item \textbf{ET no equivale a predicción \textit{zero-shot}:} aunque el grupo espacial de la central evaluada se excluye del entrenamiento en ET, la planta sí aporta su historial local causal ($\mathrm{cf}_{30}$, $\mathrm{cf}_7$, $\mathrm{cf}_1$) para construir predictores al origen.
+    \item \textbf{Sensibilidad al sesgo de selección ($\mathrm{horas\_xm} \le 6$):} excluir jornadas incompletas omite paradas parciales; al reincorporarlas sin imputación en $D+1$, $\mathrm{MAE}_{\mathrm{CF,macro}}$ aumenta en $+0{,}83\%$ (ET) y $+0{,}28\%$ (IP).
+    \item \textbf{Ausencia de protección frente a apalancamiento en covariables:} confirmado analítica y empíricamente ($0{,}03664$ CF en Huber frente a $0{,}03671$ en $L_2$ bajo $5\%$ de apalancamiento en \texttt{rad\_pron}).
+    \item \textbf{Activación desigual de la monotonía:} nula en $D+1$ ET ($0\%$), marginal en recursivos ET ($1{,}67\%$--$2{,}41\%$) y relevante solo en IP ($26{,}53\%$--$56{,}00\%$).
+    \item \textbf{Subcobertura conformal bajo deriva temporal:} los intervalos conformes divididos ($83{,}24\%$ para $90\%$ nominal; $69{,}25\%$ para $80\%$) confirman violación de la intercambiabilidad estándar \cite{barber2023nonexchangeable}.
+\end{enumerate}

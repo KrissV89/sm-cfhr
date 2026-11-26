@@ -1,0 +1,40 @@
+# Equivalente para Jupyter Book 1 (jupyter-book<2). El libro se construyó con Jupyter Book 2 y myst.yml
+# (ver el capítulo 10). Con JB1: pip install "jupyter-book<2" sphinx-proof && jupyter-book build book/
+title: "Pronóstico D+1 del factor de capacidad fotovoltaico en Colombia: informe técnico"
+author: Enmanuel David Diaz Molinares
+copyright: "2026"
+logo: ""
+only_build_toc_files: true
+
+execute:
+  execute_notebooks: force      # reconstruye las tablas leyendo resultados/ en cada construcción
+  timeout: 600
+  allow_errors: false
+
+bibtex_bibfiles:
+  - references.bib
+
+sphinx:
+  extra_extensions:
+    - sphinx_proof
+  config:
+    language: es
+    bibtex_reference_style: author_year
+    numfig: true
+    math_numfig: true
+
+parse:
+  myst_enable_extensions:
+    - dollarmath
+    - amsmath
+    - colon_fence
+    - deflist
+    - substitution
+
+repository:
+  url: https://github.com/KrissV89/sm-cfhr
+  path_to_book: book
+  branch: main
+
+html:
+  use_repository_button: true

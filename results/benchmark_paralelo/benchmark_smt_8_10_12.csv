@@ -1,0 +1,4 @@
+workers,n_units,n_trials,wall_time_s,units_per_min,gain_vs_8w_pct,cpu_percent_sys,cpu_freq_mhz,cpu_temp_c,peak_coord_rss_mb,peak_worker_rss_mb,peak_aggregate_rss_mb,worker_recycles,errors,hashes_match_8w
+8,48,25,70.064,41.106,0.0,60.7,3040.0,53.1,190.21,276.16,2375.64,0,0,True
+10,48,25,65.841,43.741,6.41,72.2,3040.0,53.1,198.62,275.92,2926.66,0,0,True
+12,48,25,63.36,45.455,10.58,83.8,3040.0,53.1,198.81,274.05,3465.09,0,0,True

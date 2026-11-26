@@ -1,0 +1,80 @@
+{
+  "nombre_tecnico": "AdaptiveStructuredHuberRegressor",
+  "denominacion_cientifica": "SM-CFHR (Structured Monotone Capacity-Factor Huber Regressor) / ASHR-Fixed",
+  "version_codigo": "1.0.3-oof-definitivo",
+  "hpo_protocol_version": "v1.0.3-exact-recursive-state",
+  "estatus": "CONGELABLE_PRE_OOF",
+  "autorizacion_alcance_solar_docente": false,
+  "rutas_contrato": {
+    "oof_dir": "resultados/evaluacion_ashr_oof",
+    "predicciones_dir": "resultados/evaluacion_ashr_oof/predicciones",
+    "hpo_trials_dir": "resultados/evaluacion_ashr_oof/hpo_trials"
+  },
+  "sha256_src_adaptive_structured_huber": "27a9fda4fa8b7ef0d95faf9e925e47ade9ed8f25e9ea5d97d6d7cf1c00ddde83",
+  "parametros_modelo": {
+    "selection": "fixed",
+    "fixed_config": {
+      "name": "fixed_lin_mono",
+      "complexity_rank": 1,
+      "n_knots": 0,
+      "alpha_lin": 0.01,
+      "alpha_meteo": 0.1,
+      "alpha_spl": 0.1,
+      "max_interactions": 0,
+      "alpha_int": 0.1,
+      "structured": true,
+      "use_mono": true,
+      "anchor": "none",
+      "lead_damp": 1.0
+    },
+    "delta": 1.35,
+    "max_iter": 400,
+    "tol": 1e-07,
+    "random_state": 2026
+  },
+  "representacion_cf": {
+    "energy_bound_kwh_per_mw_day": 24000.0,
+    "lead_damping_rec": 0.85,
+    "features_base": [
+      "month_sin",
+      "month_cos",
+      "doy_sin",
+      "doy_cos",
+      "cf30",
+      "diff_7_30",
+      "diff_1_7"
+    ],
+    "features_meteo": [
+      "rad_pron",
+      "temp_pron",
+      "nube_pron",
+      "humedad_pron",
+      "viento_pron",
+      "anom_rad",
+      "anom_temp",
+      "anom_nube",
+      "anom_humedad",
+      "anom_viento"
+    ],
+    "monotone_pos_features_weather": [
+      "cf30",
+      "rad_pron"
+    ],
+    "monotone_pos_features_no_weather": [
+      "cf30"
+    ]
+  },
+  "entorno_software": {
+    "python": "3.11.15",
+    "numpy": "2.3.5",
+    "scipy": "1.16.3",
+    "pandas": "2.3.3",
+    "matplotlib": "3.10.0",
+    "joblib": "1.5.3",
+    "statsmodels": "0.14.6",
+    "pytest": "9.1.1",
+    "nbformat": "5.11.0",
+    "ipykernel": "7.3.0",
+    "scikit-learn_solo_benchmarks": "1.9.0"
+  }
+}

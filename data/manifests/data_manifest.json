@@ -1,0 +1,37 @@
+{
+  "manifest_version": "1.0.0",
+  "domain": "17 Colombian PV plants (28 official solar scenarios)",
+  "datasets": [
+    {
+      "name": "base_planta_dia.csv",
+      "source": "XM (Colombian electricity market operator API) + Open-Meteo",
+      "version": "2026-11-15",
+      "size_bytes": 3451644,
+      "sha256": "ceb38281895177be1dc44df4c85bfc6953032811bfb3a9d7dade574dca51d898",
+      "expected_path": "base_generacion_clima/base_planta_dia.csv",
+      "classification": "C_PRIVATE_AUTHORIZED_TRANSFER",
+      "terms_of_use": "XM terms of redistribution not cleared for public GitHub hosting; transfer privately to authorized team member."
+    },
+    {
+      "name": "pronostico_diario.csv",
+      "source": "Open-Meteo Previous Runs API (ECMWF IFS + GFS + ICON)",
+      "version": "2026-11-15",
+      "size_bytes": 1452280,
+      "sha256": "c8a6120f7b53561ae45d030366bb156711e737198dbc5f1af8a649a5c4c9997c",
+      "expected_path": "datos_pronostico/pronostico_diario.csv",
+      "classification": "B_PUBLIC_ATTRIBUTION_CC_BY_4",
+      "terms_of_use": "CC BY 4.0 (Open-Meteo attribution required)."
+    },
+    {
+      "name": "pronostico_28d_gefs.csv",
+      "source": "NOAA GEFSv12 multi-horizon archived forecast",
+      "version": "2026-11-15",
+      "size_bytes": 7972444,
+      "sha256": "95314b9987a387955609bb3b1a62f2ac7867b4d6f4563e9b6472dbf1ea0d6b4d",
+      "expected_path": "datos_pronostico_multihorizonte/pronostico_28d_gefs.csv",
+      "classification": "C_PRIVATE_AUTHORIZED_TRANSFER",
+      "terms_of_use": "Processed multi-horizon panel; transfer privately alongside base_planta_dia.csv."
+    }
+  ],
+  "benchmarks_note": "28 official benchmark CSVs (654.35 MB total across resultados/benchmark_*) are excluded from Git due to size and must be imported via scripts/setup/import_local_data.py."
+}

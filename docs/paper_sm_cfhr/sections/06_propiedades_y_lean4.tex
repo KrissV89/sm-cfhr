@@ -1,0 +1,84 @@
+\section{Propiedades matemáticas y verificación formal}\label{sec:propiedades}
+
+El programa de optimización \eqref{eq:objetivo_smcfhr} admite una caracterización analítica completa en términos de regularidad diferencial, convexidad, existencia y unicidad de soluciones, condiciones de optimalidad y cotas de sensibilidad (con demostraciones completas en el Material Suplementario, Sección~S1).
+
+\subsection{Estructura diferencial, gradiente analítico y optimización}
+
+La derivada de la pérdida de Huber $\rho_\delta(r)$ es la función acotada $\psi_\delta : \mathbb{R} \to [-\delta, \delta]$,
+\begin{equation}
+\psi_\delta(r) := \rho_\delta'(r) = \begin{cases}
+r & \text{si } |r| \le \delta, \\
+\delta\,\sign(r) & \text{si } |r| > \delta,
+\end{cases}
+\label{eq:psi_huber}
+\end{equation}
+continua en todo $\mathbb{R}$ y globalmente Lipschitz con constante $1$. Definiendo el vector de residuos estandarizados $\mathbf{r}(b, \mathbf{w}) := \tilde{\mathbf{y}} - b\mathbf{1}_n - Z\mathbf{w} \in \mathbb{R}^n$ y aplicando la regla de la cadena sobre \eqref{eq:objetivo_smcfhr}, el gradiente exacto respecto al intercepto y los coeficientes es:
+\begin{equation}
+\frac{\partial J}{\partial b}(b,\mathbf{w}) = -\frac{1}{n}\sum_{k=1}^{n} \psi_\delta(r_k), \qquad
+\nabla_{\mathbf{w}} J(b,\mathbf{w}) = -\frac{1}{n} Z^\top \psi_\delta(\mathbf{r}) + D_\alpha \mathbf{w},
+\label{eq:gradiente_smcfhr}
+\end{equation}
+donde $\psi_\delta(\mathbf{r})$ se evalúa componente a componente.
+
+La función objetivo $J$ es continuamente diferenciable ($C^1(\mathbb{R}^{p+1})$) con gradiente Lipschitz continuo, pero \emph{no} es dos veces continuamente diferenciable ($C^2$) sobre los hiperplanos de transición $|r_k(b,\mathbf{w})| = \delta$. En el interior de cada región abierta donde $|r_k| \ne \delta$ para todo $k$, la matriz Hessiana existe y toma la forma:
+\begin{equation}
+\nabla^2 J(b,\mathbf{w}) = \frac{1}{n} \begin{bmatrix} \mathbf{1}_n^\top \\ Z^\top \end{bmatrix} \diag(\mathbf{1}_{\mathcal{I}_{\mathrm{quad}}}) \begin{bmatrix} \mathbf{1}_n & Z \end{bmatrix} + \begin{bmatrix} 0 & \mathbf{0}^\top \\ \mathbf{0} & D_\alpha \end{bmatrix},
+\label{eq:hessiana_regiones}
+\end{equation}
+donde $\mathcal{I}_{\mathrm{quad}} := \{k \in \{1,\dots,n\} : |r_k| < \delta\}$ agrupa las observaciones en régimen cuadrático. Fuera de esos hiperplanos, $\nabla^2 J$ es semidefinida positiva; en los quiebres $|r_k| = \delta$, la segunda derivada presenta saltos finitos. Esta regularidad $C^1$ por tramos justifica emplear L-BFGS-B \cite{byrd1995lbfgsb,zhu1997lbfgsb}: al utilizar exclusivamente evaluaciones del objetivo, gradientes analíticos de primer orden y proyecciones simples sobre las cotas de caja $\mathbb{R} \times \mathcal{C}$, el algoritmo evita invertir Hessianas discontinuas con un coste de $O(np)$ operaciones por evaluación.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_huber_estructura.pdf}
+\caption{Estructura analítica de SM-CFHR: (a) pérdida de Huber $\rho_\delta(r)$ frente a la pérdida cuadrática y función $\psi_\delta(r)$ acotada en $\pm\delta = 1{,}35$; (b) curvas de nivel de la penalización $L_2$ anisotrópica ($\alpha_{\mathrm{meteo}} = 10\,\alpha_{\mathrm{lin}}$) y cota activa sobre la región factible $\mathcal{C}$.}
+\label{fig:huber_estructura}
+\end{figure}
+
+\subsection{Convexidad, existencia, unicidad y condiciones KKT}
+
+Las propiedades básicas de convexidad y optimalidad de SM-CFHR se deducen de la teoría clásica de optimización convexa \cite{boyd2004convex} y estimación $M$ \cite{huber1964,huber2009robust}; sin embargo, la presencia de un intercepto $b$ no penalizado y el comportamiento lineal de la pérdida de Huber fuera de $[-\delta, \delta]$ exigen precisar las hipótesis exactas bajo las cuales se garantizan coercividad, existencia y unicidad. Los dos teoremas siguientes distinguen lo que se sigue directamente de convexidad estándar frente a las caracterizaciones particulares de SM-CFHR.
+
+\begin{theorem}[Convexidad y existencia de soluciones]\label{thm:convexidad_existencia}
+Supóngase $n \ge 1$, $\delta > 0$, $\alpha_{\mathrm{lin}} > 0$ y $\alpha_{\mathrm{meteo}} > 0$. Entonces:
+\begin{enumerate}
+    \item El conjunto factible $\Omega := \mathbb{R} \times \mathcal{C}$ es cerrado y convexo en $\mathbb{R}^{p+1}$.
+    \item La función objetivo $J(b,\mathbf{w})$ es convexa y $C^1$ en $\mathbb{R}^{p+1}$, con gradiente globalmente Lipschitz continuo de constante $L_J \le \frac{1}{n}\left\|\begin{bmatrix}\mathbf{1}_n & Z\end{bmatrix}\right\|_2^2 + \max\{\alpha_{\mathrm{lin}}, \alpha_{\mathrm{meteo}}\}$ (demostrada analíticamente en el Material Suplementario, Sección~S1; la Sección~\ref{sec:lean4_resumen} precisa qué parte de esta regularidad se encuentra formalizada en Lean~4).
+    \item $J$ es coerciva sobre $\Omega$ ($J(b,\mathbf{w}) \to +\infty$ cuando $\|(b,\mathbf{w})\|_2 \to \infty$) y acotada inferiormente por $0$; por consiguiente, existe al menos un minimizador global $(b^*, \mathbf{w}^*) \in \Omega$.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[Unicidad exacta y caso degenerado del intercepto]\label{thm:unicidad}
+Bajo las hipótesis del Teorema~\ref{thm:convexidad_existencia}:
+\begin{enumerate}
+    \item El vector óptimo de coeficientes $\mathbf{w}^* \in \mathcal{C}$ es \textbf{único}.
+    \item El conjunto de interceptos óptimos $\mathcal{B}^* := \{b \in \mathbb{R} : (b, \mathbf{w}^*) \text{ minimiza } J \text{ en } \Omega\}$ es un intervalo compacto y convexo. Si existe al menos una observación $k \in \{1,\dots,n\}$ cuyo residuo óptimo satisface $|\tilde{y}_k - b^* - \mathbf{z}_k^\top \mathbf{w}^*| < \delta$ para algún $b^* \in \mathcal{B}^*$, entonces el intercepto óptimo $b^*$ también es \textbf{único}.
+    \item En el caso degenerado en que $|r_k(b^*,\mathbf{w}^*)| \ge \delta$ para todo $k=1,\dots,n$ y $n$ es par con igual número de residuos positivos y negativos, $\mathcal{B}^*$ puede ser un intervalo no degenerado de múltiples interceptos con idéntico valor objetivo.
+\end{enumerate}
+\end{theorem}
+
+Dado que $\mathcal{C}$ está definido por desigualdades afines y admite puntos estrictamente interiores (tomando $w_j = 1 > 0$ para $j \in \mathcal{M}_+$), se satisface la condición de cualificación de Slater \cite{boyd2004convex}, por lo que las condiciones de Karush--Kuhn--Tucker (KKT) son necesarias y suficientes para la optimalidad global.
+
+\begin{proposition}[Condiciones KKT y complementariedad]\label{prop:kkt}
+Un punto $(b^*, \mathbf{w}^*) \in \Omega$ es minimizador global de \eqref{eq:objetivo_smcfhr} si y solo si existen multiplicadores $\boldsymbol{\lambda}^* \in \mathbb{R}_{\ge 0}^{|\mathcal{M}_+|}$ tales que:
+\begin{align}
+\frac{1}{n}\sum_{k=1}^{n} \psi_\delta(r_k^*) &= 0, \label{eq:kkt_b} \\
+-\frac{1}{n}\left(Z^\top \psi_\delta(\mathbf{r}^*)\right)_j + d_j w_j^* &= 0 && \forall j \notin \mathcal{M}_+, \label{eq:kkt_free} \\
+-\frac{1}{n}\left(Z^\top \psi_\delta(\mathbf{r}^*)\right)_j + d_j w_j^* &= \lambda_j^* \ge 0, \quad w_j^* \ge 0, \quad \lambda_j^* w_j^* = 0 \quad \forall j \in \mathcal{M}_+. \label{eq:kkt_mono}
+\end{align}
+En particular, para toda variable restringida $j \in \mathcal{M}_+$ cuya cota esté activa ($w_j^* = 0$), la correlación residual ponderada satisface $\frac{1}{n}(Z^\top \psi_\delta(\mathbf{r}^*))_j \le 0$.
+\end{proposition}
+
+\subsection{Robustez, monotonía parcial y complejidad}
+
+La Proposición~S1 del Material Suplementario (Sección~S1) precisa el alcance exacto de la robustez y la monotonía física del estimador:
+\begin{enumerate}
+    \item \textbf{Cota de gradiente en la respuesta frente a apalancamiento en predictores:} de acuerdo con la teoría clásica de funciones de influencia \cite{huber1964,hampel1986robust,huber2009robust}, como $|\psi_\delta(r_k)| \le \delta$, la contribución de cualquier observación $k$ al gradiente está acotada por $\delta/n$ en el intercepto y por $(\delta/n)\|\mathbf{z}_k\|_\infty$ en los coeficientes. Sin embargo, SM-CFHR \emph{no} posee una función de influencia globalmente acotada frente a puntos de apalancamiento arbitrariamente grandes $\|\mathbf{z}_k\|$, pues no aplica pesos de tipo Mallows o Schweppe sobre $Z$; su diseño asume predictores meteorológicos y autorregresivos acotados o imputados por mediana, concentrándose la protección robusta en anomalías de la energía observada.
+    \item \textbf{Monotonía parcial y factibilidad física:} para todo índice restringido $j \in \mathcal{M}_+$ con $\tilde{s}_j > 0$, la predicción energética $\hat{y}_q$ es monótona no decreciente respecto a $x_{q,j}$ \textit{ceteris paribus} y permanece confinada a $[0, 24\,000\,H_{\mathrm{dir}}\,C_{i,t}]$. Esta garantía no implica monotonía conjunta cuando varias covariables correlacionadas varían simultáneamente (por ejemplo, si un incremento de radiación coincide con aumentos de temperatura de celda).
+    \item \textbf{Complejidad computacional:} cada evaluación individual del objetivo $J$ y de su gradiente $\nabla J$ requiere dos productos matriz-vector con $Z \in \mathbb{R}^{n \times p}$, con coste temporal $O(np)$ ($p \in \{7,17\}$). Para un ajuste completo mediante $K$ iteraciones de L-BFGS-B (con $m=10$ pares de curvatura recientes en memoria), el coste de entrenamiento es $O(np + Knp)$ en tiempo y $O(np + mp)$ en memoria, tras un preprocesamiento único $O(np)$. Bajo ajuste bayesiano anidado con $B=25$ ensayos TPE sobre $K_{\mathrm{cv}}=3$ particiones internas, el coste de búsqueda escala como $O(B \cdot K_{\mathrm{cv}} \cdot Knp)$, mientras que el despliegue recursivo de horizonte $H$ añade $O(Hp)$ operaciones por origen de pronóstico.
+\end{enumerate}
+
+\subsection{Verificación formal en Lean~4}\label{sec:lean4_resumen}
+
+Con el propósito de comprobar mecánicamente la consistencia lógica de las demostraciones y evitar hipótesis tácitas, las propiedades analíticas y estructurales anteriores fueron formalizadas en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre la biblioteca matemática \textbf{Mathlib} (commit \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, disponibles en el repositorio oficial bajo la etiqueta \texttt{v1.0.3-polyform} (Material Suplementario, Sección~S2).
+
+El desarrollo formal comprende $26$ declaraciones verificadas en seis módulos sin marcadores incompletos ni axiomas personalizados; una auditoría mediante el núcleo de Lean~4 confirma que todas dependen únicamente de los tres axiomas estándar del sistema (\texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}). Conviene distinguir con claridad entre descubrimiento matemático y verificación formal: formalizar consecuencias de la teoría convexa clásica en Lean~4 no constituye una innovación matemática nueva, sino una validación formal de las hipótesis y pasos lógicos aplicados al estimador SM-CFHR. Asimismo, esas $26$ declaraciones corresponden a lemas modulares y teoremas auxiliares necesarios para construir la prueba formal (pérdida de Huber, conjuntos convexos, derivada direccional, coercividad, existencia, unicidad de $\mathbf{w}^*$, unicidad condicional de $b^*$ y contraejemplo explícito $n=2$, KKT, cotas del gradiente y monotonía parcial), no a $26$ resultados científicos independientes. Como discrepancia exacta de cobertura formal, debe precisarse que el módulo de gradiente en Lean~4 demuestra la continuidad Lipschitz explícita de la componente del intercepto $\partial J/\partial b$ (\texttt{gradB\_lipschitz}), mientras que la cota espectral completa $L_J$ sobre el vector completo $\nabla J(b,\mathbf{w})$ del Teorema~\ref{thm:convexidad_existencia}(2) permanece demostrada analíticamente en la Sección~S1 del Material Suplementario. La verificación formal obligó además a explicitar hipótesis que en la escritura informal suelen omitirse ---en particular $n \ge 1$ y $\alpha_j > 0$ para coercividad y existencia, frente a $\alpha_j \ge 0$ para convexidad y KKT--- y se limita estrictamente al análisis sobre $\mathbb{R}$: no verifica la implementación en Python ni su aritmética IEEE-754, ni la convergencia numérica empírica de L-BFGS-B ni el desempeño predictivo fuera de muestra.

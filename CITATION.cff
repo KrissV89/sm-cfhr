@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "Si usa este software o sus resultados, cítelo con estos metadatos."
+title: "Pronóstico D+1 del factor de capacidad de plantas fotovoltaicas colombianas: modelos K1 y W1 y dashboard predictivo"
+type: software
+version: 1.0.3-polyform
+date-released: 2026-11-23
+authors:
+  - family-names: "Diaz Molinares"
+    given-names: "Enmanuel David"
+    affiliation: "Departamento de Matemáticas y Ciencia de Datos, Programa de Ciencia de Datos, Universidad del Norte, Barranquilla, Colombia"
+repository-code: "https://github.com/KrissV89/sm-cfhr"
+license: "PolyForm-Noncommercial-1.0.0"
+# doi: pendiente: se obtiene al publicar una release en Zenodo
+keywords:
+  - energía fotovoltaica
+  - factor de capacidad
+  - pronóstico del día siguiente
+  - regresión local ponderada
+  - scikit-learn
+  - Dash

@@ -1,0 +1,12 @@
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Variante estructural & $\mathrm{MAE}_{\mathrm{CF}}$ & $\mathrm{MAE}_{\mathrm{kWh}}$ ($\text{kWh/día}$) & $\Delta$ vs.\ completo (\%) \\
+\midrule
+Modelo completo (\texttt{SM-CFHR}) & $0{,}03488$ & $60\,631{,}2$ & $0{,}00\%$ \\
+Sin pérdida de Huber (cuadrática efectiva, $\delta = 10^6$) & $0{,}03496$ & $60\,784{,}0$ & $+0{,}25\%$ \\
+Sin regularización anisotrópica ($\alpha_{\mathrm{meteo}}=\alpha_{\mathrm{lin}}$) & $0{,}03487$ & $60\,606{,}3$ & $-0{,}04\%$ \\
+Sin restricciones de monotonía & $0{,}03488$ & $60\,631{,}2$ & $0{,}00\%$ \\
+Estandarización externa de predictores & $0{,}03488$ & $60\,631{,}2$ & $0{,}00\%$ \\
+Ajuste directo en energía bruta ($\text{kWh/día}$) & $0{,}23065$ & $270\,035{,}5$ & $+345{,}37\%$ \\
+\bottomrule
+\end{tabular}

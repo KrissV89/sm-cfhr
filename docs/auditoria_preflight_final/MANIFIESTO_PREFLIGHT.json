@@ -1,0 +1,27 @@
+{
+  "decision_tecnica": "GO_TECNICO",
+  "oof_definitivo_ejecutado": false,
+  "git_head_base": "cae2e98aa5bb60a59f1c86aca7bbe22ade1dc26d",
+  "pytest_passed": 47,
+  "pytest_failed": 0,
+  "coste_28_escenarios": {
+    "fixed_fits": 19497,
+    "hpo_b25_trials": 487425,
+    "hpo_b25_total_fits": 1481772
+  },
+  "sha256": {
+    "src/adaptive_structured_huber.py": "ed89b2aadab9d3a365bee985c98bfb006c71d5da16ecb1694d757b2d87d72bad",
+    "src/ashr_oof_pipeline/config.py": "00cc2688128c457baba1b41b69631c79fb474ae338a659d85b6ad8594e29190b",
+    "src/ashr_oof_pipeline/oof_runner.py": "b967eb406c933780e46ddad7865c4c4324c94c713753e07a7b77ab7cd2cb2dbf",
+    "src/ashr_oof_pipeline/optimizacion_hiperparametros.py": "5054f2bd80579095bbe1eea6956f71b7d28b4ed2383acec593892884a209a5b3",
+    "src/ashr_oof_pipeline/evaluacion_estadistica.py": "09fa3dffca5d500a1ce37df97eb0aacf08277dcc8267a2a569e2c56a4712d709",
+    "src/ashr_oof_pipeline/robustez_y_ablacion.py": "da46b529cde73fb1edf3fdf8640c0d87ff41a144011d4dd762f845ff29d15d57",
+    "src/ashr_oof_pipeline/resultados_loader.py": "f55dcd4e952125c308e94550e32453953d787c2ad85d97396debe484c701b241",
+    "scripts/evaluacion/ejecutar_oof_definitivo_ashr.py": "01c818f567e2a09cee0cc94d66a7f468d55a008b77fe9c41df926722843bb9ec",
+    "scripts/evaluacion/preflight_ashr_desarrollo.py": "f5f8f41828536271bbf91b639b4d40888f62775bcfa0b9488d521a761c571bdb",
+    "experiments/config_ashr_congelada.json": "4554e23615a383aed5910ad25b5ee22d64d67d8a34898d6c44463deaa8b88c13",
+    "experiments/protocolo.md": "cc85cf50b856e1700fb16061afb6565cd9d0a5e991ff3284f47d1d50a2f83ec7",
+    "notebooks/actuales/evaluacion_cientifica_ashr_oof.ipynb": "743afd4264a4ecd6d9ec02100c50a8b5cde4cfd979ed6190eaf63fe29b1a83a9",
+    "tests/test_preflight_final_integracion.py": "23859868bbdff68f23527d20c20699c9875fb83117eb1d1c6d31ae3cdacca4af"
+  }
+}

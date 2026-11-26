@@ -1,0 +1,14 @@
+# Equivalente para Jupyter Book 1; la construcción con Jupyter Book 2 usa project.toc de myst.yml.
+format: jb-book                  # formato de libro de Jupyter Book
+root: intro                      # archivo de entrada
+chapters:
+  - file: 01_correcciones        # trazabilidad de correcciones
+  - file: 02_datos               # ETL, EDA y declaración de datos
+  - file: 03_benchmarks          # modelos benchmark
+  - file: 04_literatura          # revisión de literatura y novedad
+  - file: 05_modelo_original     # modelo original
+  - file: 06_validacion          # protocolo y pruebas de hipótesis
+  - file: 07_evaluacion_ampliada # datasets adicionales y robustez
+  - file: 08_dashboard           # dashboard y despliegue
+  - file: 09_conclusiones        # conclusiones y limitaciones
+  - file: 10_reproducibilidad    # entorno, semillas y bibliografía
