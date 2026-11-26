@@ -3,7 +3,7 @@ model: SM-CFHR
 code_tag: v1.0.3
 code_commit: d522cf3a288ca08f6080a17247794f706358c145
 src_sha256: 27a9fda4fa8b7ef0d95faf9e925e47ade9ed8f25e9ea5d97d6d7cf1c00ddde83
-status_global: PENDIENTE_OOF_DEFINITIVO
+status_global: INTEGRADO_OOF_Y_REVISION_V2
 
 placeholders:
   - id: RES_28_ESCENARIOS_FIXED

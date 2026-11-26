@@ -1,6 +1,15 @@
 \section{Discusión}\label{sec:discusion}
 
-En ausencia de los resultados numéricos definitivos fuera de muestra, la discusión se restringe estrictamente a las implicaciones estructurales de la formulación matemática, los compromisos conocidos del diseño experimental y los límites precisos de generalización del estudio, evitando toda especulación condicional sobre desempeños no observados.
+Los resultados definitivos fuera de muestra permiten contrastar las decisiones de diseño de SM-CFHR frente a la evidencia empírica y delimitar con precisión dónde aporta ventaja real y dónde falla frente a alternativas locales o no lineales.
+
+\subsection{Interpretación empírica por régimen, horizonte y estrategia}
+
+\begin{enumerate}
+    \item \textbf{Ventaja concentrada en transferencia espaciotemporal con meteorología:} la combinación de normalización causal por $24\,000\,C_{i,t}$, regularización anisotrópica y cotas monótonas logra rango $1{,}0/23$ y $5/5$ victorias Holm bajo el estimando $\mathrm{MAE}_{\mathrm{macro}}$ en \texttt{D+1 ET} y \texttt{RecGEFSv12 ET} ($7$--$28$~días). Al evaluar plantas nunca vistas durante el ajuste, los regresores entrenados en energía bruta ($\text{kWh/día}$) sufren la distorsión de escala de $39{,}6\times$, mientras SM-CFHR transfiere relaciones adimensionales consistentes entre zonas geográficas.
+    \item \textbf{Limitaciones en intraplanta y caída en estrategia directa sin clima:} cuando existe historial propio de la planta (\texttt{IP}), las bibliotecas locales o flexibles (\texttt{BayesianRidge}, \texttt{k-NN}, \texttt{Random Forest}) aprovechan relaciones no lineales y niveles específicos de energía sin necesitar transferencia de escala. En particular, en \texttt{DirectoSinClima\_IP} ($7$--$28$~días), el ajuste lineal adimensional sobre acumulados sin señal NWP se degrada hasta $+24{,}24\%$ frente a \texttt{k-NN}, constituyendo un resultado negativo claro del método.
+    \item \textbf{Compromiso entre configuración fija y HPO:} \texttt{SM-CFHR-Fixed} ($B=0$) supera a \texttt{SM-CFHR-HPO} ($B=25$) en $19/28$ escenarios ($14/14$ en ET; $4$ victorias Holm frente a $1$ derrota) con un coste de pared $59\times$ menor. La varianza de selección en $3$ pliegues internos penaliza a \texttt{HPO} especialmente en transferencia espacial y horizontes largos, mostrando que el sesgo inductivo fijo actúa como regularizador efectivo.
+    \item \textbf{Sensibilidad de escala ($\text{kWh}$ vs.\ CF) y subcobertura conformal:} el contraste entre rango medio $2{,}93/23$ en $\text{kWh}$ y $4{,}00/23$ en $\mathrm{MAE}_{\mathrm{CF,macro}}$ evidencia que las centrales de mayor potencia influyen fuertemente en las métricas en energía absoluta. Asimismo, las coberturas conformes empíricas ($83{,}24\%$ para $90\%$ nominal; $69{,}25\%$ para $80\%$) confirman que la no estacionariedad y deriva entre bloques violan la intercambiabilidad estándar \cite{barber2023nonexchangeable}.
+\end{enumerate}
 
 \subsection{Implicaciones estructurales de las decisiones de diseño}
 
