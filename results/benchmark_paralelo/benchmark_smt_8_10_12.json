@@ -1,0 +1,57 @@
+{
+  "recommended_workers": 12,
+  "selection_criterion": ">= +10.0% units/min vs 8w, 0 errors, exact hash match, < 6500 MB aggregate RSS",
+  "rows": [
+    {
+      "workers": 8,
+      "n_units": 48,
+      "n_trials": 25,
+      "wall_time_s": 70.064,
+      "units_per_min": 41.106,
+      "gain_vs_8w_pct": 0.0,
+      "cpu_percent_sys": 60.7,
+      "cpu_freq_mhz": 3040.0,
+      "cpu_temp_c": 53.1,
+      "peak_coord_rss_mb": 190.21,
+      "peak_worker_rss_mb": 276.16,
+      "peak_aggregate_rss_mb": 2375.64,
+      "worker_recycles": 0,
+      "errors": 0,
+      "hashes_match_8w": true
+    },
+    {
+      "workers": 10,
+      "n_units": 48,
+      "n_trials": 25,
+      "wall_time_s": 65.841,
+      "units_per_min": 43.741,
+      "gain_vs_8w_pct": 6.41,
+      "cpu_percent_sys": 72.2,
+      "cpu_freq_mhz": 3040.0,
+      "cpu_temp_c": 53.1,
+      "peak_coord_rss_mb": 198.62,
+      "peak_worker_rss_mb": 275.92,
+      "peak_aggregate_rss_mb": 2926.66,
+      "worker_recycles": 0,
+      "errors": 0,
+      "hashes_match_8w": true
+    },
+    {
+      "workers": 12,
+      "n_units": 48,
+      "n_trials": 25,
+      "wall_time_s": 63.36,
+      "units_per_min": 45.455,
+      "gain_vs_8w_pct": 10.58,
+      "cpu_percent_sys": 83.8,
+      "cpu_freq_mhz": 3040.0,
+      "cpu_temp_c": 53.1,
+      "peak_coord_rss_mb": 198.81,
+      "peak_worker_rss_mb": 274.05,
+      "peak_aggregate_rss_mb": 3465.09,
+      "worker_recycles": 0,
+      "errors": 0,
+      "hashes_match_8w": true
+    }
+  ]
+}

@@ -94,6 +94,7 @@ def model_confidence_set(
     B: int = 500,
     mean_block: float = 7.0,
     seed: int = 2026,
+    one_sided: bool = True,
 ) -> dict[str, Any]:
     """Hansen-Lunde-Nason Model Confidence Set (T_max statistic) with stationary bootstrap."""
     L = np.asarray(loss_matrix, dtype=float)
@@ -115,10 +116,10 @@ def model_confidence_set(
         centered_boot = boot_means - d_bar[None, :]
         se = np.maximum(np.std(centered_boot, axis=0, ddof=1), 1e-12)
         t_obs = d_bar / se
-        t_boot = np.abs(centered_boot) / se[None, :]
+        t_boot = (centered_boot if one_sided else np.abs(centered_boot)) / se[None, :]
         stat_obs = float(np.max(t_obs))
         stat_boot = np.max(t_boot, axis=1)
-        p_step = float(np.mean(stat_boot >= stat_obs))
+        p_step = float((1.0 + np.sum(stat_boot >= stat_obs)) / (B + 1.0))
         p_running = max(p_running, p_step)
 
         worst_local = int(np.argmax(t_obs))
