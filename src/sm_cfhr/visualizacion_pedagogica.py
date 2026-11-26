@@ -1,4 +1,4 @@
-"""Pedagogical and defense-grade scientific visualizations from persisted OOF artifacts."""
+"""Scientific visualizations for library-only, intra-dataset, inter-group, and OOF evaluations."""
 
 from __future__ import annotations
 
@@ -155,7 +155,7 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     axes[0].set_yticklabels(mean_ranks["metodo"], fontsize=9)
     axes[0].invert_yaxis()
     axes[0].set_xlabel("Rango ordinal medio (1 = mejor, sobre 10 modelos)")
-    axes[0].set_title("Rango medio exclusivo frente a 9 bibliotecas")
+    axes[0].set_title("Rango ordinal medio entre 10 modelos")
     for idx, val in enumerate(mean_ranks["rango_en_10"]):
         axes[0].text(val + 0.1, idx, f"{val:.2f}", va="center", fontsize=8.5)
     axes[0].grid(axis="x", linestyle=":", alpha=0.5)
@@ -170,11 +170,11 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     axes[1].set_xlim(0, 31)
     axes[1].axvline(14, color="#666666", linestyle="--", linewidth=0.9)
     axes[1].set_xlabel("Escenarios donde SM-CFHR-Fixed < biblioteca (de 28)")
-    axes[1].set_title("Victorias directas 1-vs-1 frente a cada biblioteca")
+    axes[1].set_title("Victorias 1-vs-1 frente a cada biblioteca")
     for idx, val in enumerate(w_vals):
         axes[1].text(val + 0.4, idx, f"{val}/28", va="center", fontsize=8.5)
     axes[1].grid(axis="x", linestyle=":", alpha=0.5)
-    fig.suptitle("Universo exclusivo de bibliotecas: posición global de SM-CFHR-Fixed", fontsize=11.5)
+    fig.suptitle("Rango ordinal y victorias 1-vs-1 frente a nueve bibliotecas", fontsize=11.5)
     fig.tight_layout()
     out["P01"] = _save_fig(fig, fig_dir, "figP01_ranking_bibliotecas")
 
@@ -192,7 +192,7 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
             ax.text(j, i, f"{mat[i, j]:+.1f}", ha="center", va="center", fontsize=6.2, color="black" if abs(mat[i, j]) < 18 else "white")
     cbar = fig.colorbar(im, ax=ax, shrink=0.8)
     cbar.set_label("Δ% MAE_macro de SM-CFHR-Fixed vs. biblioteca (< 0 favorece a SM-CFHR)")
-    ax.set_title("Mapa de calor: SM-CFHR-Fixed frente a cada biblioteca en los 28 escenarios")
+    ax.set_title("Diferencia relativa de MAE_macro frente a cada biblioteca (28 escenarios)")
     fig.tight_layout()
     out["P02"] = _save_fig(fig, fig_dir, "figP02_heatmap_vs_bibliotecas")
 
@@ -213,7 +213,7 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     for idx, v in enumerate(s3["pct_vs_MejorLib"]):
         ax.text(v + (0.4 if v >= 0 else -0.4), idx, f"{v:+.1f}%", va="center", ha="left" if v >= 0 else "right", fontsize=7.2)
     ax.set_xlabel("Diferencia porcentual en MAE_macro vs. mejor biblioteca (< 0 favorece a SM-CFHR-Fixed)")
-    ax.set_title("18 victorias y 10 derrotas frente al mejor modelo de biblioteca (* = significativo tras Holm)")
+    ax.set_title("Diferencia de MAE_macro frente a la mejor biblioteca por escenario (* = p_Holm < 0.05)")
     ax.grid(axis="x", linestyle=":", alpha=0.5)
     fig.tight_layout()
     out["P03"] = _save_fig(fig, fig_dir, "figP03_victorias_derrotas_bibliotecas")
@@ -238,7 +238,7 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
         ax.set_title(title)
         ax.legend(fontsize=8)
         ax.grid(True, linestyle=":", alpha=0.5)
-    fig.suptitle("Comparación pareada directa sobre el soporte común alineado", fontsize=11.5)
+    fig.suptitle("Comparación pareada de MAE_macro sobre observaciones alineadas", fontsize=11.5)
     fig.tight_layout()
     out["P04"] = _save_fig(fig, fig_dir, "figP04_pareado_ashr_vs_mejor_bib")
 
@@ -259,7 +259,7 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     axes[0].set_xticks(x)
     axes[0].set_xticklabels([f"{int(h)}d" if h > 1 else "D+1" for h in h_agg["horizon_days"]])
     axes[0].set_ylabel("MAE_macro equivalente (MWh/día; Directo dividido entre H)")
-    axes[0].set_title("Desglose por horizonte temporal")
+    axes[0].set_title("MAE_macro equivalente por horizonte")
     axes[0].legend(fontsize=8)
     axes[0].grid(axis="y", linestyle=":", alpha=0.5)
 
@@ -272,7 +272,7 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     axes[1].set_yticklabels([f"{r.suite} | {'ET' if r.task == 'espaciotemporal' else 'IP'}" for r in reg_agg.itertuples(index=False)], fontsize=8)
     axes[1].invert_yaxis()
     axes[1].set_xlabel("Δ% medio vs. Mejor Biblioteca (< 0 favorece a SM-CFHR)")
-    axes[1].set_title("Desglose por suite y régimen ET / IP")
+    axes[1].set_title("Diferencia media por suite y régimen")
     axes[1].legend(fontsize=8)
     axes[1].grid(axis="x", linestyle=":", alpha=0.5)
     fig.tight_layout()
@@ -404,14 +404,14 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     fig.tight_layout()
     out["P09"] = _save_fig(fig, fig_dir, "figP09_rendimiento_vs_coste")
 
-    # Fig P10: Síntesis visual de R3 vs criterio verbal
+    # Fig P10: Síntesis visual de criterios R3 frente al desempeño en bibliotecas
     fig, ax = plt.subplots(figsize=(10.0, 3.8))
     labels_c = [
         "R3 C1: Métrica externa\n(18/28 vs Mejor_Bib ex post)",
         "R3 C2: 3 pruebas calibradas\n(Holm=2/15; SPA/MCS mixtos)",
         "R3 C3: Tamaño del efecto\n(2/15 con dz <= -0.20)",
         "R3 C4: Alcance / externos\n(autorización docente=False)",
-        "Criterio verbal (bibliotecas)\n(#1 en 10 libs; 23-28/28 1-vs-1)",
+        "Comparación descriptiva (bibliotecas)\n(#1 en 10 modelos; 23-28/28 1-vs-1)",
     ]
     scores = [18 / 28, 2 / 15, 2 / 15, 0.0, 1.0]
     cols10 = ["#d95f02", "#d95f02", "#d95f02", "#999999", "#1b7837"]
@@ -425,7 +425,7 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     for idx, (s, txt) in enumerate(zip(scores, texts)):
         ax.text(s * 100.0 + 1.5, idx, txt, va="center", fontsize=8.5, fontweight="bold")
     ax.set_xlabel("Grado cuantitativo observado (%)")
-    ax.set_title("Síntesis de cumplimiento: Entregable 3 escrito (R3) vs. criterio verbal sobre bibliotecas")
+    ax.set_title("Resumen de criterios R3 frente al desempeño descriptivo en bibliotecas")
     ax.grid(axis="x", linestyle=":", alpha=0.5)
     fig.tight_layout()
     out["P10"] = _save_fig(fig, fig_dir, "figP10_sintesis_r3_criterios")

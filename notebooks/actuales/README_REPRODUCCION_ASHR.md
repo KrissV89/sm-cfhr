@@ -13,11 +13,11 @@ python -m pip install -e . --no-build-isolation --no-deps
 python -m ipykernel install --user --name solarpv-eda --display-name "Python (solarpv-eda)"
 ```
 
-## 2. Reproducción exclusiva del análisis desde los artefactos OOF cerrados (sin reentrenar)
-Los resultados OOF definitivos consolidados (`Fixed` + `HPO`, `14,625` unidades por variante, `28` escenarios) residen en `resultados/evaluacion_ashr_oof/`. Para regenerar todas las tablas, estudios diagnósticos (etapas 2–8), figuras y el notebook científico de **19 secciones** sin repetir el entrenamiento OOF:
+## 2. Reproducción del análisis desde los artefactos OOF cerrados (sin reentrenar)
+Los resultados OOF definitivos consolidados (`Fixed` + `HPO`, `14,625` unidades por variante, `28` escenarios) residen en `resultados/evaluacion_ashr_oof/`. Para regenerar todas las tablas, estudios diagnósticos (etapas 2–8), figuras y el notebook científico de **8 capítulos** sin repetir el entrenamiento OOF:
 
 ```powershell
-# 1. Regenerar tablas, inferencia, estudios diagnósticos reales y figuras (etapas 2-8)
+# 1. Regenerar tablas, inferencia, estudios diagnósticos y figuras (etapas 2-8)
 python -m sm_cfhr.cli report
 
 # 2. Regenerar el notebook desde su fuente y ejecutarlo desde kernel limpio
@@ -27,7 +27,7 @@ python -m jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel
 
 ## 3. Verificación automatizada
 ```powershell
-python -m pytest tests/test_notebook_audit_fixes.py tests/test_parallel_oof.py tests/test_adaptive_structured_huber.py tests/test_selector_ashr_v2.py -v
+python -m pytest tests/test_notebook_editorial_integrity.py tests/test_notebook_audit_fixes.py tests/test_parallel_oof.py tests/test_adaptive_structured_huber.py tests/test_selector_ashr_v2.py -v
 ```
 
 ## 4. Reejecución OOF paralela (solo referencia de auditoría)
