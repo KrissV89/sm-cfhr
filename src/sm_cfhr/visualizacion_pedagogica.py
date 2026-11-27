@@ -121,8 +121,12 @@ def compute_library_only_tables(oof_dir: Path, root: Path) -> dict[str, pd.DataF
     return {"rank_10": rank_df, "heat_vs_libs": heat_df, "mcs_lib": mcs_df, "spa_lib": spa_df}
 
 
-def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[Path, Path]]:
-    """Generate all 10 pedagogical PNG (300 dpi) + PDF figures from saved OOF artifacts."""
+def generate_pedagogical_figures(
+    oof_dir: Path,
+    root: Path,
+    include_internal_r3: bool = False,
+) -> dict[str, tuple[Path, Path]]:
+    """Generate pedagogical PNG (300 dpi) + PDF figures from saved OOF artifacts."""
     fig_dir = oof_dir / "figuras" / "pedagogicas"
     fig_dir.mkdir(parents=True, exist_ok=True)
     lib_res = compute_library_only_tables(oof_dir, root)
@@ -404,61 +408,87 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
     fig.tight_layout()
     out["P09"] = _save_fig(fig, fig_dir, "figP09_rendimiento_vs_coste")
 
-    # Fig P10: Síntesis visual de criterios R3 frente al desempeño en bibliotecas
-    fig, ax = plt.subplots(figsize=(10.0, 3.8))
-    labels_c = [
-        "R3 C1: Métrica externa\n(18/28 vs Mejor_Bib ex post)",
-        "R3 C2: 3 pruebas calibradas\n(Holm=2/15; SPA/MCS mixtos)",
-        "R3 C3: Tamaño del efecto\n(2/15 con dz <= -0.20)",
-        "R3 C4: Alcance / externos\n(sin datasets externos)",
-        "Comparación descriptiva (bibliotecas)\n(#1 en 10 modelos; 23-28/28 1-vs-1)",
-    ]
-    scores = [18 / 28, 2 / 15, 2 / 15, 0.0, 1.0]
-    cols10 = ["#d95f02", "#d95f02", "#d95f02", "#999999", "#1b7837"]
-    y10 = np.arange(len(labels_c))
-    ax.barh(y10, [s * 100.0 for s in scores], color=cols10)
-    ax.set_yticks(y10)
-    ax.set_yticklabels(labels_c, fontsize=8.5)
-    ax.invert_yaxis()
-    ax.set_xlim(0, 118)
-    texts = ["NO_CUMPLE (18/28)", "NO_CUMPLE / MIXTO", "NO_CUMPLE (2/15 real)", "PENDIENTE_AUTORIZACION", "RESPALDADO (rango 1.64/10)"]
-    for idx, (s, txt) in enumerate(zip(scores, texts)):
-        ax.text(s * 100.0 + 1.5, idx, txt, va="center", fontsize=8.5, fontweight="bold")
-    ax.set_xlabel("Grado cuantitativo observado (%)")
-    ax.set_title("Resumen de criterios R3 frente al desempeño descriptivo en bibliotecas")
-    ax.grid(axis="x", linestyle=":", alpha=0.5)
-    fig.tight_layout()
-    out["P10"] = _save_fig(fig, fig_dir, "figP10_sintesis_r3_criterios")
+    if include_internal_r3:
+        # Fig P10: Síntesis visual de criterios R3 internos (solo uso interno docente)
+        fig, ax = plt.subplots(figsize=(10.0, 3.8))
+        labels_c = [
+            "R3 C1: Métrica externa\n(18/28 vs Mejor_Bib ex post)",
+            "R3 C2: 3 pruebas calibradas\n(Holm=2/15; SPA/MCS mixtos)",
+            "R3 C3: Tamaño del efecto\n(2/15 con dz <= -0.20)",
+            "R3 C4: Alcance / externos\n(sin datasets externos)",
+            "Comparación descriptiva (bibliotecas)\n(#1 en 10 modelos; 23-28/28 1-vs-1)",
+        ]
+        scores = [18 / 28, 2 / 15, 2 / 15, 0.0, 1.0]
+        cols10 = ["#d95f02", "#d95f02", "#d95f02", "#999999", "#1b7837"]
+        y10 = np.arange(len(labels_c))
+        ax.barh(y10, [s * 100.0 for s in scores], color=cols10)
+        ax.set_yticks(y10)
+        ax.set_yticklabels(labels_c, fontsize=8.5)
+        ax.invert_yaxis()
+        ax.set_xlim(0, 118)
+        texts = ["NO_CUMPLE (18/28)", "NO_CUMPLE / MIXTO", "NO_CUMPLE (2/15 real)", "PENDIENTE_AUTORIZACION", "RESPALDADO (rango 1.64/10)"]
+        for idx, (s, txt) in enumerate(zip(scores, texts)):
+            ax.text(s * 100.0 + 1.5, idx, txt, va="center", fontsize=8.5, fontweight="bold")
+        ax.set_xlabel("Grado cuantitativo observado (%)")
+        ax.set_title("Resumen de criterios R3 frente al desempeño descriptivo en bibliotecas")
+        ax.grid(axis="x", linestyle=":", alpha=0.5)
+        fig.tight_layout()
+        out["P10"] = _save_fig(fig, fig_dir, "figP10_sintesis_r3_criterios")
 
-    # --- Intra-dataset & Inter-plant / Inter-group analyses (from persisted OOF predictions + base_planta_dia.csv) ---
+    # --- Intra-dataset & Inter-plant / Inter-group analyses (from persisted OOF predictions + daily causal cap_MW_origen) ---
     base_csv = root / "base_generacion_clima" / "base_planta_dia.csv"
     if base_csv.exists():
-        base_df = pd.read_csv(base_csv, usecols=["code", "grupo", "cap_MW"])
+        base_df = pd.read_csv(base_csv, usecols=["code", "date", "grupo", "cap_MW"])
         base_df["code"] = base_df["code"].astype(str)
+        base_df["date"] = base_df["date"].astype(str)
+        base_df = base_df.drop_duplicates(subset=["code", "date"]).sort_values(["code", "date"]).reset_index(drop=True)
+        base_df["cap_MW_origen"] = base_df.groupby("code")["cap_MW"].shift(1).fillna(base_df["cap_MW"])
         plant_meta = base_df.groupby("code", as_index=False).agg(grupo=("grupo", "first"), cap_MW_media=("cap_MW", "mean"))
-        plant_meta["B_i"] = plant_meta["cap_MW_media"] * 24000.0
+        cap_lookup = base_df[["code", "date", "cap_MW", "cap_MW_origen"]]
+
+        v2_corr_dir = root / "resultados" / "inferencia_revision_independiente_v2" / "05_metricas_corregidas"
+        v2_corr_dir.mkdir(parents=True, exist_ok=True)
 
         t_planta = pd.read_csv(oof_dir / "metricas" / "tabla_por_planta.csv")
         t_planta["code"] = t_planta["code"].astype(str)
-        d1_et_p = t_planta[t_planta["escenario"] == "D1_espaciotemporal_cinco_variables"].merge(plant_meta, on="code", how="left")
 
-        # Mejor_Bib per plant on D1_espaciotemporal_cinco_variables
+        df_d1_et = pd.read_csv(oof_dir / "predicciones" / "D1_espaciotemporal_cinco_variables.csv")
+        df_d1_et["code"] = df_d1_et["code"].astype(str)
+        df_d1_et["date"] = df_d1_et["date"].astype(str)
+        df_d1_et = df_d1_et.merge(cap_lookup, on=["code", "date"], how="left")
+        df_d1_et["ae_kwh"] = np.abs(df_d1_et["prediccion_kwh"] - df_d1_et["y_kwh"])
+        df_d1_et["ae_cf"] = df_d1_et["ae_kwh"] / (24000.0 * df_d1_et["cap_MW_origen"])
+
+        ashr_p = df_d1_et.groupby("code", as_index=False).agg(
+            grupo=("grupo", "first"),
+            MAE_kWh_ASHR=("ae_kwh", "mean"),
+            MAE_CF_ASHR=("ae_cf", "mean"),
+        ).merge(plant_meta[["code", "cap_MW_media"]], on="code", how="left")
+
+        # Mejor_Bib per plant on D1_espaciotemporal_cinco_variables using daily causal origin capacity
         sp_d1 = next(sp for sp in SCENARIOS_28 if sp.scenario_id == "D1_espaciotemporal_cinco_variables")
         bench_d1 = load_official_benchmarks(sp_d1, root=root, exclude_cf_brh=True)
         bench_d1 = bench_d1[bench_d1["metodo"].isin(LIBRARIES_9)].copy()
+        bench_d1["code"] = bench_d1["code"].astype(str)
+        bench_d1["date"] = bench_d1["date"].astype(str)
+        bench_d1 = bench_d1.merge(cap_lookup, on=["code", "date"], how="left")
         bench_d1["_ae"] = (bench_d1[sp_d1.pred_col] - bench_d1[sp_d1.target_col]).abs()
-        by_p_m = bench_d1.groupby(["code", "metodo"], as_index=False)["_ae"].mean()
-        best_bib_name_d1 = by_p_m.groupby("metodo")["_ae"].mean().idxmin()
-        bib_p = by_p_m[by_p_m["metodo"] == best_bib_name_d1][["code", "_ae"]].rename(columns={"_ae": "MAE_kWh_MejorBib"})
-        d1_et_p = d1_et_p.merge(bib_p, on="code", how="left")
-        d1_et_p["MAE_CF_ASHR"] = d1_et_p["MAE_ASHR"] / d1_et_p["B_i"]
-        d1_et_p["MAE_CF_MejorBib"] = d1_et_p["MAE_kWh_MejorBib"] / d1_et_p["B_i"]
+        bench_d1["_ae_cf"] = bench_d1["_ae"] / (24000.0 * bench_d1["cap_MW_origen"])
+        best_bib_name_d1 = bench_d1.groupby("metodo")["_ae"].mean().idxmin()
+        bib_p = bench_d1[bench_d1["metodo"] == best_bib_name_d1].groupby("code", as_index=False).agg(
+            MAE_kWh_MejorBib=("_ae", "mean"),
+            MAE_CF_MejorBib=("_ae_cf", "mean"),
+        )
 
         mm_wins_p = t_planta.groupby("code", as_index=False)["diff_vs_MM30"].apply(lambda s: int((s < 0).sum())).rename(columns={"diff_vs_MM30": "victorias_vs_MM30_en_28"})
-        intra_planta_df = d1_et_p[["code", "grupo_x", "cap_MW_media", "MAE_ASHR", "MAE_kWh_MejorBib", "MAE_CF_ASHR", "MAE_CF_MejorBib"]].rename(columns={"grupo_x": "grupo", "MAE_ASHR": "MAE_kWh_ASHR"}).merge(mm_wins_p, on="code", how="left")
-        atomic_write_csv(intra_planta_df, oof_dir / "metricas" / "intra_por_planta_capacidad.csv")
+        intra_planta_df = (
+            ashr_p[["code", "grupo", "cap_MW_media", "MAE_kWh_ASHR", "MAE_CF_ASHR"]]
+            .merge(bib_p, on="code", how="left")
+            .merge(mm_wins_p, on="code", how="left")
+        )
+        atomic_write_csv(intra_planta_df, v2_corr_dir / "intra_por_planta_capacidad_corregido.csv")
 
-        # Fig P11: Intra-dataset per plant & installed capacity
+        # Fig P11: Intra-dataset per plant & installed capacity (observation-level daily cap_MW_origen)
         fig, axes = plt.subplots(1, 2, figsize=(12.2, 4.8))
         axes[0].scatter(intra_planta_df["cap_MW_media"], intra_planta_df["MAE_kWh_ASHR"] / 1000.0, s=65, color="#1b7837", label="SM-CFHR-Fixed")
         axes[0].scatter(intra_planta_df["cap_MW_media"], intra_planta_df["MAE_kWh_MejorBib"] / 1000.0, s=55, marker="^", color="#b2182b", alpha=0.8, label=f"Mejor Bib. D1 ({best_bib_name_d1})")
@@ -474,8 +504,8 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
         axes[1].bar(x11 + 0.18, ip_s["MAE_CF_MejorBib"] * 100.0, width=0.36, color="#b2182b", alpha=0.75, label=best_bib_name_d1)
         axes[1].set_xticks(x11)
         axes[1].set_xticklabels(ip_s["code"], rotation=45, ha="right", fontsize=7.5)
-        axes[1].set_ylabel("MAE_CF normalizado (% de capacidad)")
-        axes[1].set_title("Error normalizado por planta (elimina efecto escala MW)")
+        axes[1].set_ylabel("MAE_CF normalizado (% de cap. diaria al origen)")
+        axes[1].set_title("Error normalizado por planta (cap. diaria al origen)")
         axes[1].legend(fontsize=8)
         axes[1].grid(axis="y", linestyle=":", alpha=0.5)
         fig.suptitle("Evaluación intra-dataset: desempeño por planta y relación con capacidad", fontsize=11.5)
@@ -483,10 +513,6 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
         out["P11"] = _save_fig(fig, fig_dir, "figP11_intra_plantas_capacidad")
 
         # Fig P12: Intra-dataset temporal blocks (D1/D2/D3) + Weather & Recursive/Direct impact
-        df_d1_et = pd.read_csv(oof_dir / "predicciones" / "D1_espaciotemporal_cinco_variables.csv")
-        df_d1_et["code"] = df_d1_et["code"].astype(str)
-        df_d1_et = df_d1_et.merge(plant_meta[["code", "B_i"]], on="code", how="left")
-        df_d1_et["ae_cf"] = np.abs(df_d1_et["prediccion_kwh"] - df_d1_et["y_kwh"]) / df_d1_et["B_i"]
         blk_agg = df_d1_et.groupby("bloque", as_index=False)["ae_cf"].agg(["mean", "median"]).reset_index()
 
         fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.6))
@@ -517,15 +543,24 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
         fig.tight_layout()
         out["P12"] = _save_fig(fig, fig_dir, "figP12_intra_periodos_clima_estrategia")
 
-        # Inter-plant / Inter-group (G=1..7) generalization: ET vs IP
+        # Inter-plant / Inter-group (G=1..7) generalization: strictly paired by (code, date)
         df_d1_ip = pd.read_csv(oof_dir / "predicciones" / "D1_intraplanta_cinco_variables.csv")
         df_d1_ip["code"] = df_d1_ip["code"].astype(str)
-        df_d1_ip = df_d1_ip.merge(plant_meta[["code", "B_i"]], on="code", how="left")
-        df_d1_ip["ae_cf"] = np.abs(df_d1_ip["prediccion_kwh"] - df_d1_ip["y_kwh"]) / df_d1_ip["B_i"]
+        df_d1_ip["date"] = df_d1_ip["date"].astype(str)
+        df_d1_ip = df_d1_ip.merge(cap_lookup, on=["code", "date"], how="left")
+        df_d1_ip["ae_cf"] = np.abs(df_d1_ip["prediccion_kwh"] - df_d1_ip["y_kwh"]) / (24000.0 * df_d1_ip["cap_MW_origen"])
 
-        g_et = df_d1_et.groupby("grupo", as_index=False)["ae_cf"].mean().rename(columns={"ae_cf": "MAE_CF_ET"})
-        g_ip = df_d1_ip.groupby("grupo", as_index=False)["ae_cf"].mean().rename(columns={"ae_cf": "MAE_CF_IP"})
-        inter_g = g_et.merge(g_ip, on="grupo", how="inner")
+        paired_et_ip = df_d1_et[["code", "date", "grupo", "ae_cf"]].merge(
+            df_d1_ip[["code", "date", "ae_cf"]],
+            on=["code", "date"],
+            how="inner",
+            suffixes=("_ET", "_IP"),
+        )
+        inter_g = paired_et_ip.groupby("grupo", as_index=False).agg(
+            n_pares=("ae_cf_ET", "size"),
+            MAE_CF_ET=("ae_cf_ET", "mean"),
+            MAE_CF_IP=("ae_cf_IP", "mean"),
+        )
 
         # Library ranks by group in D1 ET 5-var
         b_d1_g = bench_d1.copy() if "grupo" in bench_d1.columns else bench_d1.merge(plant_meta[["code", "grupo"]], on="code", how="left")
@@ -533,22 +568,22 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
         g_ranks = []
         for grp, sub_b in b_d1_g.groupby("grupo"):
             bm = sub_b.groupby("metodo", as_index=False)["_ae"].mean()
-            a_mae = float(df_d1_et.loc[df_d1_et["grupo"] == grp].assign(_ae=np.abs(df_d1_et["prediccion_kwh"] - df_d1_et["y_kwh"]))["_ae"].mean())
+            a_mae = float(df_d1_et.loc[df_d1_et["grupo"] == grp, "ae_kwh"].mean())
             all10_g = pd.concat([pd.DataFrame([{"metodo": "SM-CFHR-Fixed", "_ae": a_mae}]), bm], ignore_index=True).sort_values("_ae").reset_index(drop=True)
             rk = int(all10_g.index[all10_g["metodo"] == "SM-CFHR-Fixed"][0]) + 1
             g_ranks.append({"grupo": int(grp), "rango_en_10_libs_ET": rk})
         inter_g = inter_g.merge(pd.DataFrame(g_ranks), on="grupo", how="left")
-        atomic_write_csv(inter_g, oof_dir / "metricas" / "inter_grupo_et_vs_ip.csv")
+        atomic_write_csv(inter_g, v2_corr_dir / "inter_grupo_et_vs_ip_pareado.csv")
 
-        # Fig P13: Inter-plant / Inter-group generalization (no external datasets)
+        # Fig P13: Inter-plant / Inter-group generalization (strictly paired support)
         fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.6))
         xg = np.arange(len(inter_g))
         axes[0].bar(xg - 0.18, inter_g["MAE_CF_ET"] * 100.0, width=0.36, color="#1b7837", label="ET (plantas no vistas)")
         axes[0].bar(xg + 0.18, inter_g["MAE_CF_IP"] * 100.0, width=0.36, color="#762a83", label="IP (misma planta, futuro)")
         axes[0].set_xticks(xg)
-        axes[0].set_xticklabels([f"Grupo {int(g)}" for g in inter_g["grupo"]])
-        axes[0].set_ylabel("MAE_CF (% de capacidad)")
-        axes[0].set_title("Generalización ET vs. IP por grupo geográfico (D+1 5-var)")
+        axes[0].set_xticklabels([f"G{int(r.grupo)}\n(n={int(r.n_pares)})" for r in inter_g.itertuples(index=False)], fontsize=8.5)
+        axes[0].set_ylabel("MAE_CF (% de cap. diaria al origen)")
+        axes[0].set_title(f"ET vs. IP pareado por grupo (D+1 5-var; n={int(inter_g['n_pares'].sum()):,} pares)")
         axes[0].legend(fontsize=8.5)
         axes[0].grid(axis="y", linestyle=":", alpha=0.5)
 
@@ -568,13 +603,15 @@ def generate_pedagogical_figures(oof_dir: Path, root: Path) -> dict[str, tuple[P
         # Fig P14: Error distribution across populations (ET vs IP, with vs without weather)
         df_d1_et_nw = pd.read_csv(oof_dir / "predicciones" / "D1_espaciotemporal_sin_meteorologia.csv")
         df_d1_et_nw["code"] = df_d1_et_nw["code"].astype(str)
-        df_d1_et_nw = df_d1_et_nw.merge(plant_meta[["code", "B_i"]], on="code", how="left")
-        df_d1_et_nw["ae_cf"] = np.abs(df_d1_et_nw["prediccion_kwh"] - df_d1_et_nw["y_kwh"]) / df_d1_et_nw["B_i"]
+        df_d1_et_nw["date"] = df_d1_et_nw["date"].astype(str)
+        df_d1_et_nw = df_d1_et_nw.merge(cap_lookup, on=["code", "date"], how="left")
+        df_d1_et_nw["ae_cf"] = np.abs(df_d1_et_nw["prediccion_kwh"] - df_d1_et_nw["y_kwh"]) / (24000.0 * df_d1_et_nw["cap_MW_origen"])
 
         df_d1_ip_nw = pd.read_csv(oof_dir / "predicciones" / "D1_intraplanta_sin_meteorologia.csv")
         df_d1_ip_nw["code"] = df_d1_ip_nw["code"].astype(str)
-        df_d1_ip_nw = df_d1_ip_nw.merge(plant_meta[["code", "B_i"]], on="code", how="left")
-        df_d1_ip_nw["ae_cf"] = np.abs(df_d1_ip_nw["prediccion_kwh"] - df_d1_ip_nw["y_kwh"]) / df_d1_ip_nw["B_i"]
+        df_d1_ip_nw["date"] = df_d1_ip_nw["date"].astype(str)
+        df_d1_ip_nw = df_d1_ip_nw.merge(cap_lookup, on=["code", "date"], how="left")
+        df_d1_ip_nw["ae_cf"] = np.abs(df_d1_ip_nw["prediccion_kwh"] - df_d1_ip_nw["y_kwh"]) / (24000.0 * df_d1_ip_nw["cap_MW_origen"])
 
         fig, ax = plt.subplots(figsize=(9.5, 4.6))
         data_box = [

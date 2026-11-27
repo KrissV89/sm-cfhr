@@ -41,43 +41,44 @@ Al comparar directamente ambas variantes mediante $\mathrm{MAE}_{\mathrm{macro}}
 \label{fig:res_oof_rankings}
 \end{figure}
 
-\subsection{Reconciliación inferencial y métricas en factor de capacidad}
+\subsection{Protocolo original (v1.0.3), análisis retrospectivo (v2.0.0) y métricas en factor de capacidad}
 
-Bajo la formulación inicial no alineada ($T_{\mathrm{eff}} \ge 2H$ sobre promedios simples por origen), únicamente $2/15$ contrastes DM--HLN--HAC frente a \texttt{Mejor\_Bib} alcanzaban significancia tras Holm ($D+1$ ET con clima y \texttt{RecGEFSv12} ET $7$d), excluyendo $13$ escenarios de horizontes largos. Al evaluar los $28$ escenarios completos con el estimando macro-alineado sobre las mismas predicciones OOF guardadas sin reentrenar:
+Bajo el protocolo original congelado \texttt{v1.0.3} ($T_{\mathrm{eff}} \ge 2H$ sobre promedios simples por origen), únicamente $2/15$ contrastes DM--HLN--HAC frente a \texttt{Mejor\_Bib} alcanzaban significancia tras Holm ($D+1$ ET con clima y \texttt{RecGEFSv12} ET $7$d), excluyendo $13$ escenarios de horizontes largos. En la adaptación inferencial retrospectiva \texttt{v2.0.0} sobre los $28$ escenarios completos a partir de las mismas predicciones OOF guardadas sin reentrenar:
 \begin{enumerate}
-    \item \textbf{Inversiones de signo entre $\mathrm{MAE}_{\mathrm{macro}}$ y promedio por origen:} el desbalance de disponibilidad entre plantas ($1$ a $17$ centrales por origen) invierte el signo de $\Delta\mathrm{MAE}$ en $4/28$ escenarios (\texttt{D1\_IP\_sin\_clima}, \texttt{RecSinClima\_IP\_14d}, \texttt{RecSinClima\_IP\_28d} y \texttt{DirectoSinClima\_IP\_7d}), ninguno significativo ($p \ge 0{,}28$).
-    \item \textbf{DM--HLN--HAC y bootstrap sincronizado sobre $\mathrm{MAE}_{\mathrm{macro}}$:} con $h_{\mathrm{serie}}=1$ en bloques disjuntos y serie macro-alineada $z_t^{\mathrm{macro}}$, todos los $\mathbf{5/5}$ escenarios \texttt{ET + Clima} ($D+1$ y $7$, $14$, $21$, $28$~días) alcanzan significancia tras Holm frente a \texttt{Mejor\_Bib} ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$, $T_{\mathrm{eff,macro}} \ge 30{,}82$), manteniendo $0$ victorias significativas en régimen intraplanta o sin clima. Este resultado es invariante bajo $T_{\mathrm{eff}} \in \{2h_{\mathrm{serie}}, 15, 20, 25, 30\}$. Frente a referencias preespecificadas, \texttt{SM-CFHR-Fixed} obtiene $7/28$ victorias Holm ($0$ derrotas) frente a \texttt{MM30} y $4/28$ victorias Holm ($1/28$ derrota) frente a \texttt{SM-CFHR-HPO}.
+    \item \textbf{Inversiones de signo entre $\mathrm{MAE}_{\mathrm{macro}}$ y promedio por origen:} el desbalance de disponibilidad entre plantas ($1$ a $17$ centrales por origen) invertía el signo de $\Delta\mathrm{MAE}$ en $4/28$ escenarios (\texttt{D1\_IP\_sin\_clima}, \texttt{RecSinClima\_IP\_14d}, \texttt{RecSinClima\_IP\_28d} y \texttt{DirectoSinClima\_IP\_7d}), ninguno significativo ($p \ge 0{,}28$).
+    \item \textbf{DM--HLN--HAC y bootstrap sincronizado sobre $\mathrm{MAE}_{\mathrm{macro}}$ (análisis retrospectivo):} con $h_{\mathrm{serie}}=1$ en bloques disjuntos y serie macro-alineada $z_t^{\mathrm{macro}}$, todos los $5/5$ escenarios \texttt{ET + Clima} ($D+1$ y $7$, $14$, $21$, $28$~días) muestran diferencias estadísticamente significativas tras Holm por familia frente a \texttt{Mejor\_Bib} seleccionado \textit{ex post} ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$), manteniendo $0$ diferencias significativas en régimen intraplanta o sin clima. Debe destacarse como cautela muestral que en \texttt{RecGEFSv12 ET} de $21$ y $28$ días los tamaños efectivos se sitúan cerca del umbral descriptivo de $30$ ($T_{\mathrm{eff,macro}} = 31{,}35$ y $30{,}82$, respectivamente) con solo $G=7$ zonas espaciales. Frente a referencias preespecificadas en el diseño, \texttt{SM-CFHR-Fixed} obtiene $7/28$ diferencias favorables significativas ($0$ desfavorables) frente a \texttt{MM30} y $4/28$ frente a \texttt{SM-CFHR-HPO} ($1/28$ desfavorable).
+    \item \textbf{Análisis secundario retrospectivo frente a las $9$ bibliotecas ($252$ contrastes):} en el archivo de reconciliación \texttt{v2.0.0} sobre el universo global de $252$ comparaciones ($9$ bibliotecas $\times$ $28$ escenarios), todas las $45/45$ comparaciones pareadas en los cinco escenarios \texttt{ET + Clima} presentan diferencia macro favorable ($\Delta\mathrm{MAE}_{\mathrm{macro}} < 0$) y resultan significativas bajo Holm global ($p_{\mathrm{Holm,252}} < 0{,}05$, con máximos por escenario de $9{,}03\times 10^{-22}$ en $D+1$, $1{,}41\times 10^{-9}$ en $7$d, $1{,}34\times 10^{-5}$ en $14$d, $3{,}58\times 10^{-3}$ en $21$d y $4{,}17\times 10^{-2}$ en $28$d). Este resultado proviene de un análisis exploratorio retrospectivo sobre la cohorte ya estudiada y no constituye una validación prospectiva independiente.
     \item \textbf{SPA y MCS ($B=5\,000$):} en \texttt{MCS} ($T_{\max}$ unilateral) sobre $\mathrm{MAE}_{\mathrm{macro}}$, \texttt{SM-CFHR-Fixed} sobrevive en $27/28$ escenarios del universo completo y como único superviviente ($1/10$) en $7/28$ entre bibliotecas (Material Suplementario, Sección~S4).
-    \item \textbf{Métricas reales en factor de capacidad ($\mathrm{MAE}_{\mathrm{CF,macro}}$):} al normalizar cada observación por $24\,000\,C_{i,t}$ vigente (incluidas las $6$ centrales con ampliaciones escalonadas), el peso de las plantas mayores (como \texttt{GYPO}, $370$--$388$~MW) deja de dominar la media. El rango medio de \texttt{SM-CFHR-Fixed} pasa de $2{,}93/23$ ($\text{kWh}$) a $\mathbf{4{,}00/23}$ (CF), y las victorias frente a \texttt{Mejor\_Bib} de $18/28$ a $16/28$.
+    \item \textbf{Métricas reales en factor de capacidad ($\mathrm{MAE}_{\mathrm{CF,macro}}$):} al normalizar cada observación por $24\,000\,C_{i,t}$ vigente (incluidas las $6$ centrales con ampliaciones escalonadas), el peso de las plantas mayores (como \texttt{GYPO}, $370$--$388$~MW) deja de dominar la media. El rango medio de \texttt{SM-CFHR-Fixed} pasa de $2{,}93/23$ ($\text{kWh}$) a $\mathbf{4{,}00/23}$ (CF), y las victorias descriptivas frente a \texttt{Mejor\_Bib} de $18/28$ a $16/28$.
 \end{enumerate}
 
-Las Figuras~\ref{fig:res_oof_planta}, \ref{fig:res_oof_d1}, \ref{fig:res_oof_rec} y \ref{fig:res_oof_dir} ilustran el desempeño por planta y grupo espacial junto con las predicciones reales frente a observadas en $D+1$, recursivo multihorizonte y directo acumulado.
+Las Figuras~\ref{fig:res_oof_planta}, \ref{fig:res_oof_d1}, \ref{fig:res_oof_rec} y \ref{fig:res_oof_dir} ilustran el desempeño por planta y grupo espacial (con capacidad diaria causal al origen y soporte pareado) junto con trayectorias ilustrativas en $D+1$, recursivo multihorizonte y directo acumulado.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth]{figures/fig_res_oof_planta_y_grupos.pdf}
-\caption{Error adimensional $\mathrm{MAE}_{\mathrm{CF}}$ por planta frente a capacidad instalada media en \texttt{D1\_ET\_5var} (izquierda) y comparación ET frente a IP en los $7$ grupos espaciales (derecha).}
+\caption{Error adimensional $\mathrm{MAE}_{\mathrm{CF}}$ por planta (normalizado observación por observación con la capacidad diaria al origen) frente a la capacidad media en \texttt{D1\_ET\_5var} (izquierda) y comparación ET frente a IP estrictamente pareada por \texttt{(code, date)} en los $7$ grupos espaciales ($n=4\,269$ pares coincidentes; grupo~7 con $n=91$ pares frente a $134$ en ET sin parear; derecha).}
 \label{fig:res_oof_planta}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/fig_res_oof_real_vs_pred_d1.pdf}
-\caption{Generación diaria real frente a predicha en $D+1$ para centrales representativas de la cohorte en predicciones OOF congeladas.}
+\caption{Ejemplo ilustrativo de generación diaria real frente a predicha en $D+1$ (\texttt{D1\_ET\_5var}, noviembre de $2025$ a julio de $2026$) para la central \texttt{GYPO}, seleccionada por registrar la mayor generación media y capacidad instalada de la cohorte ($370$--$388$~MW).}
 \label{fig:res_oof_d1}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/fig_res_oof_real_vs_pred_rec.pdf}
-\caption{Trayectorias multihorizonte reales frente a predichas en el esquema recursivo con meteorología GEFSv12.}
+\caption{Ejemplo ilustrativo de trayectorias promedio por origen ($H=28$~días) reales frente a predichas en el esquema recursivo con meteorología GEFSv12 (\texttt{RecGEFSv12\_ET\_28d}, marzo de $2025$ a septiembre de $2026$) para la central \texttt{GYPO} (mayor generación media de la cohorte).}
 \label{fig:res_oof_rec}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/fig_res_oof_real_vs_pred_dir.pdf}
-\caption{Energía acumulada observada frente a predicha en el esquema directo sin meteorología.}
+\caption{Ejemplo ilustrativo de energía acumulada en ventanas de $28$~días observada frente a predicha en el esquema directo sin meteorología (\texttt{DirectoSinClima\_IP\_28d}, caso desfavorable) para la central \texttt{GYPO} (seleccionada por mayor generación media de la cohorte, no como muestra aleatoria).}
 \label{fig:res_oof_dir}
 \end{figure}
 
@@ -125,8 +126,8 @@ Variante de ablación & $\mathrm{MAE}_{\mathrm{CF}}$ & $\mathrm{MAE}_{\mathrm{kW
 \toprule
 Hipótesis & Estado verificado & Evidencia cuantitativa exacta \\
 \midrule
-\textbf{H1} (Normalización FC en ET) & \textbf{Respaldada solo frente a referencias en $\text{kWh}$ (no aislada)} & En $D+1$ ET con clima logra rango $1/23$ ($-22{,}16\%$ frente a \texttt{Mejor\_Bib} en $\text{kWh}$) y en el corte único $D+1$ retirar FC multiplica el error por $4{,}45\times$; dado que las $22$ referencias operaron en energía bruta, la evidencia cerrada no aísla causalmente la normalización frente al estimador. \\
-\textbf{H2} (Superioridad estadística pareada) & \textbf{Acotada a ET + Clima}; rechazada como superioridad universal & $5/5$ victorias Holm en \texttt{ET + Clima} bajo $\mathrm{MAE}_{\mathrm{macro}}$ ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$), $0$ victorias en intraplanta o sin clima, y derrotas hasta $+24{,}24\%$ en \texttt{DirectoSinClima\_IP}. \\
+\textbf{H1} (Normalización FC en ET) & \textbf{Respaldada solo en comparación de sistemas frente a referencias en $\text{kWh}$ (no aislada)} & En $D+1$ ET con clima logra rango $1/23$ ($-22{,}16\%$ frente a \texttt{Mejor\_Bib} en $\text{kWh}$) y en el corte único $D+1$ retirar FC multiplica el error por $4{,}45\times$; dado que las $22$ referencias operaron en energía bruta, la evidencia cerrada no aísla causalmente la normalización frente al estimador. \\
+\textbf{H2} (Diferencias pareadas retrospectivas) & \textbf{Acotada a ET + Clima}; rechazada como superioridad universal & En \texttt{v1.0.3} ($T_{\mathrm{eff}} \ge 2H$): $2/15$ significativas; en el análisis retrospectivo \texttt{v2.0.0} sobre $\mathrm{MAE}_{\mathrm{macro}}$: $5/5$ en \texttt{ET + Clima} frente a \texttt{Mejor\_Bib} ($p_{\mathrm{Holm}} \le 5{,}21\times 10^{-6}$) y $45/45$ en el universo global de $252$ contrastes frente a bibliotecas ($p_{\mathrm{Holm,252}} \le 0{,}0417$), con $0$ en IP o sin clima y derrotas hasta $+24{,}24\%$ en \texttt{DirectoSinClima\_IP}. \\
 \textbf{H3} (Componentes estructurales en $D+1$) & \textbf{Parcial / dependiente del corte} & La normalización FC explica la mayor caída ($4{,}45\times$); Huber aporta estabilidad bajo contaminación sintética ($10\%$); monotonía y MAD coinciden con el corte limpio sin restricción. \\
 \textbf{H4} (Fixed vs.\ HPO) & \textbf{Refutada para HPO}; \texttt{Fixed} domina en precisión y coste & \texttt{Fixed} ($B=0$) supera a \texttt{HPO} ($B=25$) en $19/28$ escenarios ($14/14$ ET; $4$ victorias Holm frente a $1$ derrota) con coste $59\times$ menor. \\
 \bottomrule

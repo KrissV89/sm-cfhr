@@ -11,6 +11,12 @@
 \usepackage{graphicx}
 \usepackage{placeins}
 \usepackage{hyperref}
+\hypersetup{
+  pdftitle={Material Suplementario: Normalizacion Causal en Factor de Capacidad y Regresor Huber Estructurado (SM-CFHR)},
+  pdfauthor={Jesus David Arevalo Montilla; Enmanuel David Diaz Molinares},
+  pdfsubject={Material suplementario de SM-CFHR},
+  pdfkeywords={SM-CFHR, Lean 4, Newey-West HAC, MCS, SPA, Pronostico fotovoltaico}
+}
 
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \providecommand{\botrule}{\bottomrule}
@@ -111,7 +117,7 @@ En términos de complejidad, cada evaluación de $J$ y $\nabla J$ requiere dos p
 
 \section{Verificación formal en Lean~4}\label{sup:lean4}
 
-La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre \textbf{Mathlib} (revisión \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, compilando $26$ declaraciones sin axiomas personalizados (únicamente \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}), resumidas en la Tabla~\ref{tab:sup_lean4}.
+La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre \textbf{Mathlib} (revisión \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, compilando $26$ declaraciones sin axiomas personalizados (únicamente \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}), resumidas en la Tabla~\ref{tab:sup_lean4}. Para reproducir la verificación en un entorno Lean~4 (\texttt{v4.36.0}) con acceso a la caché de Mathlib, ejecútese \texttt{lake exe cache get \&\& lake build \&\& lake env lean SMCFHR/AxiomsAudit.lean} dentro de \texttt{formal/sm\_cfhr\_lean/}.
 
 \begin{table}[!htbp]
 \centering
@@ -185,11 +191,13 @@ z_t^{\mathrm{macro}} := \frac{T}{M}\sum_{i \in \mathcal{P}_t} \frac{S_{t,i}}{N_i
 \end{equation}
 donde $\mathcal{P}_t$ es el conjunto de plantas evaluables en $t$, $S_{t,i}$ es el diferencial de pérdida acumulado en esa unidad y $N_i = |\mathcal{T}_i^{\mathrm{eval}}|$, verificándose idénticamente $\frac{1}{T}\sum_{t=1}^T z_t^{\mathrm{macro}} = \Delta\mathrm{MAE}_{\mathrm{macro}}$. En series con varianza muestral nula se aplica una política explícita: $\Delta = 0 \Rightarrow p = 1{,}0$, mientras que $\Delta \ne 0$ constante $\Rightarrow p = \text{NaN}$ (no evaluable mediante contraste asintótico DM). Por su parte, la prueba condicional de Giacomini--White \cite{giacomini2006tests} se excluye como prueba confirmatoria cuando $\tau = 1$ y $|\hat{\rho}_1| > 0{,}15$, tras observar en $120$ simulaciones Monte Carlo bajo errores $\mathrm{AR}(1)$ una tasa de rechazo empírica de $0{,}2083$ frente al nivel nominal $0{,}05$.
 
-\subsection{Entorno computacional y reproducibilidad}\label{sup:env}
+\subsection{Trazabilidad inferencial (v1.0.3 vs.\ v2.0.0), entorno computacional y reproducibilidad}\label{sup:env}
 
-La evaluación OOF primaria se ejecutó sobre un procesador \texttt{AMD Ryzen 7 8845HS} ($8$ núcleos físicos, $16$ hilos lógicos, $16$~GB RAM, Windows~11 con procesos \texttt{spawn}), utilizando Python~$3{,}11{,}15$, NumPy~$2{,}3{,}5$, SciPy~$1{,}16{,}3$, pandas~$2{,}3{,}3$, scikit-learn~$1{,}9{,}0$, statsmodels~$0{,}14{,}6$ y Optuna~$5{,}0{,}0$, con semilla global~$2026$, bases SQLite aisladas por unidad experimental, escritura atómica y restricción a un hilo BLAS/OpenMP por trabajador.
+Para preservar la separación entre el protocolo congelado previo a la ejecución (\texttt{v1.0.3}, $23$ de noviembre de $2026$: contraste DM--HLN--HAC sobre promedios por origen con filtro $T_{\mathrm{eff}} \ge 2H$, bootstrap $B=200$ en MCS) y la reconciliación retrospectiva posterior sobre las mismas predicciones OOF (\texttt{v2.0.0}: serie $z_t^{\mathrm{macro}}$ con $h_{\mathrm{serie}}=1$ y $B=5\,000$), ambos conjuntos de tablas se conservan en archivos separados. En el contraste \texttt{MCS} ($T_{\max}$ unilateral), la concordancia con \texttt{arch.bootstrap.MCS} alcanza índice Jaccard $\mathbf{1{,}0000}$ en los $28/28$ escenarios para el estimando $\mathrm{MAE}_{\mathrm{macro}}$; bajo el estimando alternativo $\mathrm{MAE}_{\mathrm{origen}}$ se registran dos discrepancias puntuales (\texttt{RecSinClima\_intraplanta\_14d}, Jaccard $0{,}4737$, y \texttt{RecGEFSv12\_intraplanta\_28d}, Jaccard $0{,}9474$).
 
-En la ejecución completa de los $28$ escenarios ($14\,625$ unidades por variante, $206\,073$ filas), \texttt{SM-CFHR-Fixed} concluyó en $499{,}75$~s ($8$ trabajadores, RSS pico $2\,067{,}6$~MB) y \texttt{SM-CFHR-HPO} en $29\,550{,}3$~s ($12$ trabajadores, RSS pico $4\,201{,}1$~MB, cero errores). Los datos externos ($603{,}70$~MB sin comprimir) se importan localmente con verificación de integridad (Figura~\ref{fig:sup_pipeline}). En la verificación de la prueba SPA con $B=5\,000$ réplicas frente a \texttt{arch 8.0.0}, se comprobó que \texttt{arch.SPA} almacena \texttt{studentize=True} sin aplicarlo en \texttt{compute()}; al alinear dicha opción o pre-studentizar con el estimador núcleo de Politis--Romano, la diferencia máxima cae a $\le 0{,}0183$ en los $28$ escenarios y el MCS unilateral coincide con índice Jaccard $1{,}0000$.
+La evaluación OOF primaria se ejecutó sobre un procesador \texttt{AMD Ryzen 7 8845HS} ($8$ núcleos físicos, $16$ hilos lógicos, $16$~GB RAM, Windows~11 con procesos \texttt{spawn}), utilizando Python~$3{,}11{,}15$, NumPy~$2{,}3{,}5$, SciPy~$1{,}16{,}3$, pandas~$2{,}3{,}3$, scikit-learn~$1{,}9{,}0$, statsmodels~$0{,}14{,}6$, Optuna~$5{,}0{,}0$ y \texttt{arch 8.0.0}, con semilla global~$2026$, bases SQLite aisladas por unidad experimental, escritura atómica y restricción a un hilo BLAS/OpenMP por trabajador.
+
+En la ejecución completa de los $28$ escenarios ($14\,625$ unidades por variante, $206\,073$ filas), \texttt{SM-CFHR-Fixed} concluyó en $499{,}75$~s ($8$ trabajadores, RSS pico $2\,067{,}6$~MB) y \texttt{SM-CFHR-HPO} en $29\,550{,}3$~s ($12$ trabajadores, RSS pico $4\,201{,}1$~MB, cero errores). En la verificación empírica de la prueba SPA ($B=5\,000$ réplicas) con \texttt{arch 8.0.0}, comparar la invocación directa de \texttt{arch.SPA} frente a la pre-estandarización con el estimador núcleo de Politis--Romano arroja diferencias máximas $|\Delta p_{\mathrm{SPA}}| \le 0{,}0183$ en los $28$ escenarios. La reproducibilidad se estructura en dos niveles: \textbf{Nivel~A} (auditoría y reanálisis completo de métricas, inferencia y figuras a partir de los artefactos OOF congelados) y \textbf{Nivel~B} (reproducción integral desde cero, que exige recuperar localmente los $603{,}70$~MB de datos externos primarios de XM, Open-Meteo y NOAA GEFSv12 bajo sus respectivas licencias; Figura~\ref{fig:sup_pipeline}).
 
 \begin{figure}[!htbp]
 \centering
@@ -248,6 +256,8 @@ Esta sección reúne las figuras exploratorias complementarias de la cohorte (Fi
 \label{fig:sup_validacion}
 \end{figure}
 
+\let\oldthebibliography\thebibliography
+\renewcommand{\thebibliography}[1]{\oldthebibliography{#1}\small\setlength{\itemsep}{1pt plus 0.5pt minus 0.5pt}\setlength{\parskip}{0pt}}
 \bibliographystyle{plain}
 \bibliography{bibliography/bibliography}
 

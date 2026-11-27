@@ -83,16 +83,16 @@ def fig01_rankings_y_fixed_hpo() -> None:
 
 
 def fig02_planta_y_grupos() -> None:
-    intra = pd.read_csv(OOF_DIR / "metricas" / "intra_por_planta_capacidad.csv")
-    inter = pd.read_csv(OOF_DIR / "metricas" / "inter_grupo_et_vs_ip.csv").sort_values("grupo")
+    intra = pd.read_csv(V2_DIR / "05_metricas_corregidas" / "intra_por_planta_capacidad_corregido.csv")
+    inter = pd.read_csv(V2_DIR / "05_metricas_corregidas" / "inter_grupo_et_vs_ip_pareado.csv").sort_values("grupo")
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 4.1))
     ax1.scatter(intra["cap_MW_media"], intra["MAE_CF_ASHR"], color=C_SM, s=42, alpha=0.88, label="SM-CFHR-Fixed")
     ax1.scatter(intra["cap_MW_media"], intra["MAE_CF_MejorBib"], color=C_WARN, marker="^", s=38, alpha=0.82, label="Mejor biblioteca (kWh)")
     ax1.set_xscale("log")
     ax1.set_xlabel("Capacidad media instalada (MW, escala log)")
-    ax1.set_ylabel("MAE_CF por planta (D1 ET 5 var.)")
-    ax1.set_title("Error adimensional por planta y escala")
+    ax1.set_ylabel("MAE_CF por planta (cap. diaria al origen)")
+    ax1.set_title("Error adimensional por planta (D1 ET 5 var.)")
     ax1.legend(frameon=False, fontsize=8.3)
     ax1.grid(alpha=0.22, ls=":")
 
@@ -101,10 +101,10 @@ def fig02_planta_y_grupos() -> None:
     ax2.bar(x - w / 2, inter["MAE_CF_ET"], width=w, color=C_SM, alpha=0.90, label="Espaciotemporal (ET)")
     ax2.bar(x + w / 2, inter["MAE_CF_IP"], width=w, color=C_ALT, alpha=0.85, label="Intraplanta (IP)")
     ax2.set_xticks(x)
-    ax2.set_xticklabels([f"G{int(g)}" for g in inter["grupo"]])
-    ax2.set_xlabel("Grupo espacial (leave-one-group-out)")
-    ax2.set_ylabel("MAE_CF medio")
-    ax2.set_title("Transferencia ET vs. IP por grupo espacial")
+    ax2.set_xticklabels([f"G{int(r.grupo)}\n({int(r.n_pares)})" for r in inter.itertuples(index=False)], fontsize=8.2)
+    ax2.set_xlabel("Grupo espacial y pares coincidentes (code, date)")
+    ax2.set_ylabel("MAE_CF medio (cap. diaria al origen)")
+    ax2.set_title(f"ET vs. IP pareado por grupo (n={int(inter['n_pares'].sum()):,} pares)")
     ax2.legend(frameon=False, fontsize=8.3)
     ax2.grid(axis="y", alpha=0.22, ls=":")
 

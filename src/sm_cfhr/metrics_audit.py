@@ -12,12 +12,14 @@ from src.ashr_oof_pipeline.config import ScenarioSpec
 
 
 def load_d1_plant_capacity_table(root: Path) -> pd.DataFrame:
-    """Load time-varying installed capacity (cap_MW) per (code, date) from base_planta_dia.csv."""
+    """Load time-varying installed capacity (cap_MW) and causal origin capacity (cap_MW_origen) per (code, date)."""
     base_path = root / "base_generacion_clima" / "base_planta_dia.csv"
     df = pd.read_csv(base_path, usecols=["code", "date", "cap_MW"])
     df["code"] = df["code"].astype(str)
     df["date"] = df["date"].astype(str)
-    return df.drop_duplicates(subset=["code", "date"])
+    df = df.drop_duplicates(subset=["code", "date"]).sort_values(["code", "date"]).reset_index(drop=True)
+    df["cap_MW_origen"] = df.groupby("code")["cap_MW"].shift(1).fillna(df["cap_MW"])
+    return df
 
 
 def detect_capacity_changes(base_cap_df: pd.DataFrame) -> pd.DataFrame:
@@ -57,10 +59,12 @@ def attach_capacity_and_cf_errors(
             raise ValueError("d1_cap_df es obligatorio para escenarios D+1.")
         out["date"] = out["date"].astype(str)
         out = out.merge(d1_cap_df, on=["code", "date"], how="left")
-        if out["cap_MW"].isna().any():
-            raise ValueError(f"Falta cap_MW en D+1 para escenario {sp.scenario_id}")
-        denom = 24000.0 * out["cap_MW"].to_numpy(float)
+        cap_col = "cap_MW_origen" if "cap_MW_origen" in out.columns else "cap_MW"
+        if out[cap_col].isna().any():
+            raise ValueError(f"Falta {cap_col} en D+1 para escenario {sp.scenario_id}")
+        denom = 24000.0 * out[cap_col].to_numpy(float)
         out["_ae_cf"] = ae_kwh / denom
+        out["cap_MW_usada"] = out[cap_col]
     else:
         if "cap_MW_origen" not in out.columns:
             cap_keys = ["code", "origen"]

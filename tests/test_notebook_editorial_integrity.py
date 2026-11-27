@@ -17,6 +17,10 @@ FORBIDDEN_EDITORIAL_PATTERNS = [
     "exposición de 20 minutos",
     "criterio docente",
     "criterio verbal",
+    "criterios r3",
+    "no_cumple",
+    "pendiente_autorizacion",
+    "figp10",
     "qué estamos viendo:",
     "qué encontramos:",
     "qué significa:",
@@ -70,7 +74,7 @@ def test_main_notebook_editorial_and_scientific_integrity() -> None:
     assert not TOKEN_RE.search(full_text), "Potential credential/token pattern found"
 
     # Negative results & scientific limitations must remain intact
-    for required in ("DirectoSinClima", "NO_CUMPLE", "sin datasets externos"):
+    for required in ("DirectoSinClima", "sin datasets externos", "retrospectiv"):
         assert required in full_text, f"Required scientific limitation/result missing: {required}"
 
 
