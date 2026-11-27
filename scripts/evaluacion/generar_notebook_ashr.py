@@ -34,13 +34,13 @@ def build_notebook(out_path: Path) -> Path:
     # Portada e Índice
     md("""# Evaluación fuera de muestra de `SM-CFHR` (`AdaptiveStructuredHuberRegressor`)
 
-Este cuaderno consolida los resultados definitivos fuera de muestra (*out-of-fold*, OOF) almacenados en `resultados/evaluacion_ashr_oof/` sin reentrenar modelos (`Fixed`: `14,625/14,625` unidades; `HPO`: `14,625/14,625` unidades).
+Este cuaderno consolida los resultados definitivos fuera de muestra (*out-of-fold*, OOF) almacenados en `resultados/evaluacion_ashr_oof/` y su reconciliación estadística posterior (`v2.0.0`) sin reentrenar modelos (`Fixed`: `14,625/14,625` unidades; `HPO`: `14,625/14,625` unidades).
 
 ## Índice
 1. [Capítulo 1. Alcance experimental, formulación e integridad de artefactos OOF](#Capítulo-1.-Alcance-experimental,-formulación-e-integridad-de-artefactos-OOF)
 2. [Capítulo 2. Auditoría de optimización bayesiana y validación causal anidada](#Capítulo-2.-Auditoría-de-optimización-bayesiana-y-validación-causal-anidada)
 3. [Capítulo 3. Comparación frente a modelos de biblioteca](#Capítulo-3.-Comparación-frente-a-modelos-de-biblioteca)
-4. [Capítulo 4. Evaluación general sobre 23 modelos, inferencia estadística y criterios R3](#Capítulo-4.-Evaluación-general-sobre-23-modelos,-inferencia-estadística-y-criterios-R3)
+4. [Capítulo 4. Evaluación general sobre 23 modelos, inferencia estadística y alcance de resultados](#Capítulo-4.-Evaluación-general-sobre-23-modelos,-inferencia-estadística-y-alcance-de-resultados)
 5. [Capítulo 5. Análisis intra-dataset por planta, capacidad, bloque temporal y estrategia](#Capítulo-5.-Análisis-intra-dataset-por-planta,-capacidad,-bloque-temporal-y-estrategia)
 6. [Capítulo 6. Transferencia entre plantas y grupos geográficos](#Capítulo-6.-Transferencia-entre-plantas-y-grupos-geográficos)
 7. [Capítulo 7. Configuración fija frente a HPO, diagnósticos en D+1 y coste computacional](#Capítulo-7.-Configuración-fija-frente-a-HPO,-diagnósticos-en-D+1-y-coste-computacional)
@@ -75,7 +75,6 @@ from sm_cfhr import (
     SCENARIOS_28,
     SMCFHRRegressor,
     analyze_effective_design,
-    evaluate_r3_superiority,
     export_full_scientific_artifacts,
     summarize_hpo_trials,
     verify_benchmark_inventory,
@@ -93,16 +92,16 @@ from src.ashr_oof_pipeline.oof_runner import run_oof_definitivo
 
 CFG = load_frozen_config(ROOT)
 OOF_DIR = ROOT / CFG.get("rutas_contrato", {}).get("oof_dir", "resultados/evaluacion_ashr_oof")
+V2_DIR = ROOT / "resultados" / "inferencia_revision_independiente_v2"
 HPO_TRIALS_DIR = ROOT / CFG.get("rutas_contrato", {}).get("hpo_trials_dir", "resultados/evaluacion_ashr_oof/hpo_trials")
 FIG_DIR = OOF_DIR / "figuras"
 TAB_DIR = OOF_DIR / "tablas_paper"
-SCOPE_AUTHORIZED = bool(CFG.get("autorizacion_alcance_solar_docente", False))
 
 print("sm_cfhr:", sm_cfhr.__version__, "| SHA-256 núcleo:", CFG["sha256_src_adaptive_structured_huber"])""")
 
     md(r"""## 1.2 Formulación matemática, API `scikit-learn` y alineación de predicciones
 
-Para evitar que las centrales de mayor capacidad (`388.0 MW` frente a `9.8 MW`, una razón de $39{,}6\times$) dominen el ajuste, la energía diaria o acumulada directa se normaliza por la cota física vigente al origen $B_i = \mathrm{cap}_i \cdot 24\,000\;\text{kWh/día}$ ($c_i \in [0,1]$). Posteriormente se estandariza mediante la mediana $m_c$ y la desviación robusta $\hat{\sigma}_c = \max(1{,}4826\,\mathrm{MAD}(c), 10^{-6})$:
+Para evitar que las centrales de mayor capacidad (`388.0 MW` frente a `9.8 MW`, una razón de $39{,}6\times$) dominen el ajuste, la energía diaria o acumulada directa se normaliza por la cota física vigente al origen $B_i = \mathrm{cap}_{i,t} \cdot 24\,000\;\text{kWh/día}$ ($c_i \in [0,1]$). Posteriormente se estandariza mediante la mediana $m_c$ y la desviación robusta $\hat{\sigma}_c = \max(1{,}4826\,\mathrm{MAD}(c), 10^{-6})$:
 
 $$\min_{\theta_0 \in \mathbb{R},\; \theta \in \mathcal{C}} \; \frac{1}{n}\sum_{i=1}^n \rho_\delta\!\left(\tilde{c}_i - \theta_0 - z_i^\top \theta\right) + \frac{1}{2}\sum_{j \in \mathcal{G}_{\mathrm{lin}}} \alpha_{\mathrm{lin}}\,\theta_j^2 + \frac{1}{2}\sum_{j \in \mathcal{G}_{\mathrm{meteo}}} \alpha_{\mathrm{meteo}}\,\theta_j^2, \quad \mathcal{C} = \{\theta : \theta_j \ge 0 \;\forall j \in \mathcal{M}_{\mathrm{pos}}\}.$$
 
@@ -131,7 +130,7 @@ if val_status["state"] == "VALID":
     spa_p = OOF_DIR / "inferencia" / "tabla_spa.csv"
     if spa_p.exists():
         bundle["tabla_spa"] = pd.read_csv(spa_p)
-    ped_figs = generate_pedagogical_figures(OOF_DIR, ROOT)
+    ped_figs = generate_pedagogical_figures(OOF_DIR, ROOT, include_internal_r3=False)
     align_df = pd.read_csv(OOF_DIR / "inferencia" / "auditoria_alineacion_benchmarks.csv")
     ex_df = align_df[align_df["n_extra_excluded"] > 0][
         ["scenario_id", "n_ashr_raw", "n_bench_keys", "n_extra_excluded", "n_aligned_common", "fixed_hpo_keys_identical"]
@@ -179,14 +178,14 @@ if nested_audit_path.exists():
     ))""")
 
     # CAPITULO 3
-    md("""# Capítulo 3. Comparación frente a modelos de biblioteca
+    md(r"""# Capítulo 3. Comparación frente a modelos de biblioteca
 
 ## 3.1 Definiciones operativas de evaluación
-- **`MAE_macro` (`kWh/día`):** promedio del error absoluto por planta (`code`) y posterior promedio equiponderado entre las `17` centrales; iguala el peso respecto a la duración de las series, aunque en unidades de energía conserva la escala de potencia instalada (`9.8` a `388.0 MW`), la cual se normaliza explícitamente mediante `MAE_CF_macro`.
-- **`p-valor bruto` frente a `p-valor ajustado` (Holm–Bonferroni):** el ajuste secuencial controla la tasa de error familiar (FWER $\\le 0{,}05$) dentro de la familia de contrastes.
-- **`MCS` (*Model Confidence Set*, $\\alpha=0{,}10$):** conjunto de modelos no descartables como inferiores mediante *bootstrap* estacionario; permanecer en el MCS indica compatibilidad con el mejor grupo, no superioridad demostrada salvo cuando sobrevive un único modelo.
+- **`MAE_macro` (`kWh/día` en `D+1` y recursivo; `kWh totales` en directo acumulado):** promedio del error absoluto por planta (`code`) y posterior promedio equiponderado entre las `17` centrales. En los `8` escenarios directos acumulados (`H = 7, 14, 21, 28`), la métrica primaria se expresa en `kWh` acumulados sobre la ventana completa y se reporta su equivalente diario `MAE_macro / H` (`kWh/día`) como métrica secundaria. En unidades de energía, el error conserva la escala de potencia instalada (`9.8` a `388.0 MW`), la cual se normaliza mediante `MAE_CF_macro` utilizando la capacidad vigente al origen.
+- **`p-valor bruto` frente a `p-valor ajustado` (Holm–Bonferroni):** el ajuste secuencial controla la tasa de error familiar ($\mathrm{FWER} \le 0{,}05$) dentro de la familia de contrastes especificada.
+- **`MCS` (*Model Confidence Set*, $\alpha=0{,}10$):** conjunto de modelos no descartables como inferiores mediante *bootstrap* estacionario; permanecer en el MCS indica compatibilidad con el mejor grupo, no superioridad demostrada salvo cuando sobrevive un único modelo.
 - **`SPA` (*Superior Predictive Ability*):** contrasta bajo $H_0$ si ningún competidor supera al modelo tomado como referencia.
-- **Tamaño del efecto (`Cohen's dz`) e `IC 95%`:** cuantifican la magnitud estandarizada de la diferencia pareada ($d_z \\le -0{,}20$ favorece a `SM-CFHR`) y su incertidumbre. En el protocolo congelado, los contrastes con $T_{\\mathrm{eff}} < 2H$ se marcan como de potencia insuficiente.
+- **Tamaño del efecto (`Cohen's dz`) e `IC 95%`:** cuantifican la magnitud estandarizada de la diferencia pareada ($d_z \le -0{,}20$ favorece a `SM-CFHR`) y su incertidumbre. En el protocolo original `v1.0.3`, los contrastes se evaluaron sobre promedios por origen con filtro $T_{\mathrm{eff}} \ge 2H$; en la reconciliación posterior `v2.0.0`, la serie macro-alineada $z_t^{\mathrm{macro}}$ usa espaciado no solapado $h_{\mathrm{serie}} = 1$.
 
 ## 3.2 Posición global frente a las nueve bibliotecas""")
 
@@ -203,7 +202,7 @@ if nested_audit_path.exists():
     display(Markdown(
         f"Sin ajuste de hiperparámetros ($B=0$), `SM-CFHR-Fixed` obtiene rango medio **`{ashr_rk:.2f} / 10`**, seguido por `BayesianRidge` (`{br_rk:.2f}`), `Lasso` (`3.75`) y `Ridge` (`3.96`). "
         f"En comparaciones directas `1-vs-1` supera a cada biblioteca entre `23/28` (frente a `BayesianRidge`) y `28/28` escenarios (frente a `DecisionTree`), y permanece en el MCS exclusivo de bibliotecas en `{n_surv}/28` escenarios (`{n_sole}/28` como único superviviente).\\n\\n"
-        f"Estos resultados describen un buen desempeño relativo en el conjunto de bibliotecas, aunque promedian escenarios que comparten las mismas `17` plantas y no sustituyen a las pruebas pareadas ni al control por multiplicidad."
+        f"Estos resultados describen un buen desempeño relativo en el conjunto de bibliotecas en energía bruta, aunque promedian escenarios que comparten las mismas `17` plantas y no sustituyen a las pruebas pareadas ni al control por multiplicidad."
     ))""")
 
     md("""## 3.3 Desempeño relativo por competidor, horizonte y régimen""")
@@ -229,38 +228,54 @@ if nested_audit_path.exists():
     md("""La inclusión de pronósticos `GEFSv12` mantiene el error diario equivalente más bajo de `7` a `28` días. Al promediar por suite y régimen, `SM-CFHR-Fixed` mejora a `Mejor_Bib` en todas las suites espaciotemporales (`-11.30%` en `D+1 ET` y `-11.84%` en `Rec+GEFSv12 ET`), mientras que `Directo sin clima IP` registra un deterioro medio de `+13.27%`.""")
 
     # CAPITULO 4
-    md("""# Capítulo 4. Evaluación general sobre 23 modelos, inferencia estadística y criterios R3
+    md("""# Capítulo 4. Evaluación general sobre 23 modelos, inferencia estadística y alcance de resultados
 
-Se evalúa el desempeño frente al conjunto completo de `22` competidores oficiales (incluyendo `12` modelos *custom* y `MM30`) y el cumplimiento formal de los criterios R3 congelados.""")
+Se evalúa el desempeño frente al conjunto completo de `22` competidores oficiales en energía bruta (incluyendo `12` modelos *custom* y `MM30`), separando explícitamente los resultados del protocolo congelado `v1.0.3` (pre-resultados) y la reconciliación estadística posterior `v2.0.0` (análisis retrospectivo sobre las mismas predicciones OOF).""")
 
     code("""if bundle is not None:
     display(bundle["tabla_rankings_regimen"])
-    r3_verdict_df = evaluate_r3_superiority(bundle, scope_authorized=SCOPE_AUTHORIZED, alpha=0.05)
-    display(r3_verdict_df[["condicion", "estado", "evidencia", "resultado"]])
     display(Image(filename=str(ped_figs["P06"][0])))
     t_inf_bib = bundle["tabla_inferencia"][bundle["tabla_inferencia"]["referencia"] == "Mejor_Bib"]
     n_teff_ok = int((~t_inf_bib["t_eff_insufficient"]).sum())
     n_holm_ok = int((t_inf_bib.loc[~t_inf_bib["t_eff_insufficient"], "p_holm"] < 0.05).sum())
+
+    c9_p = V2_DIR / "02_estimandos_y_dm_hln" / "comparacion_todas_9_bibliotecas_macro.csv"
+    all9_msg = ""
+    if c9_p.exists():
+        c9 = pd.read_csv(c9_p)
+        et_clima = [
+            "D1_espaciotemporal_cinco_variables",
+            "RecGEFSv12_espaciotemporal_7d",
+            "RecGEFSv12_espaciotemporal_14d",
+            "RecGEFSv12_espaciotemporal_21d",
+            "RecGEFSv12_espaciotemporal_28d",
+        ]
+        sub9 = c9[c9["escenario"].isin(et_clima)]
+        max_p252 = float(sub9["p_holm_global_252"].max())
+        all9_msg = (
+            f"\\n\\nEn el análisis secundario retrospectivo sobre el universo global de `252` contrastes (`9` bibliotecas × `28` escenarios, "
+            f"`comparacion_todas_9_bibliotecas_macro.csv`), las `45/45` comparaciones en los `5` escenarios `ET + Clima` resultan favorables "
+            f"y significativas tras Holm global (`p_Holm,252 <= {max_p252:.4g}`)."
+        )
+
     display(Markdown(
-        f"En el ranking sobre `23` modelos, `SM-CFHR-Fixed` alcanza un rango medio global de `2.93/23` (`18/28` victorias frente a `Mejor_Bib` y `22/28` frente al mejor modelo *custom*). "
-        f"Bajo el protocolo congelado, `{n_teff_ok}/28` escenarios satisfacen $T_{{\\mathrm{{eff}}}} \\ge 2H$; dentro de ese subconjunto, **`{n_holm_ok}/15` resultan significativos tras Holm** (`D1_ET_5var` con IC `[-20.2, -13.5]` MWh/día y `RecGEFSv12_ET_7d` con IC `[-18.7, -10.2]` MWh/día) y `2/15` alcanzan $d_z \\le -0{{,}}20$.\\n\\n"
-        f"En consecuencia, los requisitos estrictos de R3 (`28/28` sin derrotas y mayoría significativa con efecto relevante) **no se cumplen de forma general**, acotándose la superioridad estadística demostrada al régimen espaciotemporal con clima. "
-        f"Nota metodológica (trazabilidad de estimandos y versión): el protocolo congelado anterior (`v1.0.3`, tabla mostrada aquí sin recalcular) evalúa `DM-HLN-HAC` sobre promedios temporales por fecha/origen (`MAE_promedio_por_origen`, unidad = origen, referencia retrospectiva `Mejor_Bib`, Holm por familia, filtro $T_{{\\mathrm{{eff}}}} \\ge 2H$). Una revisión independiente posterior (`v2.0.0`, documentada en `auditoria_inferencia_estadistica.ipynb` y `resultados/inferencia_revision_independiente_v2/`) reconcilió el estimando con el `MAE_macro` del ranking mediante la serie macro-alineada $z_t^{{\\mathrm{{macro}}}}$ y bootstrap sincronizado, encontrando `4/28` cambios de signo en paneles desbalanceados y `5/28` victorias Holm (todos los escenarios `ET + Clima`: `D1` y `7d`–`28d`, con $T_{{\\mathrm{{eff,macro}}}} \\ge 30.82$), además de `MAE_CF_macro` adimensional (rango medio `4.00/23`, `16/28` victorias). Limitación: `Mejor_Bib` es una selección retrospectiva."
+        f"En el ranking sobre `23` modelos en energía bruta, `SM-CFHR-Fixed` alcanza rango medio global de `2.93/23` (`18/28` victorias descriptivas frente a `Mejor_Bib` y `22/28` frente al mejor modelo *custom*). "
+        f"Bajo el protocolo congelado `v1.0.3` (promedios por origen y filtro $T_{{\\mathrm{{eff}}}} \\ge 2H$), `{n_teff_ok}/28` escenarios cumplen $T_{{\\mathrm{{eff}}}} \\ge 2H$ y **`{n_holm_ok}/15` resultan significativos tras Holm** (`D1_ET_5var` y `RecGEFSv12_ET_7d`).\\n\\n"
+        f"En la reconciliación inferencial posterior `v2.0.0` (análisis retrospectivo sobre `MAE_macro`, serie $z_t^{{\\mathrm{{macro}}}}$ con $h_{{\\mathrm{{serie}}}}=1$, bootstrap `B=5,000`), los `5/5` escenarios `ET + Clima` (`D1` y `7d`–`28d`) muestran diferencias significativas tras Holm frente a `Mejor_Bib` seleccionado *ex post* (`T_eff_macro >= 30.82`, aunque `RecGEFSv12_ET_21d` = `31.35` y `28d` = `30.82` están próximos al umbral descriptivo de `30` con `G=7` conglomerados), mientras en factor de capacidad (`MAE_CF_macro`) el rango medio se sitúa en `4.00/23` (`16/28` victorias).{all9_msg}"
     ))""")
 
     code("""if ped_figs:
-    display(Image(filename=str(ped_figs["P07"][0])))
-    display(Image(filename=str(ped_figs["P10"][0])))""")
+    display(Image(filename=str(ped_figs["P07"][0])))""")
 
-    md("""Solo `2/15` escenarios evaluables (`D1_ET_5var` con $d_z=-0{,}898$ y `RecGEFSv12_ET_7d` con $d_z=-0{,}653$) superan simultáneamente el umbral de Holm y $|d_z| \\ge 0{,}20$ (`RecGEFSv12_ET_14d` alcanza $d_z=-0{,}815$, pero queda excluido por el filtro original $T_{\\mathrm{eff}}=25{,}5<28$). Aunque `SM-CFHR-Fixed` permanece en el MCS general en `27/28` escenarios y en el MCS de bibliotecas en `28/28` (`4/28` como único superviviente), la permanencia en el MCS refleja no descartabilidad al `10%` y no equivale a superioridad pareada en todos los horizontes.""")
+    md("""Solo `2/15` escenarios evaluables bajo `v1.0.3` (`D1_ET_5var` con $d_z=-0{,}898$ y `RecGEFSv12_ET_7d` con $d_z=-0{,}653$) superan simultáneamente el umbral de Holm y $|d_z| \\ge 0{,}20$ (`RecGEFSv12_ET_14d` alcanza $d_z=-0{,}815$, excluido en `v1.0.3` por $T_{\\mathrm{eff}}=25{,}5<28$). Aunque `SM-CFHR-Fixed` permanece en el MCS general en `27/28` escenarios y en el MCS de bibliotecas en `28/28` (`4/28` como único superviviente en `v1.0.3`; `7/28` en `v2.0.0`), la permanencia en el MCS refleja no descartabilidad al `10%` y no equivale a superioridad pareada ni a validación prospectiva independiente.""")
 
     # CAPITULO 5
     md("""# Capítulo 5. Análisis intra-dataset por planta, capacidad, bloque temporal y estrategia
 
-Se examina el comportamiento interno de `SM-CFHR-Fixed` según planta solar, capacidad instalada (`MW`), bloque temporal (`D1`–`D3`), disponibilidad de pronóstico meteorológico y estrategia recursiva frente a directa.""")
+Se examina el comportamiento interno de `SM-CFHR-Fixed` según planta solar, capacidad vigente al origen (`MW`), bloque temporal (`D1`–`D3`), disponibilidad de pronóstico meteorológico y estrategia recursiva frente a directa, empleando las métricas corregidas observación por observación en `resultados/inferencia_revision_independiente_v2/05_metricas_corregidas/`.""")
 
     code("""if ped_figs:
-    intra_p = pd.read_csv(OOF_DIR / "metricas" / "intra_por_planta_capacidad.csv")
+    intra_p = pd.read_csv(V2_DIR / "05_metricas_corregidas" / "intra_por_planta_capacidad_corregido.csv")
     display(intra_p.sort_values("MAE_CF_ASHR").head(8))
     display(Image(filename=str(ped_figs["P11"][0])))
     display(Image(filename=str(ped_figs["P12"][0])))
@@ -268,7 +283,7 @@ Se examina el comportamiento interno de `SM-CFHR-Fixed` según planta solar, cap
     cf_min, cf_max = intra_p["MAE_CF_ASHR"].min() * 100.0, intra_p["MAE_CF_ASHR"].max() * 100.0
     n_p_win = int((intra_p["MAE_CF_ASHR"] < intra_p["MAE_CF_MejorBib"]).sum())
     display(Markdown(
-        f"El error absoluto en `kWh/día` crece linealmente con la capacidad instalada, mientras el error normalizado `MAE_CF` se mantiene entre `{cf_min:.2f}%` y `{cf_max:.2f}%` (`SM-CFHR-Fixed` supera a `Lasso` en `{n_p_win}/17` plantas en `D1_ET_5var`). "
+        f"El error absoluto en `kWh/día` crece linealmente con la capacidad instalada, mientras el error normalizado `MAE_CF` (calculado con capacidad diaria causal al origen) se mantiene entre `{cf_min:.2f}%` y `{cf_max:.2f}%` (`SM-CFHR-Fixed` supera a `Lasso` en `{n_p_win}/17` plantas en `D1_ET_5var`). "
         f"Entre bloques temporales externos, `MAE_CF` aumenta de `D1` a `D3`, reflejando deriva temporal en la flota analizada. "
         f"Por estrategia, `Recursivo + GEFSv12` reduce el crecimiento del error multihorizonte frente a `Recursivo sin clima` y `Directo sin clima / H`, y reduce la dispersión de los errores diarios normalizados en `P14`."
     ))""")
@@ -276,17 +291,18 @@ Se examina el comportamiento interno de `SM-CFHR-Fixed` según planta solar, cap
     # CAPITULO 6
     md("""# Capítulo 6. Transferencia entre plantas y grupos geográficos
 
-Esta sección evalúa la generalización a plantas no vistas (`ET`) frente al pronóstico sobre la historia futura de cada planta (`IP`) entre los `7` grupos geográficos del panel colombiano. No incluye conjuntos de datos externos fuera del dominio solar nacional.""")
+Esta sección evalúa la generalización a plantas de grupos no vistos (`ET`) frente al pronóstico sobre la historia futura de cada planta (`IP`) entre los `7` grupos geográficos del panel colombiano, comparando exclusivamente sobre las **`4,269` observaciones pareadas `(code, date)`** coincidentes (el grupo `7` aporta `91` pares coincidentes frente a `134` registros en ET sin parear). No incluye conjuntos de datos externos fuera del dominio solar nacional.""")
 
     code("""if ped_figs:
-    inter_g = pd.read_csv(OOF_DIR / "metricas" / "inter_grupo_et_vs_ip.csv")
+    inter_g = pd.read_csv(V2_DIR / "05_metricas_corregidas" / "inter_grupo_et_vs_ip_pareado.csv")
     display(inter_g)
     display(Image(filename=str(ped_figs["P13"][0])))
     rk_max = int(inter_g["rango_en_10_libs_ET"].max())
     n_et_better = int((inter_g["MAE_CF_ET"] <= inter_g["MAE_CF_IP"]).sum())
+    n_pares_tot = int(inter_g["n_pares"].sum())
     display(Markdown(
-        f"En `D+1` con meteorología, el esquema `ET` iguala o supera a `IP` en `{n_et_better}/{len(inter_g)}` grupos geográficos en `MAE_CF`, y `SM-CFHR-Fixed` conserva el rango `#1` a `#{rk_max}` de `10` bibliotecas en todos los grupos. "
-        f"El aporte específico de la normalización y las restricciones monótonas se evalúa en la ablación controlada del Capítulo 7. Esta transferencia entre grupos del mismo panel no sustituye a una validación externa en otras redes o climas."
+        f"Sobre el soporte común pareado (`{n_pares_tot:,}` pares `(code, date)`), el esquema `ET` iguala o supera a `IP` en `{n_et_better}/{len(inter_g)}` grupos geográficos en `MAE_CF`, y `SM-CFHR-Fixed` conserva el rango `#1` a `#{rk_max}` de `10` bibliotecas en todos los grupos. "
+        f"Nótese que la evaluación compara sistemas completos tal como fueron configurados (SM-CFHR en CF frente a referencias en kWh) y no sustituye a una validación externa en otras redes o climas."
     ))""")
 
     # CAPITULO 7
@@ -312,12 +328,12 @@ Se contrasta el rendimiento y coste de `SM-CFHR-Fixed` ($B=0$) frente a `SM-CFHR
     ))""")
 
     # CAPITULO 8
-    md("""# Capítulo 8. Síntesis de hallazgos y limitaciones
+    md(r"""# Capítulo 8. Síntesis de hallazgos y limitaciones
 
-1. **Desempeño frente a bibliotecas:** `SM-CFHR-Fixed` ocupa el rango medio `1.64 / 10` entre las nueve bibliotecas, supera a cada biblioteca individual en `23`–`28/28` escenarios, vence en `18/28` escenarios al mejor competidor *ex post* y permanece en el MCS exclusivo de bibliotecas en `28/28` casos.
-2. **Alcance de la superioridad estadística:** Bajo el protocolo congelado (`v1.0.3`, estimando `MAE_promedio_por_origen` con filtro $T_{\mathrm{eff}} \ge 2H$, `Mejor_Bib` retrospectivo, Holm por familia), la superioridad tras ajuste Holm-Bonferroni y con tamaño del efecto grande queda acreditada en `2/15` escenarios (`D1_ET_5var` con `-22.2%`, $d_z=-0.898$; `RecGEFSv12_ET_7d` con `-13.4%`, $d_z=-0.653$). En la revisión independiente `v2.0.0` (`auditoria_inferencia_estadistica.ipynb` y `resultados/inferencia_revision_independiente_v2/`), al alinear DM-HLN-HAC y MCS/SPA con el estimando `MAE_macro` y usar `h_overlap=1` real, la superioridad significativa tras Holm se extiende a los `5` escenarios `ET + Clima` (`D1`, `7d`–`28d`), pero **no** al régimen intraplanta ni al conjunto completo de `28` escenarios.
-3. **Comportamiento por planta, régimen y presupuesto:** La normalización por capacidad estabiliza el error relativo entre centrales de `9.8` y `388 MW` y a través de `7` grupos geográficos. Las principales derrotas se concentran en `DirectoSinClima_IP` (`+13.3%` medio frente a `k-NN`). Por último, `SM-CFHR-Fixed` ($B=0$) supera a `SM-CFHR-HPO` ($B=25$) en `19/28` escenarios (`14/14` en `ET`) con un coste computacional `~59×` menor.
-4. **Limitaciones abiertas:** Persisten la subcobertura conformal en `D+1` (`83.2%` para `90%`), la dependencia entre los `28` escenarios del mismo panel solar, el hecho de que las `22` referencias comparadas operaron en energía bruta (`kWh`) y la ausencia de validación en conjuntos externos (sin datasets externos).""")
+1. **Desempeño frente a bibliotecas en energía bruta:** `SM-CFHR-Fixed` ocupa el rango medio `1.64 / 10` entre las nueve bibliotecas, supera a cada biblioteca individual en `23`–`28/28` escenarios y vence descriptivamente en `18/28` escenarios al mejor competidor seleccionado *ex post* (`16/28` en `MAE_CF_macro`, rango `4.00/23`).
+2. **Alcance de la inferencia estadística (protocolo `v1.0.3` vs. revisión retrospectiva `v2.0.0`):** Bajo el protocolo congelado `v1.0.3` (promedios por origen, filtro $T_{\mathrm{eff}} \ge 2H$, `Mejor_Bib` retrospectivo, Holm por familia), `2/15` escenarios alcanzan significancia tras Holm con tamaño de efecto relevante (`D1_ET_5var` con `-22.2%`, $d_z=-0.898$; `RecGEFSv12_ET_7d` con `-13.4%`, $d_z=-0.653$). En la reconciliación retrospectiva `v2.0.0` (`auditoria_inferencia_estadistica.ipynb` y `resultados/inferencia_revision_independiente_v2/`), al alinear el estimando con `MAE_macro` y $h_{\mathrm{serie}}=1$, los `5` escenarios `ET + Clima` (`D1`, `7d`–`28d`) muestran diferencias significativas tras Holm frente a `Mejor_Bib` y `45/45` en el universo global de `252` contrastes frente a bibliotecas ($p_{\mathrm{Holm,252}} \le 0{,}0417$), pero **no** en intraplanta ni sobre el total de `28` escenarios; además, `RecGEFSv12_ET_21d` ($T_{\mathrm{eff,macro}}=31{,}35$) y `28d` ($30{,}82$) se sitúan próximos al umbral descriptivo `30` con solo `G=7` zonas espaciales.
+3. **Comportamiento por planta, régimen y presupuesto:** La normalización por capacidad estabiliza el error relativo entre centrales de `9.8` y `388 MW` y sobre el soporte pareado (`4,269` pares) entre los `7` grupos geográficos. Las principales derrotas se concentran en `DirectoSinClima_IP` (`+13.3%` medio, hasta `+24.24%` frente a `k-NN`). `SM-CFHR-Fixed` ($B=0$) supera a `SM-CFHR-HPO` ($B=25$) en `19/28` escenarios (`14/14` en `ET`) con un coste computacional `~59×` menor.
+4. **Limitaciones abiertas:** Persisten la subcobertura conformal en `D+1` (`83.2%` para `90%`), la dependencia entre los `28` escenarios del mismo panel solar, el hecho de que las `22` referencias comparadas operaron en energía bruta (`kWh`) —por lo que la comparación evalúa sistemas completos sin aislar causalmente normalización y estimador—, la ausencia de validación prospectiva independiente y la ausencia de conjuntos externos (sin datasets externos).""")
 
     code("""if bundle is not None:
     resumen_desc = build_descriptive_summary(bundle)
@@ -327,7 +343,6 @@ Se contrasta el rendimiento y coste de `SM-CFHR-Fixed` ($B=0$) frente a `SM-CFHR
         bundle,
         OOF_DIR,
         extra_artifacts={
-            "conclusiones/veredicto_r3": r3_verdict_df,
             "inferencia/diseno_efectivo": design_df,
             "conclusiones/resumen_descriptivo": resumen_desc,
         },

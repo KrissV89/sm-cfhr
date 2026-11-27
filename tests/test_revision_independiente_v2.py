@@ -182,3 +182,48 @@ def test_capacity_changes_and_frozen_oof_integrity() -> None:
     if manifest_path.exists():
         m = json.loads(manifest_path.read_text(encoding="utf-8"))
         assert m["estatus"] == "OOF_DEFINITIVO_COMPLETO"
+
+
+def test_d1_capacity_uses_causal_origin_day() -> None:
+    """F03: D+1 capacity normalization must use causal origin-day capacity (t-1)."""
+    from sm_cfhr.metrics_audit import attach_capacity_and_cf_errors
+    from src.ashr_oof_pipeline.config import SCENARIOS_28
+
+    sp_d1 = next(sp for sp in SCENARIOS_28 if sp.mode_eval == "d1")
+    d1_cap = pd.DataFrame([
+        {"code": "P1", "date": "2026-09-08", "cap_MW": 100.0, "cap_MW_origen": 100.0},
+        {"code": "P1", "date": "2026-09-09", "cap_MW": 120.0, "cap_MW_origen": 100.0},
+    ])
+    df_oof = pd.DataFrame([
+        {"code": "P1", "date": "2026-09-09", "y_kwh": 240000.0, "prediccion_kwh": 0.0},
+    ])
+    out = attach_capacity_and_cf_errors(df_oof, sp_d1, bench_raw=pd.DataFrame(), d1_cap_df=d1_cap)
+    assert float(out["cap_MW_usada"].iloc[0]) == 100.0
+    assert np.isclose(float(out["_ae_cf"].iloc[0]), 240000.0 / (24000.0 * 100.0))
+
+
+def test_arch_spa_version_empirical_check() -> None:
+    """F09: Reproducible verification on installed arch.bootstrap.SPA behavior."""
+    import arch
+    from arch.bootstrap import SPA as ArchSPA
+
+    assert arch.__version__ == "8.0.0"
+    rng = np.random.default_rng(2026)
+    lb = rng.normal(2.0, 1.0, size=(120, 1))
+    lm = rng.normal(1.5, 1.0, size=(120, 1))
+    sp = ArchSPA(lb, lm, block_size=5, reps=300, studentize=True, seed=2026)
+    sp.compute()
+    assert 0.0 <= float(sp.pvalues["consistent"]) <= 1.0
+
+
+def test_corrected_v2_plant_and_paired_group_tables() -> None:
+    """F04 & F05: Verify corrected per-plant CF and paired ET/IP group tables."""
+    v2_m = ROOT / "resultados" / "inferencia_revision_independiente_v2" / "05_metricas_corregidas"
+    intra_p = v2_m / "intra_por_planta_capacidad_corregido.csv"
+    inter_p = v2_m / "inter_grupo_et_vs_ip_pareado.csv"
+    if intra_p.exists() and inter_p.exists():
+        intra = pd.read_csv(intra_p)
+        inter = pd.read_csv(inter_p)
+        assert len(intra) == 17
+        assert int(inter["n_pares"].sum()) == 4269
+        assert int(inter.loc[inter["grupo"] == 7, "n_pares"].iloc[0]) == 91

@@ -1,21 +1,36 @@
 # Manuscrito Científico SM-CFHR (`docs/paper_sm_cfhr/`)
 
-Manuscrito LaTeX completo correspondiente a la distribución oficial **`v1.0.3-polyform`** (protocolo científico **`v1.0.3`**, núcleo `src/adaptive_structured_huber.py` con SHA-256 `27a9fda4fa8b7ef0d95faf9e925e47ade9ed8f25e9ea5d97d6d7cf1c00ddde83`).
+Fuentes LaTeX, figuras vectoriales PDF y tablas del manuscrito principal (`main.tex` $\to$ `main.pdf`, 26 páginas) y del material suplementario (`suplemento.tex` $\to$ `suplemento.pdf`, 11 páginas).
 
-## Compilación en modo placeholder (sin resultados OOF integrados)
+## Compilación reproducible (requiere `pdflatex` y `bibtex`, p. ej. TeX Live 2026)
+
+### Manuscrito principal
 ```bash
 cd docs/paper_sm_cfhr
-python scripts/integrate_results.py
 pdflatex -interaction=nonstopmode main.tex
 bibtex main
 pdflatex -interaction=nonstopmode main.tex
 pdflatex -interaction=nonstopmode main.tex
+# O con latexmk:
+latexmk -pdf -interaction=nonstopmode main.tex
 ```
 
-## Integración automática cuando llegue el ZIP de resultados OOF
+### Material suplementario
 ```bash
-python docs/paper_sm_cfhr/scripts/integrate_results.py --results-zip /ruta/al/resultados_oof_v1.0.2.zip
 cd docs/paper_sm_cfhr
-pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+pdflatex -interaction=nonstopmode suplemento.tex
+bibtex suplemento
+pdflatex -interaction=nonstopmode suplemento.tex
+pdflatex -interaction=nonstopmode suplemento.tex
+# O con latexmk:
+latexmk -pdf -interaction=nonstopmode suplemento.tex
 ```
-El script verifica el `manifest_ashr_oof.json` y el SHA-256 del núcleo (`27a9fda4fa8b7ef0d95faf9e925e47ade9ed8f25e9ea5d97d6d7cf1c00ddde83`) sin reentrenar ningún modelo.
+
+## Trazabilidad de fuentes auxiliares en `appendices/`
+- `appendices/B_escenarios_benchmarks.tex`: **compilado** activamente mediante `\input` dentro de `suplemento.tex` (Tablas S2–S5).
+- `appendices/A_demostraciones.tex` y `appendices/C_verificacion_lean4.tex`: **borradores históricos no compilados** (su contenido actualizado se encuentra integrado directamente en las Secciones S1 y S2 de `suplemento.tex`).
+
+## Regeneración de figuras desde OOF congelado (sin reentrenar)
+```bash
+python docs/paper_sm_cfhr/scripts/generate_oof_figures.py
+```

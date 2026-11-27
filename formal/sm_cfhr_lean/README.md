@@ -1,6 +1,6 @@
 # Formalización Matemática de SM-CFHR en Lean 4
 
-Proyecto autocontenido en **Lean 4** + **Mathlib** que verifica formalmente las propiedades analíticas, convexas, de optimalidad y de monotonía parcial del estimador **SM-CFHR** (*Structured Monotone Capacity-Factor Huber Regressor*, referencia científica `v1.0.2`).
+Proyecto autocontenido en **Lean 4** (`leanprover/lean4:v4.36.0`) + **Mathlib** (revisión `fc4f59e577feb1a4956671bc04ac18aaaf8cd842`) que verifica formalmente $26$ declaraciones sobre $\mathbb{R}$ (`THEOREMS_MANIFEST.json`, `0` marcadores `sorry`/`admit` ni axiomas personalizados) para el estimador **SM-CFHR** (*Structured Monotone Capacity-Factor Huber Regressor*).
 
 ## Estructura
 - `SMCFHR/Clipping.lean`: truncamiento físico `[0, 1]`.
