@@ -2,63 +2,31 @@
 
 \subsection{Fuentes de información y depuración causal de la cohorte}
 
-La base empírica cubre el periodo comprendido entre el 1 de enero de 2024 y el 31 de octubre de 2026 ($1\,035$ días calendario) e integra cuatro fuentes auditadas: (1) generación horaria real medida y capacidad efectiva neta diaria reportadas por el operador del mercado eléctrico colombiano XM \cite{xm2026api}; (2) coordenadas geográficas verificadas de las centrales en el \textit{Global Solar Power Tracker} \cite{gem2026solar}; (3) pronósticos meteorológicos horarios a $24\text{ h}$ de antelación (promedio del ensamble ECMWF IFS $0{,}25^\circ$, GFS e ICON) recuperados de los archivos históricos de la API \textit{Previous Runs} de Open-Meteo \cite{openmeteoPreviousRuns}; y (4) corridas operacionales subestacionales del sistema NOAA GEFSv12 (\texttt{00~UTC}, pasos horarios hasta $696\text{ h}$, equivalentes a $29$ días), totalizando $65\,688$ registros completos planta--origen--horizonte. Durante la auditoría inicial se descartó reconstruir pronósticos históricos $D+1$ a partir de las primeras horas de las corridas de archivo, pues su elevada proximidad al reanálisis meteorológico (correlación $0{,}976$ frente a $0{,}615$ del pronóstico real emitido con $24\text{ h}$ de antelación) habría introducido fuga de información futura.
+La base empírica abarca del 1 de enero de 2024 al 31 de octubre de 2026 ($1\,035$ días) e integra cuatro fuentes: (1) generación horaria real y capacidad efectiva neta diaria del operador del mercado colombiano XM \cite{xm2026api}; (2) coordenadas verificadas en el \textit{Global Solar Power Tracker} \cite{gem2026solar}; (3) pronósticos horarios a $24\text{ h}$ (promedio de ECMWF IFS $0{,}25^\circ$, GFS e ICON) de la API \textit{Previous Runs} de Open-Meteo \cite{openmeteoPreviousRuns}; y (4) corridas subestacionales NOAA GEFSv12 (\texttt{00~UTC}, hasta $696\text{ h}$ / $29$ días, $65\,688$ registros completos planta--origen--horizonte). Se utilizan exclusivamente pronósticos emitidos con antelación real ($24\text{ h}$ en $D+1$ y \texttt{00~UTC} en GEFSv12), pues aproximar el día siguiente con las primeras horas de archivo introduce una correlación artificial con el reanálisis ($0{,}976$ frente a $0{,}615$).
 
-El protocolo de depuración física \cite{nist2003eda,pipino2002quality,jensen2024solarqc} parte de $30\,964$ registros recurso--día de XM y aplica filtros secuenciales estrictos: existencia de capacidad efectiva neta registrada en la fecha, generación y capacidad estrictamente positivas, plausibilidad física $\mathrm{cf}^{\mathrm{obs}}_{i,t} \le 1{,}05$ (admitiendo un margen de $5\%$ para tolerar pequeñas diferencias horarias antes de reportar ampliaciones), coordenadas verificadas, al menos $60$ días transcurridos desde la entrada en operación comercial y un mínimo de $100$ días útiles por planta. La Figura~\ref{fig:cohorte_mapa} resume el flujo cuantitativo de depuración hasta consolidar $12\,756$ observaciones planta--día en $M=17$ centrales distribuidas en $G=7$ zonas geográficas (agrupadas por enlace simple a menos de $100\text{ km}$). Para el ajuste y evaluación causal se exige además contar con más de $6$ horas reportadas en el día, excluyendo $31$ registros incompletos ($0{,}24\%$, todos con factor de capacidad inferior a $0{,}04$) hasta obtener $12\,725$ días válidos, sin imputar jamás la variable objetivo.
+El protocolo de depuración física \cite{nist2003eda,pipino2002quality,jensen2024solarqc} parte de $30\,964$ registros recurso--día de XM y exige capacidad vigente, generación y capacidad positivas, plausibilidad $\mathrm{cf}^{\mathrm{obs}}_{i,t} \le 1{,}05$, coordenadas verificadas, al menos $60$ días post-arranque y un mínimo de $100$ días útiles por planta, consolidando $12\,756$ observaciones en $M=17$ centrales distribuidas en $G=7$ zonas espaciales ($<100\text{ km}$ por enlace simple; Material Suplementario, Sección~S3, Tabla~S2 y Sección~S5, Figura~S2). Para el ajuste y evaluación se exige además más de $6$ horas reportadas al día, excluyendo $31$ registros incompletos ($0{,}24\%$, todos con factor de capacidad $< 0{,}04$) hasta obtener $12\,725$ días válidos ($251$--$1\,032$ por planta), sin imputar jamás la variable objetivo. Como posible sesgo de selección, excluir jornadas con generación nula o $\le 6\text{ h}$ restringe las métricas a operación activa o parcialmente activa y omite centrales en fase temprana de pruebas.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.86\textwidth]{figures/eda_flujo_cohorte.pdf}\\[0.5em]
-\includegraphics[width=0.86\textwidth]{figures/eda_mapa_plantas.pdf}
-\caption{Depuración cuantitativa de la cohorte ($30\,964 \to 12\,756$ registros planta--día en $17$ centrales; arriba) y distribución geográfica en $G=7$ zonas espaciales por enlace simple a $<100\text{ km}$ (abajo).}
-\label{fig:cohorte_mapa}
-\end{figure}
+\subsection{Hallazgos exploratorios que motivan el diseño del modelo}\label{sec:eda_motivacion}
 
-Es indispensable explicitar los posibles sesgos de selección derivados de estos filtros: al excluir días con generación nula o $\le 6$ horas reportadas, las métricas reflejan operación activa o parcialmente activa y omiten paradas totales prolongadas; asimismo, el requisito de $\ge 100$ días útiles y $\ge 60$ días post-arranque excluye plantas recién conectadas en fase temprana de pruebas. La Tabla~S1 del Material Suplementario detalla el inventario completo de las $17$ centrales estabilizadas, cuyas coberturas útiles con $\mathrm{horas\_xm} > 6$ oscilan entre $251$ y $1\,032$ días válidos ($12\,725$ registros en total, frente a $12\,756$ antes del filtro horario). En la Sección~\ref{sec:resultados} se cuantifica directamente la sensibilidad de las métricas al reincorporar los registros incompletos con $\mathrm{horas\_xm} \le 6$.
+Tres regularidades empíricas del panel depurado fundamentan directamente la arquitectura de SM-CFHR y el protocolo de evaluación (las figuras exploratorias complementarias de cobertura temporal, horas reportadas, estacionalidad y variables NWP figuran en el Material Suplementario, Sección~S5, Figuras~S3 y~S4):
 
-\subsection{Hallazgos exploratorios y su vínculo con el diseño del estimador}
-
-Cada figura exploratoria responde una pregunta científica específica que condiciona las decisiones metodológicas posteriores:
-
-\paragraph{1. ¿Qué heterogeneidad de cobertura, escala y ampliaciones presenta la flota?}
-La Figura~\ref{fig:eda_cob_horas} muestra que las centrales entran en operación de forma escalonada (desde enero de 2024 hasta febrero de 2026), con capacidades netas entre $9{,}8$~MW y $388{,}0$~MW (cociente de escala de $39{,}6\times$) y $7$ ampliaciones discretas en $6$ centrales (por ejemplo, de $83$ a $100$~MW y de $90$ a $100$~MW). Asimismo, la distribución de horas reportadas confirma la presencia de $31$ jornadas truncadas ($\le 6\text{ h}$) asociadas a valores anormalmente bajos. Estas dos observaciones justifican tres decisiones: (a) normalizar tanto predictores históricos como objetivos en factor de capacidad usando exclusivamente la capacidad vigente al origen $C_{i,t}$ sin anticipar ampliaciones futuras; (b) agregar errores mediante macro-promedio por planta ($\mathrm{MAE}_{\mathrm{macro}}$) para igualar el peso por longitud de serie entre centrales ---complementándolo con métricas adimensionales ($\mathrm{MAE}_{\mathrm{CF}}$ y $\mathrm{Skill}$) dado que el error en $\text{kWh/día}$ conserva proporcionalidad física con la capacidad instalada---; y (c) excluir días incompletos de $\le 6\text{ h}$ para no contaminar la señal física con fallas de telemetría.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/eda_cobertura_temporal.pdf}\\[0.5em]
-\includegraphics[width=0.92\textwidth]{figures/eda_horas_y_anomalos.pdf}
-\caption{Cobertura temporal heterogénea por planta ($251$ a $1\,032$ días útiles; arriba) y distribución de horas reportadas por XM mostrando los registros incompletos excluidos ($\le 6\text{ h}$; abajo).}
-\label{fig:eda_cob_horas}
-\end{figure}
-
-\paragraph{2. ¿Cómo se distribuyen el factor de capacidad y la relación con la irradiación?}
-La Figura~\ref{fig:eda_univ} muestra que el factor de capacidad diario observado posee media $0{,}248$, mediana $0{,}250$ (rango intercuartílico $0{,}203$--$0{,}295$; máximo $0{,}436$) y una cola izquierda extendida hacia cero. Al graficarlo frente a la irradiación horizontal diaria pronosticada, se observa una asociación positiva monótona acompañada de $68$ episodios de rendimiento específico reducido (cociente entre factor de capacidad normalizado e irradiación inferior a $0{,}3$). Sin registros independientes de consignas de despacho no puede atribuirse la totalidad de esos episodios a \textit{curtailment}: reflejan una mezcla de restricciones operativas, desconexiones parciales, mantenimiento y nubosidad convectiva local no capturada por la malla NWP. Desde el punto de vista metodológico, esta evidencia motiva evaluar la pérdida de Huber con escalado robusto MAD para acotar el peso de caídas anómalas en la respuesta, junto con restricciones de signo no negativo sobre la irradiación pronosticada y la persistencia reciente para evitar pendientes negativas espurias.
+\begin{enumerate}
+    \item \textbf{Heterogeneidad de escala y ampliaciones discretas:} las $17$ centrales entran en operación de forma escalonada ($2024$--$2026$), presentan capacidades netas entre $9{,}8$~MW y $388{,}0$~MW ($39{,}6\times$) y registran $7$ ampliaciones discretas en $6$ centrales. Esto motiva normalizar predictores históricos y objetivo por la capacidad vigente al origen $C_{i,t}$ sin anticipar ampliaciones futuras, y agregar el desempeño mediante macro-promedio por planta ($\mathrm{MAE}_{\mathrm{macro}}$) complementado con $\mathrm{MAE}_{\mathrm{CF,macro}}$ adimensional.
+    \item \textbf{Asimetría hacia cero y episodios de bajo rendimiento específico:} en la cohorte filtrada ($\mathrm{horas\_xm} > 6$), el factor de capacidad diario tiene media $0{,}248$, mediana $0{,}250$ (rango intercuartílico $0{,}203$--$0{,}295$; máximo $0{,}436$) y una cola izquierda extendida hacia cero (Figura~\ref{fig:eda_univ}, izquierda). Frente a la irradiación pronosticada (Figura~\ref{fig:eda_univ}, derecha), la relación positiva monótona coexiste con $39$ episodios de rendimiento específico reducido ($< 0{,}3$) atribuibles a una mezcla de restricciones operativas, mantenimiento y nubosidad convectiva subgrilla. Esta evidencia motiva evaluar la pérdida de Huber con escalado MAD y restringir el signo de la irradiación y la persistencia reciente.
+    \item \textbf{Persistencia temporal y acoplamiento intrazonal:} la Figura~\ref{fig:eda_dep} muestra autocorrelación positiva pronunciada en rezagos cortos y elevada correlación cruzada entre centrales de la misma zona ($<100\text{ km}$), junto con variación regional y degradación NWP en horizontes subestacionales. Ello justifica incluir medias móviles causales ($30$ y $7$ días), anomalías climáticas causales con regularización diferenciada ($\alpha_{\mathrm{meteo}}$), validación espacial \textit{leave-one-group-out} por zonas $<100\text{ km}$ e inferencia robusta HAC.
+\end{enumerate}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.49\textwidth]{figures/eda_distribucion_fc.pdf}
 \includegraphics[width=0.49\textwidth]{figures/eda_rendimiento_especifico.pdf}
-\caption{Distribución asimétrica del factor de capacidad diario observado (izquierda) y relación empírica frente a la irradiación diaria destacando $68$ episodios de rendimiento específico reducido (derecha).}
+\caption{Distribución asimétrica del factor de capacidad diario observado (izquierda) y relación empírica frente a la irradiación pronosticada destacando $39$ episodios de rendimiento específico reducido en la cohorte filtrada ($\mathrm{horas\_xm} > 6$, derecha).}
 \label{fig:eda_univ}
 \end{figure}
 
-\paragraph{3. ¿Qué estructura de estacionalidad, persistencia y acoplamiento espacial existe?}
-La Figura~\ref{fig:eda_est_dep} evidencia una variación mensual moderada acorde con los ciclos climáticos de Colombia (regiones Caribe, Andina y Orinoquía), una autocorrelación positiva pronunciada en rezagos cortos que decae progresivamente con el tiempo, y correlaciones cruzadas significativas entre plantas pertenecientes a la misma zona geográfica ($<100\text{ km}$). La persistencia temporal fundamenta incluir medias móviles causales de $30$ y $7$ días junto con diferencias amortiguadas por horizonte y armónicos anuales de calendario; a su vez, la elevada correlación intrazonal demuestra que una validación espacial ingenua por planta individual filtraría información de centrales vecinas situadas en el mismo régimen nuboso, haciendo obligatoria la validación \textit{leave-one-group-out} por conglomerados de $<100\text{ km}$ y la inferencia robusta con varianza HAC.
-
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/eda_estacionalidad.pdf}\\[0.5em]
-\includegraphics[width=0.92\textwidth]{figures/eda_dependencia.pdf}
-\caption{Estacionalidad mensual del factor de capacidad (arriba) y estructura de autocorrelación temporal y correlación espacial entre centrales (abajo).}
-\label{fig:eda_est_dep}
-\end{figure}
-
-\paragraph{4. ¿Qué comportamiento presentan las variables meteorológicas pronosticadas?}
-Finalmente, la Figura~\ref{fig:eda_clima} muestra la distribución y dinámica de las cinco variables meteorológicas pronosticadas sobre la cohorte (irradiación horizontal, temperatura a $2\text{ m}$, nubosidad total, humedad relativa y velocidad del viento a $10\text{ m}$). La dispersión regional y la variabilidad atmosférica motivan complementar los niveles NWP absolutos con anomalías causales respecto a la media móvil reciente de $30$ días de cada planta y asignar una regularización cuadrática diferenciada ($\alpha_{\mathrm{meteo}}$) capaz de atenuar su influencia cuando la habilidad NWP se degrada en horizontes subestacionales.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/eda_clima.pdf}
-\caption{Distribución y dinámica de las cinco variables meteorológicas pronosticadas sobre la cohorte de $17$ centrales.}
-\label{fig:eda_clima}
+\includegraphics[width=0.86\textwidth]{figures/eda_dependencia.pdf}
+\caption{Autocorrelación temporal del factor de capacidad y matriz de correlación espacial entre centrales, evidenciando el acoplamiento intrazonal que exige validación por conglomerados ($<100\text{ km}$).}
+\label{fig:eda_dep}
 \end{figure}

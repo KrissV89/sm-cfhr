@@ -8,6 +8,8 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{graphicx}
+\usepackage{placeins}
 \usepackage{hyperref}
 
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
@@ -16,10 +18,15 @@
 \newtheorem{proposition}{Proposición}
 \DeclareMathOperator{\clip}{clip}
 \DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\MAD}{MAD}
+\DeclareMathOperator{\sign}{sign}
 
+\newcounter{algoritmo}
 \renewcommand{\thesection}{S\arabic{section}}
 \renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
 \renewcommand{\theequation}{S\arabic{equation}}
+\renewcommand{\thealgoritmo}{S\arabic{algoritmo}}
 
 \begin{document}
 
@@ -33,7 +40,7 @@
 \hrule
 \vspace{1em}
 
-\section{Demostraciones matemáticas completas}\label{sup:demos}
+\section{Demostraciones matemáticas completas, estructura diferencial y complejidad}\label{sup:demos}
 
 Esta sección reúne las demostraciones completas de los resultados analíticos resumidos en el manuscrito principal, distinguiendo expresamente las aplicaciones directas de la teoría convexa y robusta clásica \cite{boyd2004convex,huber1964,hampel1986robust,huber2009robust} de las verificaciones específicas para SM-CFHR.
 
@@ -91,9 +98,20 @@ Además, cada observación satisface $\left|\frac{1}{n}\psi_\delta(r_k^*)\right|
 Las restricciones $-w_j \le 0$ ($j \in \mathcal{M}_+$) son afines y cumplen Slater ($w_j > 0$), por lo que las condiciones KKT del Lagrangiano $\mathcal{L}(b,\mathbf{w},\boldsymbol{\lambda}) = J(b,\mathbf{w}) - \sum_{j \in \mathcal{M}_+} \lambda_j w_j$ son necesarias y suficientes \cite{boyd2004convex}. La cota en el gradiente se sigue directamente de $|\psi_\delta(r)| \le \delta$, y la monotonía parcial se sigue de $z_{q,j}' - z_{q,j} = \Delta/\tilde{s}_j > 0$, $w_j^* \ge 0$, $\sigma_y > 0$ y la monotonía de $\clip(\cdot, 0, 1)$.
 \end{proof}
 
+\subsection{Estructura diferencial por tramos y complejidad computacional}
+
+Aunque $J \in C^1(\mathbb{R}^{p+1})$ tiene gradiente Lipschitz continuo, no es de clase $C^2$ sobre los hiperplanos de transición $|r_k(b,\mathbf{w})| = \delta$. En el interior de cada región abierta donde $|r_k| \ne \delta$ para todo $k$, la matriz Hessiana existe y toma la forma:
+\begin{equation}
+\nabla^2 J(b,\mathbf{w}) = \frac{1}{n} \begin{bmatrix} \mathbf{1}_n^\top \\ Z^\top \end{bmatrix} \diag(\mathbf{1}_{\mathcal{I}_{\mathrm{quad}}}) \begin{bmatrix} \mathbf{1}_n & Z \end{bmatrix} + \begin{bmatrix} 0 & \mathbf{0}^\top \\ \mathbf{0} & D_\alpha \end{bmatrix},
+\label{eq:sup_hessiana}
+\end{equation}
+donde $\mathcal{I}_{\mathrm{quad}} := \{k \in \{1,\dots,n\} : |r_k| < \delta\}$ agrupa las observaciones en régimen cuadrático. Fuera de esos hiperplanos, $\nabla^2 J$ es semidefinida positiva; en los quiebres $|r_k| = \delta$, la segunda derivada presenta saltos finitos, lo que motiva resolver el problema mediante L-BFGS-B de primer orden con proyecciones simples sobre las cotas de caja $\mathbb{R} \times \mathcal{C}$ \cite{byrd1995lbfgsb,zhu1997lbfgsb}.
+
+En términos de complejidad, cada evaluación de $J$ y $\nabla J$ requiere dos productos matriz-vector con $Z \in \mathbb{R}^{n \times p}$ ($O(np)$ operaciones, con $p \in \{7,17\}$). Para un ajuste completo con $K$ iteraciones de L-BFGS-B ($m=10$ pares de curvatura en memoria), el coste es $O(np + Knp)$ en tiempo y $O(np + mp)$ en memoria tras el preprocesamiento inicial $O(np)$. Con búsqueda bayesiana anidada de $B=25$ ensayos TPE sobre $K_{\mathrm{cv}}=3$ particiones internas, el coste escala como $O(B \cdot K_{\mathrm{cv}} \cdot Knp)$, mientras que el despliegue recursivo de horizonte $H$ añade $O(Hp)$ operaciones por origen.
+
 \section{Verificación formal en Lean~4}\label{sup:lean4}
 
-La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre \textbf{Mathlib} (commit \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, etiqueta \texttt{v1.0.3-polyform}, compilando $26$ declaraciones sin axiomas personalizados (únicamente \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}), resumidas en la Tabla~\ref{tab:sup_lean4}.
+La formalización matemática de SM-CFHR se desarrolló en \textbf{Lean~4} (\texttt{leanprover/lean4:v4.36.0}) \cite{moura2021lean4} sobre \textbf{Mathlib} (revisión \texttt{fc4f59e577feb1a4956671bc04ac18aaaf8cd842}) \cite{mathlib2020}, compilando $26$ declaraciones sin axiomas personalizados (únicamente \texttt{propext}, \texttt{Classical.choice} y \texttt{Quot.sound}), resumidas en la Tabla~\ref{tab:sup_lean4}.
 
 \begin{table}[!htbp]
 \centering
@@ -114,28 +132,121 @@ Proposición~\ref{sup:prop_kkt} & \texttt{Optimality.lean}, \texttt{Gradient.lea
 \end{tabularx}
 \end{table}
 
-\section{Inventarios completos de flota, escenarios, referencias y tablas extendidas \texttt{v3.0.0}}\label{sup:tablas}
+\section{Inventarios completos, parámetros operativos y despliegue recursivo}\label{sup:tablas}
 
 \input{appendices/B_escenarios_benchmarks}
 
-\begin{table}[!htbp]
+\subsection{Parámetros operativos secundarios y algoritmo de despliegue recursivo}\label{sup:operativos}
+
+El protocolo de preprocesamiento y validación interna incorpora los siguientes resguardos numéricos secundarios: (1) en la imputación de predictores, si una columna completa es no finita en entrenamiento, la mediana se fija en $0$; (2) en la estandarización de predictores, toda columna constante con desviación estándar $s_j \le 10^{-8}$ adopta escala efectiva $\tilde{s}_j = 1$; (3) en el escalado robusto de la respuesta, tanto el estimador $1{,}4826\,\MAD(\mathbf{y})$ como su respaldo mediante desviación estándar poblacional aplican un piso numérico de $10^{-6}$; (4) durante los primeros días de operación sin ventana completa de $30$ días se aplican respaldos jerárquicos causales ($\mathrm{cf}_{30} \leftarrow 0{,}15$, $\mathrm{cf}_7 \leftarrow \mathrm{cf}_{30}$, $\mathrm{cf}_1 \leftarrow \mathrm{cf}_7$); y (5) la búsqueda interna \texttt{SM-CFHR-HPO} descarta particiones que incumplan los tamaños mínimos $n_{\mathrm{tr}} \ge 15$ y $n_{\mathrm{va}} \ge 5$.
+
+En los escenarios recursivos ($H \in \{7,14,21,28\}$), tanto la validación interna de hiperparámetros como la evaluación externa ejecutan el procedimiento causal exacto formalizado en el Algoritmo~\ref{alg:sup_rollout}.
+
+\begin{figure}[!htbp]
 \centering
-\caption{Efecto promedio de normalizar por factor de capacidad (\texttt{kWh\_bruto} $\to$ \texttt{CF}) en los $10$ escenarios de la Condición~A (\texttt{v3.0.0}).}\label{tab:sup_cf_shift}
-\scriptsize
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Familia de modelo & $\mathrm{MAE}_{\mathrm{CF}}$ medio (\texttt{kWh\_bruto}) & $\mathrm{MAE}_{\mathrm{CF}}$ medio (\texttt{CF}) & Cambio medio (\%) & Mediana cambio (\%) \\
-\midrule
-\texttt{BayesianRidge} & $0{,}04843$ & $0{,}03993$ & $-14{,}59\%$ & $-5{,}83\%$ \\
-\texttt{ElasticNet} & $0{,}04839$ & $0{,}03937$ & $-17{,}66\%$ & $-17{,}27\%$ \\
-\texttt{HuberRegressor} & $0{,}04847$ & $0{,}04332$ & $-10{,}13\%$ & $-4{,}49\%$ \\
-\texttt{RandomForest} & $0{,}05187$ & $0{,}04053$ & $-19{,}06\%$ & $-23{,}32\%$ \\
-\texttt{Ridge} & $0{,}04974$ & $0{,}04153$ & $-13{,}96\%$ & $-5{,}48\%$ \\
-\texttt{SM-CFHR} & $0{,}04829$ & $0{,}04045$ & $-14{,}91\%$ & $-8{,}16\%$ \\
-\texttt{XGBoost} & $0{,}05574$ & $0{,}04052$ & $-23{,}24\%$ & $-29{,}85\%$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\fbox{\begin{minipage}{0.95\textwidth}
+\small
+\refstepcounter{algoritmo}\label{alg:sup_rollout}\textbf{Algoritmo~\thealgoritmo: Despliegue recursivo causal exacto desde el origen $t_0$ ($\text{horizonte } H$)}
+\begin{enumerate}
+    \item \textbf{Inicialización al origen $t_0$:} fijar la capacidad constante al origen $C_{i,t_0}$, la cota energética $E^{\max}_{i,t_0} = 24\,000\,C_{i,t_0}$, la línea base climática de $30$ días $\bar{\mathbf{z}}^{(30)}_{i,t_0}$ y el búfer histórico con las últimas $30$ observaciones reales $\tilde{B}_{t_0} = (y_{i,t_0-29}, \dots, y_{i,t_0})$.
+    \item \textbf{Para $h = 1, \dots, H$:}
+    \begin{enumerate}
+        \item Calcular $\bar{y}^{(30)}$ (media de los últimos $30$ elementos de $\tilde{B}_{t_0+h-1}$), $\bar{y}^{(7)}$ (últimos $7$) y $y^{\mathrm{ult}}$ (último elemento), y obtener $(\mathrm{cf}_{30}, \mathrm{cf}_7, \mathrm{cf}_1)$.
+        \item Construir $\mathbf{x}_{i,t_0+h \mid t_0}$ con los armónicos de fecha $t_0+h$, el amortiguamiento $\gamma_h = 0{,}85^{h-1}$ y, si hay meteorología, el pronóstico GEFSv12 emitido en $t_0$ para $t_0+h$ y su anomalía respecto a $\bar{\mathbf{z}}^{(30)}_{i,t_0}$.
+        \item Evaluar el estimador entrenado para obtener la predicción física truncada $\hat{y}_{i,t_0+h \mid t_0} \in [0, E^{\max}_{i,t_0}]$.
+        \item Actualizar el búfer causal desplazando la ventana un día e insertando únicamente la predicción propia: $\tilde{B}_{t_0+h} \leftarrow \text{append}(\tilde{B}_{t_0+h-1}[2:30],\; \hat{y}_{i,t_0+h \mid t_0})$.
+    \end{enumerate}
+    \item \textbf{Salida:} trayectoria $\{\hat{y}_{i,t_0+h \mid t_0}\}_{h=1}^H$ sin acceso a observaciones posteriores a $t_0$.
+\end{enumerate}
+\end{minipage}}
+\end{figure}
+
+\section{Fórmulas estadísticas auxiliares y entorno computacional}\label{sup:repro}
+
+\subsection{Fórmulas estadísticas auxiliares y política inferencial}\label{sup:stats}
+
+Para comparar dos procedimientos $m_A$ y $m_B$ sobre series alineadas de diferenciales de pérdida $d_t := L_{m_A, t} - L_{m_B, t}$ ($t = 1,\dots,T$), la varianza de largo plazo bajo autocorrelación serial se estima mediante el estimador HAC de Newey--West \cite{newey1987} con núcleo de Bartlett hasta el rezago $L = \max\{1, \lfloor 4(T/100)^{2/9} \rfloor\}$:
+\begin{equation}
+\hat{\Omega}_{\mathrm{HAC}} := \hat{\gamma}_0 + 2\sum_{k=1}^{L}\left(1 - \frac{k}{L+1}\right)\hat{\gamma}_k, \qquad
+\hat{\gamma}_k := \frac{1}{T}\sum_{t=k+1}^{T}(d_t - \bar{d})(d_{t-k} - \bar{d}),
+\label{eq:sup_hac}
+\end{equation}
+y el tamaño muestral efectivo se cuantifica como
+\begin{equation}
+T_{\mathrm{eff}} := \frac{T}{\max\!\left\{1,\; 1 + 2\sum_{k=1}^{L}\left(1 - \frac{k}{L+1}\right)\frac{\hat{\gamma}_k}{\hat{\gamma}_0}\right\}}.
+\label{eq:sup_teff}
+\end{equation}
+Dado que en los escenarios multihorizonte los orígenes consecutivos están separados exactamente por $H$ días sin solapamiento entre ventanas ($h_{\mathrm{serie}} = 1$), las series alineadas se clasifican en cuatro niveles de fiabilidad muestral según $T_{\mathrm{eff}}$: $<2h_{\mathrm{serie}}$, $[2h_{\mathrm{serie}}, 20)$, $[20, 30)$ y $\ge 30$.
+
+Para garantizar equivalencia exacta con el estimando $\mathrm{MAE}_{\mathrm{macro}}$ cuando el número de plantas disponibles por origen varía ($1$ a $17$), el diferencial macro-alineado en el instante $t$ se define como
+\begin{equation}
+z_t^{\mathrm{macro}} := \frac{T}{M}\sum_{i \in \mathcal{P}_t} \frac{S_{t,i}}{N_i},
+\label{eq:sup_zmacro}
+\end{equation}
+donde $\mathcal{P}_t$ es el conjunto de plantas evaluables en $t$, $S_{t,i}$ es el diferencial de pérdida acumulado en esa unidad y $N_i = |\mathcal{T}_i^{\mathrm{eval}}|$, verificándose idénticamente $\frac{1}{T}\sum_{t=1}^T z_t^{\mathrm{macro}} = \Delta\mathrm{MAE}_{\mathrm{macro}}$. En series con varianza muestral nula se aplica una política explícita: $\Delta = 0 \Rightarrow p = 1{,}0$, mientras que $\Delta \ne 0$ constante $\Rightarrow p = \text{NaN}$ (no evaluable mediante contraste asintótico DM). Por su parte, la prueba condicional de Giacomini--White \cite{giacomini2006tests} se excluye como prueba confirmatoria cuando $\tau = 1$ y $|\hat{\rho}_1| > 0{,}15$, tras observar en $120$ simulaciones Monte Carlo bajo errores $\mathrm{AR}(1)$ una tasa de rechazo empírica de $0{,}2083$ frente al nivel nominal $0{,}05$.
+
+\subsection{Entorno computacional y reproducibilidad}\label{sup:env}
+
+La evaluación OOF primaria se ejecutó sobre un procesador \texttt{AMD Ryzen 7 8845HS} ($8$ núcleos físicos, $16$ hilos lógicos, $16$~GB RAM, Windows~11 con procesos \texttt{spawn}), utilizando Python~$3{,}11{,}15$, NumPy~$2{,}3{,}5$, SciPy~$1{,}16{,}3$, pandas~$2{,}3{,}3$, scikit-learn~$1{,}9{,}0$, statsmodels~$0{,}14{,}6$ y Optuna~$5{,}0{,}0$, con semilla global~$2026$, bases SQLite aisladas por unidad experimental, escritura atómica y restricción a un hilo BLAS/OpenMP por trabajador.
+
+En la ejecución completa de los $28$ escenarios ($14\,625$ unidades por variante, $206\,073$ filas), \texttt{SM-CFHR-Fixed} concluyó en $499{,}75$~s ($8$ trabajadores, RSS pico $2\,067{,}6$~MB) y \texttt{SM-CFHR-HPO} en $29\,550{,}3$~s ($12$ trabajadores, RSS pico $4\,201{,}1$~MB, cero errores). Los datos externos ($603{,}70$~MB sin comprimir) se importan localmente con verificación de integridad (Figura~\ref{fig:sup_pipeline}). En la verificación de la prueba SPA con $B=5\,000$ réplicas frente a \texttt{arch 8.0.0}, se comprobó que \texttt{arch.SPA} almacena \texttt{studentize=True} sin aplicarlo en \texttt{compute()}; al alinear dicha opción o pre-studentizar con el estimador núcleo de Politis--Romano, la diferencia máxima cae a $\le 0{,}0183$ en los $28$ escenarios y el MCS unilateral coincide con índice Jaccard $1{,}0000$.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_pipeline_reproduccion.pdf}
+\caption{Arquitectura de ejecución resumible y verificación de integridad de datos y resultados.}
+\label{fig:sup_pipeline}
+\end{figure}
+
+\FloatBarrier
+\section{Análisis exploratorio complementario y diagramas metodológicos}\label{sup:figuras}
+
+Esta sección reúne las figuras exploratorias complementarias de la cohorte (Figuras~\ref{fig:sup_cohorte_mapa}--\ref{fig:sup_est_clima}) y los diagramas detallados de despliegue multihorizonte, estructura de la pérdida de Huber y validación cruzada causal anidada (Figuras~\ref{fig:sup_despliegue}--\ref{fig:sup_validacion}).
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.84\textwidth]{figures/eda_flujo_cohorte.pdf}\\[0.5em]
+\includegraphics[width=0.84\textwidth]{figures/eda_mapa_plantas.pdf}
+\caption{Depuración cuantitativa de la cohorte ($30\,964 \to 12\,756$ registros planta--día en $17$ centrales; arriba) y distribución geográfica en $G=7$ zonas espaciales por enlace simple a $<100\text{ km}$ (abajo).}
+\label{fig:sup_cohorte_mapa}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{figures/eda_cobertura_temporal.pdf}\\[0.5em]
+\includegraphics[width=0.90\textwidth]{figures/eda_horas_y_anomalos.pdf}
+\caption{Cobertura temporal escalonada por planta ($251$ a $1\,032$ días útiles; arriba) y distribución de horas reportadas por XM mostrando los $31$ registros incompletos excluidos ($\le 6\text{ h}$; abajo).}
+\label{fig:sup_cob_horas}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{figures/eda_estacionalidad.pdf}\\[0.5em]
+\includegraphics[width=0.90\textwidth]{figures/eda_clima.pdf}
+\caption{Estacionalidad mensual del factor de capacidad (arriba) y distribución de las cinco variables meteorológicas pronosticadas sobre la cohorte (abajo).}
+\label{fig:sup_est_clima}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_despliegue_multihorizonte.pdf}
+\caption{Comparación estructural entre el esquema directo acumulado ($H_{\mathrm{dir}}=H$, sin realimentación) y el despliegue recursivo multihorizonte con actualización causal mediante predicciones propias.}
+\label{fig:sup_despliegue}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_huber_estructura.pdf}
+\caption{Estructura analítica de SM-CFHR: pérdida de Huber $\rho_\delta(r)$ y derivada acotada $\psi_\delta(r)$ para $\delta = 1{,}35$ (izquierda), y curvas de nivel de la penalización $L_2$ anisotrópica con cota activa sobre $\mathcal{C}$ (derecha).}
+\label{fig:sup_huber}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_validacion_anidada.pdf}
+\caption{Esquema de validación cruzada causal anidada: separación temporal y espacial externa (\textit{leave-one-group-out} en ET) con brecha de embargo causal de $30$ días y validación interna de $3$ particiones para Optuna TPE.}
+\label{fig:sup_validacion}
+\end{figure}
 
 \bibliographystyle{plain}
 \bibliography{bibliography/bibliography}
